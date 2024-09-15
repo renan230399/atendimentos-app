@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "strict": true,
+        "isolatedModules": true,
+        "target": "ESNext",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": true,
+        "baseUrl": ".",  // Define o diretório raiz como base
+        "paths": {
+            "@/*": ["./resources/js/*"],
+            "@components/*": ["./resources/js/Components/*"],  // Adicionado "./" para resolver corretamente
+            "@styles/*": ["./resources/css/*"],
+            "@layouts/*": ["./resources/js/Layouts/*"],
+            "@pages/*": ["./resources/js/Pages/*"],
+            "@lixo/*": ["./resources/js/lixo/*"],
+            "ziggy-js": ["./vendor/tightenco/ziggy"]
+        }
+    },
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.tsx",
+        "resources/js/**/*.d.ts"
+    ]
+}

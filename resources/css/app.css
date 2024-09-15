@@ -1,0 +1,403 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --primary-color: #efefef; /* Define uma variável chamada --primary-color com o valor de cor #3498db */
+    --secondary-color: #fff;
+    --tertiary-color: #000000;
+    --quaternary-color: #FFF;
+    --primeira_cor:#efefef;
+}
+.zoom { 
+	text-align:center;
+	overflow: hidden; 
+	cursor:pointer;
+	-moz-transition: all 0.5s;
+	-webkit-transition: all 0.5s;
+	transition: all 0.5s;
+}
+.zoom:hover { 
+	-moz-transform: scale(1.1);
+	-webkit-transform: scale(1.1);
+	-transform: scale(1.1);
+}
+.rbc-calendar{
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.8);
+    border-radius:10px;
+    background-color: white;
+
+    padding:5px;
+}
+/* 
+  Estilos Gerais para a Tela da Agenda
+*/
+.tela {
+    display: flex; /* Define um layout flexível */
+    background-color: #fff; /* Cor de fundo escura para a tela principal */
+}
+
+.calendario {
+    border-radius: 10px;
+    border:1px solid black;
+    margin: 12vh auto ;
+    background-color: white;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.8);
+    height: 85vh; /* Altura máxima da viewport */
+    width: 98%; /* Usa 80% da largura da tela */
+    overflow: auto; /* Permite rolagem se o conteúdo ultrapassar o tamanho da área */
+}
+
+
+
+/* 
+  Estilos para o Cabeçalho da Toolbar
+*/
+.toolbar-container {
+    display: flex; /* Define um layout flexível */
+    height: 10vh; /* Altura do cabeçalho da toolbar */
+    align-items: center; /* Alinha verticalmente os itens ao centro */
+    padding-left: 50px; /* Espaçamento à esquerda */
+    margin-top:50px;
+    background-color: #efefef;
+    color:black;
+}
+
+.mesAno {
+    font-family:'Roboto';
+    width: 20%; /* Ocupa 50% da largura do container */
+    color: #000; /* Cor do texto clara */
+    justify-content: flex-start; /* Alinha conteúdo à esquerda */
+}
+
+
+label{
+    font-family:Roboto !important;
+}
+/* 
+  Estilos para o Modal de Eventos
+*/
+.modal {
+    position: fixed; /* Fixa a posição do modal na tela */
+    top: 0; /* Alinha o topo do modal com o topo da tela */
+    left: 0; /* Alinha a esquerda do modal com a esquerda da tela */
+    width: 100%; /* Largura total da tela */
+    height: 100%; /* Altura total da tela */
+    background-color: rgba(0, 0, 0, 0.578); /* Fundo semi-transparente para efeito de sobreposição */
+    display: flex; /* Define um layout flexível */
+    justify-content: center; /* Centraliza o conteúdo horizontalmente */
+    align-items: center; /* Centraliza o conteúdo verticalmente */
+    z-index: 9999; /* Define a prioridade de sobreposição do modal */
+}
+
+.modal-content {
+    background-color: black; /* Cor de fundo clara para o conteúdo do modal */
+    padding: 20px; /* Espaçamento interno para o conteúdo */
+    border-radius: 6px; /* Bordas arredondadas */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.081); /* Sombra suave para efeito de elevação */
+    z-index: 10000; /* Prioridade de sobreposição para o conteúdo do modal */
+}
+
+/* 
+  Estilos para o Calendário
+*/
+/* Header e Botões */
+
+
+.rbc-btn-group > button {
+    border: 0; /* Remove a borda padrão dos botões */
+}
+.rbc-toolbar-label {
+    color: white; /* Cor do texto dos botões */
+    border: 1px solid #cccccc4f; /* Borda leve e clara */
+    font-family:Calibri;
+    padding:10px !important;
+    background-color: blue;
+    font-size:12px;
+    font-weight: 600;
+    width:20vw;
+    text-transform: uppercase;
+}
+.rbc-toolbar button {
+    color: black; /* Cor do texto dos botões */
+    border: 1px solid #000; /* Borda leve e clara */
+    border-radius:5px;
+    width:10vw;
+    padding:0px;
+}
+
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+    background-color: blue !important; /* Cor de fundo clara para estado ativo */
+    color:white !important;
+
+}
+
+/* Corpo do Calendário */
+/* Linhas */
+.rbc-month-view {
+    border-color: #000; /* Cor da borda das linhas do calendário */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.8); /* Sombra suave para efeito de elevação */
+    border-radius:10px;
+
+}
+
+.rbc-month-row + .rbc-month-row {
+    border-color: #000; /* Cor da borda entre linhas do mês */
+
+}
+
+.rbc-day-bg + .rbc-day-bg {
+    border-color: #000 !important; /* Cor da borda entre dias */
+}
+
+/* Cabeçalho do Mês */
+.rbc-header {
+    color: #fff; /* Cor do texto para os cabeçalhos dos dias */
+    border-color: #000; /* Cor da borda dos cabeçalhos dos dias */
+    background-color:blue;
+}
+.rbc-event{
+    width:90%;
+    padding-left:10px;
+}
+.rbc-header{
+    border-radius:5px;
+    border-top: 0px; /* Remove a borda superior */
+    border-left: 0px; /* Remove a borda esquerda */
+    border-right: 0px; /* Remove a borda direita */
+    border-bottom:0px;
+    border-color: #000; /* Cor da borda restante */
+    background-color:#3f3f3f;
+    height:5vh;
+    padding:0px;
+}
+/*.rbc-header rbc-today{
+
+}*/
+.rbc-off-range-bg {
+    background-color: #3f3f3f; /* Cor de fundo para dias fora do intervalo do mês */
+}
+.rbc-allday-cell{
+display:block;
+}
+
+.rbc-today {
+    background-color: #000 !important; /* Cor de fundo para o dia atual */
+}
+
+.rbc-button-link {
+    margin: 0px; /* Margem em volta do botão */
+    font-size: 15px; /* Tamanho da fonte */
+    height:15px;
+    color: #000; /* Cor do texto */
+    position:relative;
+    background-color: #3f3f3f; /* Cor de fundo para o botão do dia atual */
+    border-radius: 2px; /* Bordas ligeiramente arredondadas */
+    padding-left: 2px; /* Espaçamento interno à esquerda */
+    padding-right: 2px; /* Espaçamento interno à direita */
+    padding-top: 0px; /* Espaçamento interno à direita */
+    line-height: 0px;
+    margin: 0px; /* Margem em volta do botão */
+    font-size: 16px; /* Tamanho da fonte */
+    height:20px;
+}
+
+.rbc-off-range .rbc-button-link {
+    color: #000; /* Cor do texto para dias fora do intervalo */
+}
+
+.rbc-now .rbc-button-link {
+    background-color: blue; /* Cor de fundo para o botão do dia atual */
+    color: #ffffff; /* Cor do texto para o botão do dia atual */
+    border-radius: 2px; /* Bordas ligeiramente arredondadas */
+    padding-left: 2px; /* Espaçamento interno à esquerda */
+    padding-right: 2px; /* Espaçamento interno à direita */
+    padding-top: 0px; /* Espaçamento interno à direita */
+    line-height: 0px;
+    margin: 0px; /* Margem em volta do botão */
+    font-size: 16px; /* Tamanho da fonte */
+    height:20px;
+}
+
+.rbc-time-content, .rbc-time-content > .rbc-day-slot, .rbc-timeslot-group, .rbc-time-slot {
+    color: #000; /* Cor do texto para horários */
+    border-color: #000; /* Cor da borda para slots de tempo */
+  
+}
+.rbc-time-slot-cell{
+    color: #000; /* Cor do texto para horários */
+    border-color: #b0b0b036; /* Cor da borda para slots de tempo */
+    height:100px;
+    width:50px;
+}
+.rbc-day-slot .rbc-time-slot {
+    border: 1px solid #c8c8c80a; /* Borda superior para slots de tempo */
+    color:black;
+
+}
+
+.rbc-time-view .rbc-time-slot .rbc-label {
+    color: black; /* Define a cor do texto como preto */
+
+}
+
+
+
+/* Estilos para a Visão de Agenda */
+.rbc-agenda-content, .rbc-agenda-view {
+    color: #fff; /* Cor do texto para a visão de agenda */
+    border:0px solid #000;
+    border-radius:10px;
+    box-shadow: 0 0 0px rgba(0, 0, 0, 0.8); /* Sombra suave para efeito de elevação */
+
+}
+
+.rbc-agenda-date-cell {
+    background-color: #efefef; /* Cor de fundo para células de data e hora na agenda */
+    color:#000 !important;
+    background-color:white; /* Cor de fundo preta */
+    margin-top:0px;
+    border-radius:20px 0px 0px 20px;
+}
+.rbc-agenda-view .rbc-agenda-time-cell {
+    background-color:white; /* Cor de fundo preta */
+    height:50px;
+    color: white; /* Cor do texto branca */
+    color:#000 !important;
+    padding: 5px;
+}
+.rbc-agenda-event-cell {
+    padding: 5px;
+    margin:10px;
+    border-radius:0 30px 30px 0; /* Bordas arredondadas para células de eventos */
+    font-weight: 500;
+    justify-content: center;
+    vertical-align: middle;
+    align-items: center;
+    color: white; /* Cor do texto para eventos */
+    cursor:pointer;
+    background-color:#1e1f66c0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); /* Sombra suave para efeito de elevação */
+
+    margin-top:15px;
+}
+
+
+
+.custom-select-component {
+    width: 200px;
+    position: relative;
+}
+
+.custom-select-box {
+    border: 1px solid #ccc;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background-color: white;
+}
+
+.custom-options-container {
+    position: absolute;
+    width: 100%;
+    border: 1px solid #ccc;
+    background-color: white;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.custom-select-option {
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.custom-select-option:hover {
+    background-color: #f1f1f1;
+}
+
+.conteudo_materiais_cursos {
+    border:3px solid blue;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); /* Sombra suave para efeito de elevação */
+    overflow-y: auto;
+    z-index: 300;
+    background: white;
+    width: 98%;
+    height: 95%;
+    overflow-x:hidden !important;
+    border-radius: 5px;
+    border-radius:10px;
+    transition: transform 0.5s ease-in-out;
+    
+}
+
+      /* Barra de rolagem para navegadores WebKit */
+      .conteudo_materiais_cursos::-webkit-scrollbar {
+        width:4px; /* Largura da barra de rolagem */
+        border-radius: 10px;
+    }
+
+    /* Trilha da barra de rolagem */
+    .conteudo_materiais_cursos::-webkit-scrollbar-track {
+        background:gray; /* Cor da trilha */
+        border-radius: 10px; /* Bordas arredondadas */
+    }
+
+    /* Polegar da barra de rolagem */
+    .conteudo_materiais_cursos::-webkit-scrollbar-thumb {
+        background: #001; /* Cor do polegar */
+        border-radius: 10px; /* Bordas arredondadas */
+    }
+
+    /* Polegar da barra de rolagem ao passar o mouse */
+    .conteudo_materiais_cursos::-webkit-scrollbar-thumb:hover {
+        background: white; /* Cor do polegar ao passar o mouse */
+    }
+.materiais_cursos.materialShow { 
+visibility: visible;
+opacity: 1;
+}
+.materiais_cursos.materialShow .conteudo_materiais_cursos {
+transform: scale(0.5);
+}
+.materiais_cursos.materialHide .conteudo_materiais_cursos {
+transform: scale(0);
+transition: transform 0.3s ease-in-out;
+}
+
+.materiais_cursos.materialHide {
+opacity: 0;
+transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
+}
+
+
+	/* width */
+    ::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      /* Track */
+      ::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 10px white; 
+      
+      }
+       
+      /* Handle */
+      ::-webkit-scrollbar-thumb {
+        background: gray; /* Cor do polegar */
+      border-radius: 10px; /* Bordas arredondadas */
+      }
+      
+      /* Handle on hover */
+      ::-webkit-scrollbar-thumb:hover {
+         background: darkgray; 
+      }
+      ::-webkit-scrollbar-track :hover {
+         box-shadow: inset 0 0 20px blue; 
+        border-radius: 300px;
+      }
