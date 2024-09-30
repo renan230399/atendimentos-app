@@ -12,16 +12,16 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // Nome da categoria
             $table->enum('type', ['income', 'expense']); // Tipo da categoria
-            $table->unsignedBigInteger('empresa_id'); // Chave estrangeira para empresa
+            $table->unsignedBigInteger('company_id'); // Chave estrangeira para empresa
             $table->timestamps();
 
             // Foreign key for empresa
-            $table->foreign('empresa_id')->references('id')->on('empresas')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('transaction_categories');
     }
 };

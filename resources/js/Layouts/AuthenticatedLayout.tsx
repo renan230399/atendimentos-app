@@ -10,19 +10,18 @@ export default function Authenticated({ user, header, children }: PropsWithChild
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <nav className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 z-1">
+            <nav className="fixed top-0 left-0 w-full bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center w-full">
-                            {/* Exibir o logotipo da empresa, se existir */}
                             <div className="shrink-0">
-                                <Link href="/">
-                                    {user.empresa && user.empresa.logo_empresa ? (
+                                <Link href="/dashboard">
+                                    {user.company && user.company.company_logo ? (
                                         <img
-                                            src={user.empresa.logo_empresa}
-                                            alt={user.empresa.nome_empresa}
-                                            className="h-9 w-auto"
+                                            src={user.company.company_logo}
+                                            alt={user.company.company_name}
+                                            className="h-12 w-auto"
                                         />
                                     ) : (
                                         <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
@@ -31,28 +30,24 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                {/* Exibe as opções de acordo com o cargo do usuário */}
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
                                     Agenda
                                 </NavLink>
-
-                                {/* Opções que todos os usuários podem ver */}
-                                <NavLink href={route('pacients')} active={route().current('pacients')}>
+                                <NavLink href={route('patients.index')} active={route().current('patients.index')}>
                                     Pacientes
                                 </NavLink>
-
-                                {/* Exibe apenas para administradores */}
-                                {user.cargo === 1 && user.empresa && (
+                                {user.role === 1 && user.company && (
                                     <>
                                         <NavLink href={route('forms.index')} active={route().current('forms.index')}>
-                                            Formulários
+                                            Fichas
                                         </NavLink>
                                         <NavLink href={route('employees.index')} active={route().current('employees.index')}>
                                             Funcionários
                                         </NavLink>
-                                        <NavLink href={route('reports.index')} active={route().current('reports.index')}>
-                                            Relatórios
+                                        <NavLink href={route('inventory.dashboard')} active={route().current('inventory.dashboard')}>
+                                            Inventário
                                         </NavLink>
+
                                         <NavLink href={route('financial.dashboard')} active={route().current('financial.dashboard')}>
                                             Financeiro
                                         </NavLink>
@@ -61,17 +56,16 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                             </div>
                         </div>
 
-                        <div className="hidden sm:flex sm:items-center sm:ml-6">
-                            <div className="ml-3 relative">
+                        <div className="hidden sm:flex right-0 sm:items-center sm:ml-6">
+                            <div className="ml-3 w-full relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
+                                        <span className="inline-flex rounded-md w-full">
                                             <button
                                                 type="button"
                                                 className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150"
                                             >
                                                 {user.name}
-
                                                 <svg
                                                     className="ml-2 -mr-0.5 h-4 w-4"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -89,9 +83,9 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
-                                        <Dropdown.Link href={route('profile.edit')}>Informações do perfil</Dropdown.Link>
+                                        <Dropdown.Link href={route('profile.edit')}>Editar informações</Dropdown.Link>
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
-                                            Sair da conta
+                                            Sair
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -127,22 +121,24 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                     <div className="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                            Agenda
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('pacients')} active={route().current('pacients')}>
+                            Agenda 
+                       </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('patients.index')} active={route().current('patients.index')}>
                             Pacientes
                         </ResponsiveNavLink>
-
-                        {user.cargo === 1 && user.empresa && (
+                        {user.role === 1 && user.company && (
                             <>
                                 <ResponsiveNavLink href={route('forms.index')} active={route().current('forms.index')}>
-                                    Formulários
+                                    Fichas
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('employees.index')} active={route().current('employees.index')}>
                                     Funcionários
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>
                                     Relatórios
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink href={route('financial.dashboard')} active={route().current('reports.index')}>
+                                    Inventário
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('financial.dashboard')} active={route().current('financial.dashboard')}>
                                     Financeiro
@@ -160,22 +156,24 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>Perfil</ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
                             <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                                Sair
+                                Log Out
                             </ResponsiveNavLink>
                         </div>
                     </div>
                 </div>
             </nav>
 
+            {/* Adjust padding to avoid content being behind the fixed header */}
             {header && (
-                <header className="bg-white dark:bg-gray-800 shadow">
+                <header className="bg-white dark:bg-gray-800 shadow mt-16">
                     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{header}</div>
                 </header>
             )}
 
-            <main>{children}</main>
+            {/* Add padding to main content to avoid overlap with fixed header */}
+            <main className="pt-16">{children}</main>
         </div>
     );
 }

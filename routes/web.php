@@ -1,9 +1,9 @@
 <?php
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EventsController;
-use App\Http\Controllers\PacientController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\FormController;
-use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\TransactionCategoryController;
@@ -11,6 +11,10 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\FinancialController;
+use App\Http\Controllers\InventoryController;
+
+use App\Http\Controllers\ConsultationController; // Adicionado
+use App\Http\Controllers\FormResponseController; // Adicionando o controlador para respostas de formulário
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -45,32 +49,48 @@ Route::middleware('auth')->group(function () {
     // Rota para o dashboard de eventos
     Route::get('/dashboard', [EventsController::class, 'index'])->name('dashboard');
 
-    // Rotas para pacientes
-    Route::get('/pacients', [PacientController::class, 'index'])->name('pacients');
-    Route::post('/pacients', [PacientController::class, 'store'])->name('pacients.store');
+    // Rotas para pacientes (patients)
+    Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
+    Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
 
     // Rotas para formulários dinâmicos
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
     Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
+    Route::get('/forms/{form}/fields', [FormController::class, 'getFields'])->name('forms.fields');
 
-    // Rotas para empresas (somente para administradores - cargo 1)
+    // Rota para enviar respostas do formulário
+    Route::post('/forms/{form}/responses', [FormResponseController::class, 'store'])->name('form.responses.store');
+
+    // Rota para buscar as consultas de um paciente específico
+    Route::get('/patients/{id}/consultations', [ConsultationController::class, 'getConsultationsByPatient']);
+    
+    // Rotas para consultas (consultations)
+    Route::resource('consultations', ConsultationController::class);
+
+    // Rota para obter as respostas de formulários de um paciente específico
+    Route::get('/patients/{id}/form-responses', [FormResponseController::class, 'getFormResponsesByPatient']);
+
+    // Rotas para empresas (companies) (somente para administradores - cargo 1)
     Route::middleware(['verifyUserRole:1'])->group(function () {
-        Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas.index');
-        Route::get('/empresas/create', [EmpresaController::class, 'create'])->name('empresas.create');
-        Route::post('/empresas', [EmpresaController::class, 'store'])->name('empresas.store');
-        Route::get('/empresas/{empresa}', [EmpresaController::class, 'show'])->name('empresas.show');
-        Route::get('/empresas/{empresa}/edit', [EmpresaController::class, 'edit'])->name('empresas.edit');
-        Route::put('/empresas/{empresa}', [EmpresaController::class, 'update'])->name('empresas.update');
-        Route::delete('/empresas/{empresa}', [EmpresaController::class, 'destroy'])->name('empresas.destroy');
+        Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
+        Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
+        Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+        Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
+        Route::post('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
+        Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
 
         // Rotas para gerenciar funcionários da empresa do usuário autenticado
-        Route::get('/employees', [EmpresaController::class, 'employeesIndex'])->name('employees.index');
-        Route::get('/employees/{employee}/edit', [EmpresaController::class, 'editEmployee'])->name('employees.edit');
-        Route::post('/employees', [EmpresaController::class, 'addEmployee'])->name('employees.store');
-        Route::delete('/employees/{employee}', [EmpresaController::class, 'removeEmployee'])->name('employees.destroy');
+        Route::get('/employees', [CompanyController::class, 'employeesIndex'])->name('employees.index');
+        Route::get('/employees/{employee}/edit', [CompanyController::class, 'editEmployee'])->name('employees.edit'); // Rota para exibir o formulário de edição
+        Route::put('/employees/{employee}', [CompanyController::class, 'updateEmployee'])->name('employees.update'); // Rota para atualizar o funcionário
+        Route::post('/employees', [CompanyController::class, 'addEmployee'])->name('employees.store'); // Rota para adicionar um novo funcionário
+        Route::delete('/employees/{employee}', [CompanyController::class, 'removeEmployee'])->name('employees.destroy'); // Rota para excluir o funcionário
+
+        Route::get('/inventory-dashboard', [InventoryController::class, 'inventoryDashboard'])->name('inventory.dashboard');
 
         // Rotas para relatórios
-        Route::get('/reports', [EmpresaController::class, 'index'])->name('reports.index');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
         // Rota central para o dashboard financeiro
         Route::get('/financial-dashboard', [FinancialController::class, 'financialDashboard'])->name('financial.dashboard');
@@ -86,7 +106,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/transaction-categories/{category}', [TransactionCategoryController::class, 'update'])->name('transaction_categories.update');
         Route::delete('/transaction-categories/{category}', [TransactionCategoryController::class, 'destroy'])->name('transaction_categories.destroy');
 
-        Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+        Route::post('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+        Route::post('/transactions/filter', [TransactionController::class, 'filter'])->name('transactions.filter');
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
         Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
         Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');

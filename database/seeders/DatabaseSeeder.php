@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,9 +11,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Chama os seeders de usuário, paciente e formulário de anamnese
         $this->call([
-            EmpresaSeeder::class,
             UserSeeder::class,
+            PatientSeeder::class, // Adiciona o PatientSeeder aqui
+            FormFieldSeeder::class, // Adiciona o FormFieldSeeder aqui
+            CategoryProductSeeder::class,
+            ProductSeeder::class,
+            ConsultationSeeder::class,
         ]);
     }
 }

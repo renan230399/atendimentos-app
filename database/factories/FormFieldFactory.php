@@ -11,16 +11,14 @@ class FormFieldFactory extends Factory
 
     public function definition()
     {
-        $types = ['text', 'number', 'email', 'textarea', 'select'];
-        $options = ['Option 1', 'Option 2', 'Option 3'];
-
         return [
-            'form_id' => \App\Models\Form::factory(),
-            'label' => $this->faker->word,
-            'type' => $this->faker->randomElement($types),
-            'required' => $this->faker->boolean,
-            'options' => json_encode($this->faker->randomElements($options, 2)),
-            'order' => $this->faker->numberBetween(1, 10),
+            'form_id' => 1, // Associe ao ID do formulário de anamnese
+            'label' => '', // O label será preenchido no seeder
+            'type' => '',  // O tipo também será preenchido no seeder
+            'required' => true, // Defina se o campo é obrigatório
+            'options' => null,  // As opções serão preenchidas no seeder, para campos como checkbox ou radio
+            'class' => '', // Adiciona a classe, que também será preenchida no seeder ou manualmente
+            'order' => 0, // Defina a ordem no seeder
         ];
     }
 }

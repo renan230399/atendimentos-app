@@ -20,7 +20,9 @@ class CreateFormFieldsTable extends Migration
             $table->string('type'); // Tipo do campo (ex.: text, email, number, etc.)
             $table->boolean('required')->default(false); // Se o campo é obrigatório ou não
             $table->json('options')->nullable(); // Opções adicionais (por exemplo, para campos select ou radio)
+            $table->string('class')->nullable(); // Coluna para classes que indicam o comportamento do campo
             $table->integer('order')->default(0); // Ordem do campo no formulário
+            $table->integer('step')->default(1); // Define em qual etapa o campo será exibido no wizard
             $table->timestamps();
         });
     }

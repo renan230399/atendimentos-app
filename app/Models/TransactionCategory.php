@@ -17,7 +17,7 @@ class TransactionCategory extends Model
     protected $fillable = [
         'name',
         'type',
-        'empresa_id',
+        'company_id',
     ];
 
     /**
@@ -26,9 +26,9 @@ class TransactionCategory extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function empresa()
+    public function company()
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(Company::class);
     }
 
     /**

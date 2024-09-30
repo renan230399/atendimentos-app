@@ -183,8 +183,10 @@ display:block;
 }
 
 .rbc-today {
-    background-color: #000 !important; /* Cor de fundo para o dia atual */
+    background-color: rgba(7, 165, 15, 0.8); /* Define uma cor de fundo com opacidade */
+    border-radius: 2px; /* Aplica um arredondamento de 2px nos cantos */
 }
+
 
 .rbc-button-link {
     margin: 0px; /* Margem em volta do botão */
@@ -327,13 +329,31 @@ display:block;
     overflow-y: auto;
     z-index: 300;
     background: white;
-    width: 98%;
+    width: 50%;
     height: 95%;
     overflow-x:hidden !important;
     border-radius: 5px;
     border-radius:10px;
     transition: transform 0.5s ease-in-out;
     
+}
+
+
+.materiais_cursos.materialShow { 
+visibility: visible;
+opacity: 1;
+}
+.materiais_cursos.materialShow .conteudo_materiais_cursos {
+transform: scale(0.5);
+}
+.materiais_cursos.materialHide .conteudo_materiais_cursos {
+transform: scale(0);
+transition: transform 0.3s ease-in-out;
+}
+
+.materiais_cursos.materialHide {
+opacity: 0;
+transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
 }
 
       /* Barra de rolagem para navegadores WebKit */
@@ -358,24 +378,6 @@ display:block;
     .conteudo_materiais_cursos::-webkit-scrollbar-thumb:hover {
         background: white; /* Cor do polegar ao passar o mouse */
     }
-.materiais_cursos.materialShow { 
-visibility: visible;
-opacity: 1;
-}
-.materiais_cursos.materialShow .conteudo_materiais_cursos {
-transform: scale(0.5);
-}
-.materiais_cursos.materialHide .conteudo_materiais_cursos {
-transform: scale(0);
-transition: transform 0.3s ease-in-out;
-}
-
-.materiais_cursos.materialHide {
-opacity: 0;
-transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
-}
-
-
 	/* width */
     ::-webkit-scrollbar {
         width: 6px;

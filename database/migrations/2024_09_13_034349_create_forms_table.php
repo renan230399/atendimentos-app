@@ -14,10 +14,17 @@ class CreateFormsTable extends Migration
     {
         Schema::create('forms', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('company_id')->index();
+            $table->integer('category')->nullable();
             $table->string('name'); // Nome do formulário
             $table->text('description')->nullable(); // Descrição do formulário
             $table->boolean('active')->default(true); // Status do formulário (ativo ou não)
+            $table->string('icon')->nullable();
+            $table->boolean('is_wizard')->default(false); // Define se o formulário é um wizard
+            $table->json('wizard_structure')->nullable(); 
             $table->timestamps(); // Colunas created_at e updated_at
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade'); // Deletes patient if the company is deleted
+
         });
     }
 

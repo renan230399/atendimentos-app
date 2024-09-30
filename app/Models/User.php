@@ -19,8 +19,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'empresa_id', // Adiciona o campo empresa_id aos atributos preenchíveis
-        'cargo', // Adiciona o campo cargo aos atributos preenchíveis
+        'company_id', // Adiciona o campo empresa_id aos atributos preenchíveis
+        'role', // Adiciona o campo cargo aos atributos preenchíveis
     ];
 
     /**
@@ -48,8 +48,8 @@ class User extends Authenticatable
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function empresa()
+    public function company()
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(Company::class);
     }
 }

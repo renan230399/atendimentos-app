@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('account_id'); // Conta associada
             $table->unsignedBigInteger('category_id'); // Categoria da transação
-            $table->unsignedBigInteger('empresa_id'); // Chave estrangeira para empresa
+            $table->unsignedBigInteger('company_id'); // Chave estrangeira para empresa
             $table->enum('type', ['income', 'expense', 'transfer']); // Tipo da transação
             $table->decimal('amount', 15, 2); // Valor da transação
             $table->text('description')->nullable(); // Descrição adicional
@@ -22,7 +22,7 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
             $table->foreign('category_id')->references('id')->on('transaction_categories')->onDelete('cascade');
-            $table->foreign('empresa_id')->references('id')->on('empresas')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

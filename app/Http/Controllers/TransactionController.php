@@ -3,46 +3,107 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Account;
+use App\Models\TransactionCategory;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
     /**
      * Display a listing of the transactions.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = Transaction::where('empresa_id', auth()->user()->empresa_id)->get();
-        return view('transactions.index', ['transactions' => $transactions]);
+        $user = auth()->user();
+        $companyId = $user->company_id;
+    
+        // Filtra transações por datas se os filtros forem passados e não forem nulos
+        $transactionsQuery = Transaction::where('company_id', $companyId);
+    
+        if ($request->filled('start_date')) {
+            $transactionsQuery->where('transaction_date', '>=', $request->start_date);
+        }
+    
+        if ($request->filled('end_date')) {
+            $transactionsQuery->where('transaction_date', '<=', $request->end_date);
+        }
+    
+        // Paginação de 10 transações por página
+        $transactions = $transactionsQuery->paginate(10);
+    
+        // Recupera contas e categorias associadas à empresa do usuário
+        $accounts = Account::where('company_id', $companyId)->get();
+        $categories = TransactionCategory::where('company_id', $companyId)->get();
+    
+        return Inertia::render('Financial/FinancialDashboard', [
+            'transactions' => $transactions,
+            'accounts' => $accounts,
+            'categories' => $categories,
+            'pagination' => $transactions, // Passa a paginação completa
+        ]);
     }
-
-    /**
-     * Show the form for creating a new transaction.
-     */
-    public function create()
+    public function filter(Request $request)
     {
-        return view('transactions.create');
+        $user = auth()->user();
+        $companyId = $user->company_id;
+    
+        // Filtra transações por datas se os filtros forem passados e não forem nulos
+        $transactionsQuery = Transaction::where('company_id', $companyId);
+    
+        if ($request->filled('start_date')) {
+            $transactionsQuery->where('transaction_date', '>=', $request->start_date);
+        }
+    
+        if ($request->filled('end_date')) {
+            $transactionsQuery->where('transaction_date', '<=', $request->end_date);
+        }
+    
+        // Paginação de 10 transações por página
+        $transactions = $transactionsQuery->paginate(10);
+    
+        // Recupera contas e categorias associadas à empresa do usuário
+        $accounts = Account::where('company_id', $companyId)->get();
+        $categories = TransactionCategory::where('company_id', $companyId)->get();
+    
+        return Inertia::render('Financial/FinancialDashboard', [
+            'transactions' => $transactions,
+            'accounts' => $accounts,
+            'categories' => $categories,
+            'pagination' => $transactions, // Passa a paginação completa
+        ]);
     }
-
     /**
      * Store a newly created transaction in storage.
      */
     public function store(Request $request)
     {
+        // Validação dos dados recebidos
         $validatedData = $request->validate([
             'account_id' => 'required|exists:accounts,id',
             'category_id' => 'required|exists:transaction_categories,id',
-            'type' => 'required|in:income,expense',
+            'type' => 'required|in:income,expense,transfer',
             'amount' => 'required|numeric',
-            'description' => 'nullable|string',
             'transaction_date' => 'required|date',
+            'description' => 'nullable|string',
         ]);
 
-        $validatedData['empresa_id'] = auth()->user()->empresa_id;
+        // Adicionar o 'company_id' do usuário autenticado
+        $validatedData['company_id'] = auth()->user()->company_id;
 
-        Transaction::create($validatedData);
+        // Criar a transação
+        $transaction = Transaction::create($validatedData);
 
-        return redirect()->route('transactions.index')->with('success', 'Transação criada com sucesso!');
+        // Atualizar o saldo da conta
+        $account = Account::findOrFail($request->account_id);
+        if ($request->type == 'income') {
+            $account->balance += $request->amount;
+        } elseif ($request->type == 'expense') {
+            $account->balance -= $request->amount;
+        }
+        $account->save();
+
+        return redirect()->back()->with('success', 'Transação criada e saldo atualizado!');
     }
 
     /**
@@ -51,7 +112,7 @@ class TransactionController extends Controller
     public function show(Transaction $transaction)
     {
         $this->authorize('view', $transaction);
-        return view('transactions.show', compact('transaction'));
+        return Inertia::render('transactions.show', ['transaction' => $transaction]);
     }
 
     /**
@@ -60,7 +121,7 @@ class TransactionController extends Controller
     public function edit(Transaction $transaction)
     {
         $this->authorize('update', $transaction);
-        return view('transactions.edit', compact('transaction'));
+        return Inertia::render('transactions.edit', ['transaction' => $transaction]);
     }
 
     /**

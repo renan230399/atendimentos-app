@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('from_account_id'); // Conta de origem
             $table->unsignedBigInteger('to_account_id'); // Conta de destino
-            $table->unsignedBigInteger('empresa_id'); // Chave estrangeira para empresa
+            $table->unsignedBigInteger('company_id'); // Chave estrangeira para empresa
             $table->decimal('amount', 15, 2); // Valor transferido
             $table->date('transfer_date'); // Data da transferência
             $table->text('description')->nullable(); // Descrição adicional
@@ -21,7 +21,7 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('from_account_id')->references('id')->on('accounts')->onDelete('cascade');
             $table->foreign('to_account_id')->references('id')->on('accounts')->onDelete('cascade');
-            $table->foreign('empresa_id')->references('id')->on('empresas')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

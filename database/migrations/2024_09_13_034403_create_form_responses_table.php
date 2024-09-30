@@ -5,26 +5,24 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateFormResponsesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('form_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_id')->constrained()->onDelete('cascade'); // Relacionamento com a tabela forms
-            $table->json('responses'); // Armazena as respostas em formato JSON (campos e valores)
+            
+            // Relaciona com a tabela 'forms' e define a deleção em cascata
+            $table->foreignId('form_id')->constrained('forms')->onDelete('cascade');
+            
+            // Relaciona com a tabela 'companies'
+            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
+            
+            // Relaciona com a tabela 'patients'
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
+            
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('form_responses');

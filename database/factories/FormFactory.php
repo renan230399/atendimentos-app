@@ -12,9 +12,10 @@ class FormFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->sentence(3),
-            'description' => $this->faker->paragraph,
-            'active' => $this->faker->boolean,
+            'company_id' => 1, // Associe ao ID de uma empresa
+            'name' => 'Ficha de Anamnese - Histórico de Saúde',
+            'description' => 'Formulário detalhado para coleta de informações sobre histórico de saúde do paciente',
+            'active' => true, // Defina como ativo
         ];
     }
 }

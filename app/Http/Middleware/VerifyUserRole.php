@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class VerifyUserRole
 {
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles) // Múltiplos roles
     {
-        dd('Middleware chamado');
+
         if (Auth::check()) {
-            if (Auth::user()->cargo == $role) {
+            if (in_array(Auth::user()->role, $roles)) {
                 return $next($request);
             } else {
                 abort(403, 'Acesso negado');
@@ -22,4 +22,3 @@ class VerifyUserRole
         return redirect()->route('login');
     }
 }
-

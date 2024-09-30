@@ -19,68 +19,34 @@ moment.updateLocale('pt-br', {
     monthsShort: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 });
 
-const Dashboard = ({ auth, events: initialEvents }) => {
-    // Convertendo eventos iniciais para garantir que start e end sejam objetos Date
+const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
+    // Convertendo as datas de string para objetos Date
     const [events, setEvents] = useState(
         initialEvents.map(event => ({
             ...event,
-            start: new Date(event.start.replace(' ', 'T')),
-            end: new Date(event.end.replace(' ', 'T'))
+            start: new Date(event.start), // Converte para objeto Date
+            end: new Date(event.end), // Converte para objeto Date
         }))
     );
 
     const [currentView, setCurrentView] = useState(Views.MONTH);
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [eventoSelecionado, setEventoSelecionado] = useState(null);
+    const [selectedEvent, setSelectedEvent] = useState(null);
     const [modalParams, setModalParams] = useState({});
-    
-    // Controle de visibilidade da barra de ferramentas para dispositivos menores
-    const [showToolbar, setShowToolbar] = useState(false);
-    const handleOpenWindow = () => {
-        // Especifica a URL, o nome da janela, e os parâmetros de estilo
-        const url = 'http://localhost/agenda'; // Altere para a URL que você deseja abrir
-        const windowName = 'MiniJanela'; // Nome da janela
-        const windowFeatures = 'width=1000,height=1000,resizable,scrollbars=yes,status=1'; // Parâmetros da janela
-
-        // Abre uma nova janela com os parâmetros especificados
-        window.open(url, windowName, windowFeatures);
-    };
-    const handleSelectSlot = useCallback((slotInfo) => {
-        const title = window.prompt('Novo Evento:');
-        if (title) {
-            const newEvent = {
-                id: events.length + 1,
-                title,
-                start: new Date(slotInfo.start),
-                end: new Date(slotInfo.end),
-            };
-            setEvents((prevEvents) => [...prevEvents, newEvent]);
-        }
-    }, [events]);
 
     const handleEventClick = useCallback((event, e) => {
         setModalParams({ clientX: e.clientX, clientY: e.clientY });
-        setEventoSelecionado(event);
+        setSelectedEvent(event);
     }, []);
 
     const handleEventClose = useCallback(() => {
-        setEventoSelecionado(null);
+        setSelectedEvent(null);
     }, []);
 
     const handleEventDelete = useCallback((eventId) => {
         setEvents((prevEvents) => prevEvents.filter(event => event.id !== eventId));
-        setEventoSelecionado(null);
+        setSelectedEvent(null);
     }, []);
-
-    const handleNavigate = useCallback((action, date) => {
-        if (action === 'date') {
-            setCurrentDate(date);
-        } else if (action === 'TODAY') {
-            setCurrentDate(new Date());
-        } else {
-            setCurrentDate(moment(currentDate).add(action === 'PREV' ? -1 : 1, currentView).toDate());
-        }
-    }, [currentDate, currentView]);
 
     const handleViewChange = useCallback((view) => {
         if (view) {
@@ -88,106 +54,91 @@ const Dashboard = ({ auth, events: initialEvents }) => {
         }
     }, []);
 
-    const handleToggleToolbar = () => {
-        setShowToolbar(!showToolbar);
-    };
+    const handleNavigate = useCallback((newDate) => {
+        setCurrentDate(newDate);
+    }, []);
 
     const label = currentView === Views.MONTH 
         ? moment(currentDate).format('MMMM YYYY') 
         : currentView === Views.WEEK 
         ? `Semana de ${moment(currentDate).startOf('week').format('D [de] MMMM')} a ${moment(currentDate).endOf('week').format('D [de] MMMM')}` 
         : moment(currentDate).format('D [de] MMMM YYYY');
-    
+
     return (
         <AuthenticatedLayout user={auth.user}>
             <Head title="Agenda" />
             <div className="h-screen">
-                {/* Botão para mostrar/esconder a barra de ferramentas somente em dispositivos menores */}
-  
                 <div className='flex flex-wrap'>
-                <div 
-                    className={`z-40 relative w-[100%] md:w-[20%] h-[50%] bg-gray-200 p-4 transition-transform duration-300 m-auto ease-in-out `}
-                >
-                        
-                    <CustomToolbar
-                        onNavigate={handleNavigate}
-                        onView={handleViewChange}
-                        label={label}
-                        date={currentDate}
-                        view={currentView}
-                    />
-                </div>
-                
-                <div className="z-30 w-[100%] md:w-[77%] md:h-[80vh] p-0 h-[50vh]">
-                    <div className="place-items-center">
-                        {label}
-                    </div>
-                    <div className="md:hidden relative z-50 top-2 right-2">
-                        <button 
-                            onClick={handleToggleToolbar} 
-                            className="bg-blue-500 text-white px-4 py-2 rounded">
-                            {showToolbar ? 'Esconder Barra' : 'Mostrar Barra'}
-                        </button>
-                    </div>
-                    <Calendar
-                        localizer={localizer}
-                        events={events}
-                        selectable
-                        onSelectSlot={handleSelectSlot}
-                        onSelectEvent={handleEventClick}
-                        startAccessor="start"
-                        endAccessor="end"
-                        style={{ height: '100%' }}
-                        view={currentView}
-                        date={currentDate}
-                        onNavigate={handleNavigate}
-                        onView={handleViewChange}
-                        components={{
-                            toolbar: () => null
-                        }}
-                        messages={{
-                            allDay: 'Dia Inteiro',
-                            previous: 'Anterior',
-                            next: 'Próximo',
-                            today: 'Hoje',
-                            month: 'Mês',
-                            week: 'Semana',
-                            day: 'Dia',
-                            agenda: 'Agenda',
-                            date: 'Data',
-                            time: 'Hora',
-                            event: 'Evento',
-                            noEventsInRange: 'Não há eventos neste intervalo.',
-                            showMore: (total) => `+${total} mais`,
-                        }}
-                        formats={{
-                            timeGutterFormat: 'HH:mm',
-                            eventTimeRangeFormat: ({ start, end }, culture, localizer) => 
-                                `${localizer.format(start, 'HH:mm', culture)} - ${localizer.format(end, 'HH:mm', culture)}`,
-                            agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
-                                `${localizer.format(start, 'HH:mm', culture)} - ${localizer.format(end, 'HH:mm', culture)}`
-                        }}
-                    />
-                        <div>
-            <button onClick={handleOpenWindow}>
-                Abrir Mini Janela
-            </button>
-        </div>
-                </div>
-            
-                {eventoSelecionado && (
-                    <EventPopup
-                        eventoSelecionado={eventoSelecionado}
-                        params={modalParams}
-                        onClose={handleEventClose}
-                        onDelete={handleEventDelete}
-                    />
-                )}
-                </div>
-
-
-            </div>
+                    <div 
+                        className={`z-40 relative w-[100%] xl:w-[20%] h-[50%] bg-gray-200 p-4 transition-transform duration-300 m-auto ease-in-out `}
+                    >
+                        <CustomToolbar
+                            onView={handleViewChange}
+                            label={label}
+                            date={currentDate}
+                            view={currentView}
+                            onNavigate={handleNavigate} // Adicionando onNavigate
+                        />
  
+                    </div>
+
+                    <div className="z-30 w-[100%] xl:w-[77%] xl:h-[80vh] mx-5 xl:mx-0 h-[50vh]">
+                        <div className="place-items-center">
+                            {label}
+                        </div>
+
+                        <Calendar
+                            localizer={localizer}
+                            events={events}
+                            onSelectEvent={handleEventClick}
+                            startAccessor="start"
+                            endAccessor="end"
+                            style={{ height: '100%' }}
+                            view={currentView}
+                            date={currentDate}
+                            onView={handleViewChange}
+                            onNavigate={handleNavigate} // Adicionando onNavigate
+                            components={{
+                                toolbar: () => null
+                            }}
+                            messages={{
+                                allDay: 'Dia Inteiro',
+                                previous: 'Anterior',
+                                next: 'Próximo',
+                                today: 'Hoje',
+                                month: 'Mês',
+                                week: 'Semana',
+                                day: 'Dia',
+                                agenda: 'Agenda',
+                                date: 'Data',
+                                time: 'Hora',
+                                event: 'Evento',
+                                noEventsInRange: 'Não há eventos neste intervalo.',
+                                showMore: (total) => `+${total} mais`,
+                            }}
+                            formats={{
+                                timeGutterFormat: 'HH:mm',
+                                eventTimeRangeFormat: ({ start, end }, culture, localizer) => 
+                                    `${localizer.format(start, 'HH:mm', culture)} - ${localizer.format(end, 'HH:mm', culture)}`,
+                                agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
+                                    `${localizer.format(start, 'HH:mm', culture)} - ${localizer.format(end, 'HH:mm', culture)}`,
+                            }}
+                        />
+                    </div>
+
+                    {selectedEvent && (
+                        <EventPopup
+                            auth={auth}
+                            selectedEvent={selectedEvent}
+                            params={modalParams}
+                            onClose={handleEventClose}
+                            onDelete={handleEventDelete}
+                            logo={auth.user.company.company_logo}
+                            forms={forms}
+                        />
+                    )}
+                </div>
+            </div>
         </AuthenticatedLayout>
     );
 };

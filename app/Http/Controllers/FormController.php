@@ -14,10 +14,12 @@ class FormController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user()->load('empresa');
-        $forms = Form::all(); // Busca todos os formulários
-        
-        // Renderiza a página de listagem com Inertia, passando os formulários como props
+        $user = $request->user()->load('company');
+
+        // Busca todos os formulários e carrega os campos relacionados (form_fields)
+        $forms = Form::with('fields')->get();
+
+        // Renderiza a página de listagem com Inertia, passando os formulários com seus campos
         return Inertia::render('Forms/Index', [
             'forms' => $forms,
             'auth' => [
@@ -25,7 +27,16 @@ class FormController extends Controller
             ],
         ]);
     }
-
+    public function getFields($formId)
+    {
+        $form = Form::with('fields')->findOrFail($formId);
+    
+        return response()->json([
+            'form' => $form,
+            'fields' => $form->fields,
+        ]);
+    }
+    
     /**
      * Exibe o formulário para criar um novo.
      */

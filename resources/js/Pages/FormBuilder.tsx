@@ -125,7 +125,7 @@ const FieldEditor = ({ field, index, onUpdate, onRemove }) => {
   };
 
   return (
-    <div className="border p-4 mb-4 bg-gray-100 rounded">
+    <div className="border flex flex-wrap p-4 mb-4 bg-gray-100 rounded">
       {/* Label do Campo */}
       <div className="mb-2">
         <InputLabel value="Label do Campo" />

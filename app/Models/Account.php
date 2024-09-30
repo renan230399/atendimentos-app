@@ -22,7 +22,7 @@ class Account extends Model
      * @var array
      */
     protected $fillable = [
-        'empresa_id',
+        'company_id',
         'name',
         'type',
         'balance',
@@ -42,9 +42,9 @@ class Account extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function empresa()
+    public function company()
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(Company::class);
     }
 
     /**

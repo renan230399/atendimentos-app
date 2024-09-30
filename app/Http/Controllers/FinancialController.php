@@ -17,14 +17,14 @@ class FinancialController extends Controller
     public function financialDashboard(Request $request)
     {
         // Obtenha os dados relacionados à empresa do usuário autenticado
-        $empresaId = auth()->user()->empresa_id;
-        $user = $request->user()->load('empresa');
+        $companyId = auth()->user()->company_id;
+        $user = $request->user()->load('company');
 
         // Busque os dados necessários para o dashboard financeiro
-        $accounts = Account::where('empresa_id', $empresaId)->get();
-        $categories = TransactionCategory::where('empresa_id', $empresaId)->get();
-        $transactions = Transaction::where('empresa_id', $empresaId)->get();
-        $cashFlows = CashFlow::where('empresa_id', $empresaId)->get();
+        $accounts = Account::where('company_id', $companyId)->get();
+        $categories = TransactionCategory::where('company_id', $companyId)->get();
+        $transactions = Transaction::where('company_id', $companyId)->get();
+        $cashFlows = CashFlow::where('company_id', $companyId)->get();
 
         // Retorne a view com os dados agregados
         return Inertia::render('Financial/FinancialDashboard', [

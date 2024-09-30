@@ -9,8 +9,11 @@ class Form extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'active'];
+    protected $fillable = ['category','name', 'description', 'active','icon','is_wizard','wizard_structure', 'company_id']; // Incluímos company_id para ser atribuído
 
+    protected $casts = [
+        'wizard_structure' => 'array',
+    ];
     // Relacionamento com os campos do formulário
     public function fields()
     {
@@ -21,5 +24,11 @@ class Form extends Model
     public function responses()
     {
         return $this->hasMany(FormResponse::class);
+    }
+
+    // Relacionamento com a empresa
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

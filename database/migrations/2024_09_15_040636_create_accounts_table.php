@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('empresa_id'); // Chave estrangeira para a tabela empresas
+            $table->unsignedBigInteger('company_id'); // Chave estrangeira para a tabela empresas
             $table->string('name'); // Nome da conta (ex: Caixa, Banco)
             $table->enum('type', ['bank', 'cash', 'investment']); // Tipo da conta
             $table->decimal('balance', 15, 2)->default(0); // Saldo inicial da conta
             $table->timestamps();
 
             // Define a chave estrangeira que referencia a tabela de empresas
-            $table->foreign('empresa_id')->references('id')->on('empresas')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

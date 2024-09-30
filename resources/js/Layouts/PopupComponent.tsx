@@ -3,16 +3,17 @@ import ReactDOM from 'react-dom';
 import { IoIosClose } from 'react-icons/io';
 import ModalBackground from '@/Components/ModalBackground';
 
-const PopupComponent = ({ id, params = {}, children, onClose }) => {
+const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', params = {}, children, onClose }) => {
     const [visible, setVisible] = useState(false);
     const contentRef = useRef(null);
 
     useEffect(() => {
+        // Adiciona a classe 'modal-open' para travar o scroll
         document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden'; // Travar o scroll
 
         const popupContent = contentRef.current;
-        
-        // Defina a origem da transformação com base na posição do clique, se disponível
+
         if (popupContent && typeof params.clientX === 'number' && typeof params.clientY === 'number') {
             const popupWidth = popupContent.offsetWidth;
             const popupHeight = popupContent.offsetHeight;
@@ -23,7 +24,6 @@ const PopupComponent = ({ id, params = {}, children, onClose }) => {
             popupContent.style.transformOrigin = `${transformOriginX}% ${transformOriginY}%`;
         }
 
-        // Exibe o popup com animação
         setTimeout(() => setVisible(true), 10);
 
         const handleKeyDown = (e) => {
@@ -31,21 +31,22 @@ const PopupComponent = ({ id, params = {}, children, onClose }) => {
                 handleClose();
             }
         };
-        
-        // Adiciona evento de teclado para fechar o modal com "Escape"
+
         window.addEventListener('keydown', handleKeyDown);
 
         return () => {
+            // Remove a classe e o overflow quando o popup é fechado
             document.body.classList.remove('modal-open');
+            document.body.style.overflow = ''; // Restaurar o comportamento padrão do scroll
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [params]);
 
     const handleClose = useCallback(() => {
-        setVisible(false); // Inicia a animação de fechamento
+        setVisible(false);
         setTimeout(() => {
             onClose(id);
-        }, 300); // Aguarda a animação terminar antes de fechar completamente
+        }, 300);
     }, [id, onClose]);
 
     return ReactDOM.createPortal(
@@ -53,23 +54,28 @@ const PopupComponent = ({ id, params = {}, children, onClose }) => {
             <ModalBackground
                 id_fundo_modal={`modal_background_${id}`}
                 visible={true}
-                sobreposicao={90}
+                sobreposicao={zindex - 1} // Certifique-se de que o z-index seja menor que o popup
                 onClick={handleClose}
             />
-            
+
             <div
                 ref={contentRef}
                 id={`id_div_conteudo_${id}`}
                 role="dialog"
                 aria-labelledby={`popup_${id}_label`}
                 aria-modal="true"
-                className={`conteudo_materiais_cursos ${visible ? 'open' : ''}`}
+                className={`${visible ? 'open' : ''}`}
                 style={{
+                    width, // Aqui a width será corretamente aplicada
+                    height,
+                    backgroundColor: 'white',
                     paddingTop: params.paddingTop || '0px',
-                    paddingBottom: params.paddingBottom || '200px',
+                    paddingBottom: params.paddingBottom || '0px',
                     paddingRight: params.paddingRight || '0px',
                     paddingLeft: params.paddingLeft || '0px',
                     overflow: params.overflow || 'auto',
+                    borderRadius: params.borderRadius || '10px',
+                    boxShadow: params.boxShadow || '0px 4px 15px rgba(0, 0, 0, 0.2)',
                     textAlign: 'center',
                     position: 'fixed',
                     top: '50%',
@@ -77,20 +83,16 @@ const PopupComponent = ({ id, params = {}, children, onClose }) => {
                     transform: `translate(-50%, -50%) scale(${visible ? 1 : 0.5})`,
                     opacity: visible ? 1 : 0,
                     transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
-                    zIndex: isNaN(Number(id)) ? 101 : 101 + Number(id),
+                    zIndex: zindex, // Z-index maior que o fundo
                 }}
             >
-            <button 
-    onClick={handleClose} 
-    aria-label="Fechar popup"
-    className="fixed z-100 top-2 right-2 cursor-pointer bg-transparent border-none"
->
-    <IoIosClose size={24} />
-</button>
-
-              
-
-                   
+                <button
+                    onClick={handleClose}
+                    aria-label="Fechar popup"
+                    className="fixed z-[1001] top-2 right-2 cursor-pointer bg-transparent border-none"
+                >
+                    <IoIosClose size={24} />
+                </button>
 
                 {children}
             </div>

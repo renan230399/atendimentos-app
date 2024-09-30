@@ -12,7 +12,7 @@ class AccountsController extends Controller
      */
     public function index()
     {
-        $accounts = Account::where('empresa_id', auth()->user()->empresa_id)->get();
+        $accounts = Account::where('company_id', auth()->user()->company_id)->get();
         return view('accounts.index', ['accounts' => $accounts]);
     }
 
@@ -35,11 +35,11 @@ class AccountsController extends Controller
             'balance' => 'required|numeric',
         ]);
 
-        $validatedData['empresa_id'] = auth()->user()->empresa_id;
+        $validatedData['company_id'] = auth()->user()->company_id;
 
         Account::create($validatedData);
 
-        return redirect()->route('accounts.index')->with('success', 'Conta criada com sucesso!');
+        return redirect()->route('financial.dashboard')->with('success', 'Conta criada com sucesso!');
     }
 
     /**

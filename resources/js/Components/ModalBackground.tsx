@@ -7,23 +7,18 @@ const ModalBackground = ({ id_fundo_modal, sobreposicao = 90, visible = false, o
     let fundoModal = document.getElementById(id_fundo_modal);
 
     if (!fundoModal) {
+      // Criação do elemento de fundo do modal
       fundoModal = document.createElement('div');
       fundoModal.id = id_fundo_modal;
-      fundoModal.style.position = 'fixed';
-      fundoModal.style.top = '0';
-      fundoModal.style.left = '0';
-      fundoModal.style.width = '100vw';
-      fundoModal.style.height = '100vh';
-      fundoModal.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
-      fundoModal.style.zIndex = sobreposicao;
-      fundoModal.style.transition = 'opacity 0.5s ease-in-out'; // Adiciona transição de opacidade
+      fundoModal.className = `fixed inset-0 bg-black bg-opacity-40 transition-opacity duration-500 cursor-pointer`; // Usando Tailwind para estilização
       fundoModal.style.opacity = visible ? '1' : '0'; // Define a opacidade inicial
-      fundoModal.style.display = 'block'; // Mantém o display como block
+      fundoModal.style.zIndex = sobreposicao; // Define o z-index diretamente
       fundoModal.onclick = onClick; // Fecha o modal ao clicar no fundo
       document.body.appendChild(fundoModal);
       modalRef.current = fundoModal;
     } else {
       fundoModal.style.opacity = visible ? '1' : '0'; // Ajusta a opacidade
+      fundoModal.style.zIndex = sobreposicao; // Define o z-index diretamente
       if (visible) {
         fundoModal.style.display = 'block'; // Mostra o modal
       } else {

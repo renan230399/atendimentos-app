@@ -12,7 +12,7 @@ class TransferController extends Controller
      */
     public function index()
     {
-        $transfers = Transfer::where('empresa_id', auth()->user()->empresa_id)->get();
+        $transfers = Transfer::where('company_id', auth()->user()->company_id)->get();
         return view('transfers.index', ['transfers' => $transfers]);
     }
 
@@ -37,11 +37,11 @@ class TransferController extends Controller
             'transfer_date' => 'required|date',
         ]);
 
-        $validatedData['empresa_id'] = auth()->user()->empresa_id;
+        $validatedData['company_id'] = auth()->user()->company_id;
 
         Transfer::create($validatedData);
 
-        return redirect()->route('transfers.index')->with('success', 'Transferência criada com sucesso!');
+        return redirect()->route('financial.dashboard')->with('success', 'Transferência criada com sucesso!');
     }
 
     /**

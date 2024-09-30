@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\TransactionCategory;
+
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TransactionCategoryController extends Controller
 {
@@ -12,8 +14,13 @@ class TransactionCategoryController extends Controller
      */
     public function index()
     {
-        $categories = TransactionCategory::where('empresa_id', auth()->user()->empresa_id)->get();
-        return view('transaction_categories.index', ['categories' => $categories]);
+        // Obtém as categorias de transação da empresa do usuário autenticado
+        $categories = TransactionCategory::where('company_id', auth()->user()->company_id)->get();
+
+        // Retorna o componente React via Inertia
+        return Inertia::render('TransactionCategories/Index', [
+            'categories' => $categories
+        ]);
     }
 
     /**
@@ -21,7 +28,8 @@ class TransactionCategoryController extends Controller
      */
     public function create()
     {
-        return view('transaction_categories.create');
+        // Renderiza a página de criação da categoria via Inertia
+        return Inertia::render('TransactionCategories/Create');
     }
 
     /**
@@ -29,16 +37,22 @@ class TransactionCategoryController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('Dados recebidos no backend: ', $request->all());  // Para depuração
+
+        // Valida os dados recebidos do formulário
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:income,expense',
         ]);
 
-        $validatedData['empresa_id'] = auth()->user()->empresa_id;
+        // Adiciona o ID da empresa do usuário autenticado
+        $validatedData['company_id'] = auth()->user()->company_id;
 
+        // Cria a nova categoria de transação
         TransactionCategory::create($validatedData);
 
-        return redirect()->route('transaction_categories.index')->with('success', 'Categoria criada com sucesso!');
+        // Redireciona para a listagem de categorias com uma mensagem de sucesso
+        return redirect()->route('financial.dashboard')->with('success', 'Categoria criada com sucesso!');
     }
 
     /**
@@ -46,8 +60,9 @@ class TransactionCategoryController extends Controller
      */
     public function show(TransactionCategory $transactionCategory)
     {
+        // Autoriza a visualização da categoria e renderiza via Inertia
         $this->authorize('view', $transactionCategory);
-        return view('transaction_categories.show', compact('transactionCategory'));
+        return Inertia::render('TransactionCategories/Show', compact('transactionCategory'));
     }
 
     /**
@@ -55,8 +70,9 @@ class TransactionCategoryController extends Controller
      */
     public function edit(TransactionCategory $transactionCategory)
     {
+        // Autoriza a edição da categoria e renderiza via Inertia
         $this->authorize('update', $transactionCategory);
-        return view('transaction_categories.edit', compact('transactionCategory'));
+        return Inertia::render('TransactionCategories/Edit', compact('transactionCategory'));
     }
 
     /**
@@ -64,15 +80,19 @@ class TransactionCategoryController extends Controller
      */
     public function update(Request $request, TransactionCategory $transactionCategory)
     {
+        // Autoriza a atualização da categoria
         $this->authorize('update', $transactionCategory);
 
+        // Valida os dados recebidos do formulário
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:income,expense',
         ]);
 
+        // Atualiza a categoria de transação
         $transactionCategory->update($validatedData);
 
+        // Redireciona para a listagem de categorias com uma mensagem de sucesso
         return redirect()->route('transaction_categories.index')->with('success', 'Categoria atualizada com sucesso!');
     }
 
@@ -81,9 +101,13 @@ class TransactionCategoryController extends Controller
      */
     public function destroy(TransactionCategory $transactionCategory)
     {
+        // Autoriza a exclusão da categoria
         $this->authorize('delete', $transactionCategory);
+
+        // Exclui a categoria
         $transactionCategory->delete();
 
+        // Redireciona para a listagem de categorias com uma mensagem de sucesso
         return redirect()->route('transaction_categories.index')->with('success', 'Categoria removida com sucesso!');
     }
 }
