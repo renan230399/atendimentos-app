@@ -166,7 +166,7 @@ const DynamicForm = ({auth, form, patient }) => {
                         Próxima Etapa
                     </PrimaryButton>
                 ) : (
-                    <form onSubmit={handleSubmit} className="w-full">
+                    <form onSubmit={handleSubmit} className="w-full" encType="multipart/form-data">
                         <PrimaryButton
                             type="submit"
                             className="bg-green-600 left-0 w-full"

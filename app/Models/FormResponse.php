@@ -14,6 +14,8 @@ class FormResponse extends Model
         'form_id',
         'company_id',
         'patient_id',
+        'status', // Novo campo para status
+        'completed_at', // Novo campo para a data de conclusão
     ];
 
     // Relacionamento: uma resposta de formulário pertence a um formulário
@@ -38,5 +40,19 @@ class FormResponse extends Model
     public function patient()
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    // Função para verificar se a resposta foi concluída
+    public function isCompleted()
+    {
+        return $this->status === 'completed';
+    }
+    
+    // Função para definir a resposta como concluída
+    public function complete()
+    {
+        $this->status = 'completed';
+        $this->completed_at = now();
+        $this->save();
     }
 }

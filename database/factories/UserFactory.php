@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Empresa;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -20,12 +20,12 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'empresa_id' => Empresa::factory(),  // Associa o usuário a uma empresa gerada pelo factory
+            'company_id' => Company::factory(),  // Associa o usuário a uma empresa gerada pelo factory
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => Hash::make('password'), // Define uma senha padrão
-            'cargo' => $this->faker->numberBetween(1, 5), // Agora gera um número inteiro para cargo
+            'role' => $this->faker->numberBetween(1, 5), // Agora gera um número inteiro para cargo
             'remember_token' => Str::random(10),
         ];
     }

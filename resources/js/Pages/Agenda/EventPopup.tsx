@@ -4,9 +4,12 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import TextArea from '@/Components/TextArea';
 import ViewPatient from '@/Pages/Patients/ViewPatient'; // Importando o componente de visualização do paciente
 import PrimaryButton from '@/Components/PrimaryButton';
 import DynamicForm from '../Forms/DynamicForm';
+import Dinero from 'dinero.js'; // Importar Dinero.js para manipulação de valores monetários
+
 const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms = [] }) => {
     // Estado para controlar a exibição do popup de visualização do paciente
     const [isViewPatientPopupOpen, setIsViewPatientPopupOpen] = useState(false);
@@ -74,6 +77,8 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
     const handleCloseAddFormPopup = useCallback(() => {
         setIsAddFormPopupOpen(false);
     }, []);
+    const formattedPrice = Dinero({ amount: selectedEvent.price, currency: 'BRL' }).toFormat('$0,0.00');
+
     return (
         <>
             <PopUpComponent id="detalhesEvento" params={params} onClose={onClose} 
@@ -115,16 +120,6 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
 
                     </div>
 
-                    {/* Informações sobre a consulta */}
-                    <div className='w-full md:w-1/2 px-4'>
-                        <InputLabel htmlFor='paciente' value='Paciente:' />
-                        <TextInput
-                            id="paciente"
-                            value={selectedEvent.patient_id ? selectedEvent.patient_id : 'Desconhecido'}
-                            readOnly
-                            className="mt-1 block w-full bg-gray-100"
-                        />
-                        </div>
 
                     <div className='w-full md:w-1/2 px-4'>
                         <InputLabel htmlFor='profissional' value='Profissional:' />
@@ -138,13 +133,7 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
                     </div>
                     <div className='w-full md:w-1/2 px-4'>
                         <InputLabel htmlFor='profissional' value='Preço:' />
-                        <TextInput
-                            id="profissional"
-                            value={selectedEvent.price}
-                            readOnly
-                            className="mt-1 block w-full bg-gray-100"
-                        />
-
+                        <p>{formattedPrice}</p> 
                     </div>
                     <div className='w-full md:w-1/2 px-4'>
                         <InputLabel htmlFor='data_inicio' value='Início:' />
@@ -168,7 +157,7 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
 
                     <div className='w-full px-4'>
                         <InputLabel htmlFor='observacoes' value='Observações:' />
-                        <TextInput
+                        <TextArea
                             id="observacoes"
                             value={selectedEvent.observacoes || 'Nenhuma observação'}
                             readOnly

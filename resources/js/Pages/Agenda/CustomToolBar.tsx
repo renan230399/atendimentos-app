@@ -58,8 +58,8 @@ const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
     };
 
     return (
-        <div className="flex flex-col items-center space-y-4">
-            <div className="toolbar-label text-lg font-semibold">
+        <div className="flex xl:flex-col flex-wrap text-center items-center space-y-2">
+            <div className="toolbar-label text-lg font-semibold hidden m-auto">
                 {label}
             </div>
 
@@ -93,11 +93,11 @@ const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
                 ))}
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap space-x-2 space-y-2">
                 <select 
                     onChange={handleMonthChange} 
                     value={currentMonth} 
-                    className="border rounded p-2"
+                    className="border rounded p-2 m-auto xl:w-[100%] w-[150px]"
                     aria-label="Selecionar mês"
                 >
                     {months.map((month, index) => (
@@ -107,7 +107,7 @@ const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
                 <select 
                     onChange={handleYearChange} 
                     value={currentYear} 
-                    className="border rounded p-2"
+                    className="border rounded p-2 xl:w-[100%] m-auto w-[150px]"
                     aria-label="Selecionar ano"
                 >
                     {years.map((year) => (

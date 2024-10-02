@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Consultation;
+use App\Models\Transaction;
+
 use Illuminate\Http\Request;
 
 class ConsultationController extends Controller
@@ -21,11 +23,12 @@ class ConsultationController extends Controller
             'end_time' => 'required|after:start_time',       // Valida que o horário de fim é após o início
             'professional' => 'required|string|max:255',     // Valida o nome do profissional
             'notes' => 'nullable|string',                    // Observações são opcionais
+            'price' => 'required|numeric',
             'status' => 'required|in:pending,completed,cancelled',  // Valida o status da consulta
         ]);
     
         // Criação da consulta
-        Consultation::create([
+        $consultation = Consultation::create([
             'company_id' => $validated['company_id'],        // ID da empresa vindo diretamente do request
             'patient_id' => $validated['patient_id'],        // ID do paciente
             'date' => $validated['date'],                    // Data da consulta
@@ -33,12 +36,28 @@ class ConsultationController extends Controller
             'end_time' => $validated['end_time'],            // Horário de fim
             'professional' => $validated['professional'],    // Profissional
             'notes' => $validated['notes'] ?? null,          // Observações
-            'status' => $validated['status'],                // Status
+            'status' => $validated['status'], 
+            'price' => $validated['price'],                  // Preço da consulta
+        ]);
+    
+        // Criação da transação associada à consulta
+        Transaction::create([
+            'account_id' => 2,        // Conta associada à transação
+            'category_id' => 2,      // Categoria da transação
+            'company_id' => $validated['company_id'],        // Empresa associada
+            'type' => 'income',                              // Transação de receita para a consulta
+            'amount' => $validated['price'],           // Valor da consulta em centavos (por exemplo)
+            'description' => 'Receita gerada pela consulta', // Descrição da transação
+            'transaction_date' => $validated['date'],        // Data da consulta como data da transação
+            'status' => false,                                // Considerando que a transação está confirmada
+            'related_id' => $consultation->id,               // ID da consulta criada
+            'related_type' => Consultation::class,           // Classe relacionada
         ]);
     
         // Retorna uma resposta JSON com a mensagem de sucesso
-        return response()->json(['message' => 'Consulta criada com sucesso.'], 201);
+        return response()->json(['message' => 'Consulta e transação criadas com sucesso.'], 201);
     }
+    
 
     /**
      * Update the specified resource in storage.

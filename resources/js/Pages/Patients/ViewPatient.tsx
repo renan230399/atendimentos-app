@@ -4,6 +4,7 @@ import { FaPhone, FaMapMarkerAlt, FaIdCard } from 'react-icons/fa';
 import { UserIcon, PhoneIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import PrimaryButton from '@/Components/PrimaryButton';
 import ConsultationsList from '@/Pages/Consultations/ConsultationsList';
+import FormResponseList from './FormResponseList';
 
 const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPopup, handleOpenAddFormPopup, forms }) => {
     const [consultations, setConsultations] = useState([]);
@@ -145,7 +146,7 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                     />
                 </div>
 
-                <div className="w-full md:w-3/4 flex flex-col gap-6 py-6">
+                <div className="w-full md:w-3/4 flex flex-col gap-6 ">
                     <div>
                         <p className="text-xl font-semibold text-gray-800"><strong>Localização:</strong></p>
                     </div>
@@ -169,14 +170,14 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
 
                     <div className="flex items-center text-lg text-gray-700">
                         <FaMapMarkerAlt className="text-blue-500 mr-3" />
-                        <p>
+                        <h1>
                             <strong>Endereço:</strong>
                             {patient.street && patient.house_number ? (
                                 `${patient.street}, ${patient.house_number}`
                             ) : (
                                 'Endereço não informado'
                             )}
-                        </p>
+                        </h1>
                     </div>
 
                     <div className="text-lg text-gray-700">
@@ -237,38 +238,10 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
 
             {/* Lista de Consultas do Paciente */}
             <ConsultationsList consultations={consultations} loading={loading} />
+            
              {/* Exibição das respostas dos formulários */}
-             <div className="mt-8">
-                <h3 className="text-2xl font-bold mb-4">Respostas de Formulários</h3>
-                {loadingFormResponses ? (
-                    <p>Carregando respostas...</p>
-                ) : formResponses.length > 0 ? (
-                    <div className="space-y-4">
-                        {formResponses.map((response) => (
-                            <div key={response.id} className="bg-gray-100 p-4 rounded-lg shadow">
-                                <img
-                                    src={response.form.icon}
-                                    alt={`Ícone  de ${response.form.name}`}
-                                    className="w-[20%] md:w-10 md:h-10 m-auto"
-                                />
-                                <h4 className="text-lg font-semibold mb-2">{response.form.name}</h4>
-                                <h4 className="text-lg font-semibold mb-2">
-                                    Preenchido em: {new Date(response.form.created_at).toLocaleDateString('pt-BR')}
-                                </h4>
-                                <ul className="list-disc pl-5">
-                                    {response.form_response_details.map((detail) => (
-                                        <li key={detail.id}>
-                                            <strong>{detail.form_field.label}:</strong> {detail.response}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p>Nenhuma resposta de formulário encontrada para este paciente.</p>
-                )}
-            </div>
+             <FormResponseList formResponses={formResponses} loadingFormResponses={loadingFormResponses} forms={forms}/>
+
         </>
     );
 };

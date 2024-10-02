@@ -95,6 +95,8 @@ Route::middleware('auth')->group(function () {
         // Rota central para o dashboard financeiro
         Route::get('/financial-dashboard', [FinancialController::class, 'financialDashboard'])->name('financial.dashboard');
 
+        Route::get('/financial-data', [FinancialController::class, 'financialDashboardData'])->name('financial.data');
+
         // Rotas para o sistema financeiro (Financial Dashboard)
         Route::get('/accounts', [AccountsController::class, 'index'])->name('accounts.index');
         Route::post('/accounts', [AccountsController::class, 'store'])->name('accounts.store');
@@ -107,7 +109,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/transaction-categories/{category}', [TransactionCategoryController::class, 'destroy'])->name('transaction_categories.destroy');
 
         Route::post('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
-        Route::post('/transactions/filter', [TransactionController::class, 'filter'])->name('transactions.filter');
+        Route::get('/transactions/filter', [TransactionController::class, 'filter'])->name('transactions.filter');
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
         Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
         Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');

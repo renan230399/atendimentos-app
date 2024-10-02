@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             FormFieldSeeder::class, // Adiciona o FormFieldSeeder aqui
             CategoryProductSeeder::class,
             ProductSeeder::class,
+            TransactionCategorySeeder::class,
+            AccountSeeder::class,
             ConsultationSeeder::class,
         ]);
     }

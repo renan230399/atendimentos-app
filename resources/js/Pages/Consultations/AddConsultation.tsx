@@ -5,39 +5,67 @@ import TextInput from '@/Components/TextInput';
 import TextArea from '@/Components/TextArea';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputError from '@/Components/InputError';
+import Dinero from 'dinero.js'; // Importando corretamente Dinero.js v1.9.1
 
 const AddConsultation = ({ patient, employees, auth, onClose }) => {
-    // Adicionar company_id baseado no usuário autenticado (auth.user)
+    const getCurrentDate = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    // Inicializa os dados do formulário
     const { data, setData, post, errors, reset } = useForm({
         patient_id: patient.id,
-        company_id: auth.user.company_id, // Pega o company_id a partir do usuário autenticado
-        date: '',
+        company_id: auth.user.company_id,
+        date: getCurrentDate(),
         start_time: '',
         end_time: '',
         professional: '',
         notes: '',
-        status: 'pending', // Status inicial
+        status: 'pending',
+        price: '', // Vamos armazenar o valor do preço em centavos
     });
 
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
+    // Função para formatar o preço para exibição no input
+    const formatPrice = (value) => {
+        const price = Dinero({ amount: parseInt(value || 0), currency: 'BRL' });
+        return price.toFormat('$0,0.00'); // Formata em R$
+    };
+
+    // Função para lidar com a mudança no campo de preço
+    const handlePriceChange = (e) => {
+        const value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+        setData('price', value); // Atualiza o valor no estado em centavos
+    };
+
     const handleSubmit = useCallback((e) => {
         e.preventDefault();
         setLoading(true);
-        setSuccessMessage(''); // Limpa a mensagem de sucesso antes de nova submissão
+        setSuccessMessage('');
+
+        // Converte o valor de price para número inteiro (centavos) antes de enviar
+        const numericPrice = parseInt(data.price || 0);
 
         post(route('consultations.store'), {
+            ...data,
+            price: numericPrice, // Envia o valor do preço em centavos
+        }, {
             onSuccess: (response) => {
                 setLoading(false);
-                setSuccessMessage(response.message); // Define a mensagem de sucesso
-                reset();  // Limpa os campos do formulário após o sucesso
+                setSuccessMessage('Consulta adicionada com sucesso!');
+                reset();
             },
             onError: () => {
                 setLoading(false);
             }
         });
-    }, [post, reset]);
+    }, [post, reset, data]);
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 p-6 bg-white rounded-lg shadow-lg">
@@ -92,7 +120,7 @@ const AddConsultation = ({ patient, employees, auth, onClose }) => {
                     <InputError message={errors.end_time} className="mt-2 text-red-500" />
                 </div>
 
-                {/* Profissional responsável (transformado em select) */}
+                {/* Profissional responsável */}
                 <div className="w-[35%]">
                     <InputLabel htmlFor="professional" value="Profissional Responsável" className="text-lg font-medium" />
                     <select
@@ -110,6 +138,21 @@ const AddConsultation = ({ patient, employees, auth, onClose }) => {
                         ))}
                     </select>
                     <InputError message={errors.professional} className="mt-2 text-red-500" />
+                </div>
+
+                {/* Preço da consulta */}
+                <div className="md:w-[15%]">
+                    <InputLabel htmlFor="price" value="Preço (R$)" className="text-lg font-medium" />
+                    <TextInput
+                        id="price"
+                        type="text"
+                        value={formatPrice(data.price)}
+                        onChange={handlePriceChange}
+                        required
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="R$ 0,00"
+                    />
+                    <InputError message={errors.price} className="mt-2 text-red-500" />
                 </div>
 
                 {/* Observações */}

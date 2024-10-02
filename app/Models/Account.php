@@ -33,9 +33,9 @@ class Account extends Model
      *
      * @var array
      */
-    protected $casts = [
+    /*protected $casts = [
         'balance' => 'decimal:2', // Converte o campo de saldo em decimal com 2 casas decimais
-    ];
+    ];*/
 
     /**
      * Define a relação com o modelo Empresa.

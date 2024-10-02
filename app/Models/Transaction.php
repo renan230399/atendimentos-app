@@ -22,6 +22,9 @@ class Transaction extends Model
         'amount',
         'description',
         'transaction_date',
+        'related_id',
+        'related_type',
+        'status',
     ];
 
     /**
@@ -47,7 +50,7 @@ class Transaction extends Model
     }
 
     /**
-     * Relacionamento com a tabela Empresa.
+     * Relacionamento com a tabela Company.
      * Cada transação pertence a uma empresa.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -55,5 +58,16 @@ class Transaction extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Relacionamento polimórfico dinâmico.
+     * Isso permite que uma transação se relacione com diferentes tipos de entidades.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
+    public function related()
+    {
+        return $this->morphTo();
     }
 }

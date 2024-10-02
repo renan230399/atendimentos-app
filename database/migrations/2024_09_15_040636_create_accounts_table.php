@@ -16,7 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('company_id'); // Chave estrangeira para a tabela empresas
             $table->string('name'); // Nome da conta (ex: Caixa, Banco)
             $table->enum('type', ['bank', 'cash', 'investment']); // Tipo da conta
-            $table->decimal('balance', 15, 2)->default(0); // Saldo inicial da conta
+            $table->integer('balance')->default(0)->comment('Valor da transação');
+
             $table->timestamps();
 
             // Define a chave estrangeira que referencia a tabela de empresas

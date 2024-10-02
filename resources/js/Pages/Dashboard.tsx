@@ -14,7 +14,7 @@ const localizer = momentLocalizer(moment);
 
 moment.updateLocale('pt-br', {
     weekdays: ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'],
-    weekdaysShort: ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'],
+    weekdaysShort: ['dom', 'seg', 'ter', 'qua', 'quinta-feira', 'sex', 'sáb'],
     months: ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'],
     monthsShort: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 });
@@ -82,12 +82,13 @@ const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
  
                     </div>
 
-                    <div className="z-30 w-[100%] xl:w-[77%] xl:h-[80vh] mx-5 xl:mx-0 h-[50vh]">
-                        <div className="place-items-center">
+                    <div className="z-30 w-[100%] xl:w-[77%] xl:h-[80vh] md:h-[80vh] mx-5 xl:mx-0 h-[50vh]">
+                        <div className="place-items-center m-auto text-center">
                             {label}
                         </div>
 
                         <Calendar
+                        className="w-[95%] m-auto"
                             localizer={localizer}
                             events={events}
                             onSelectEvent={handleEventClick}

@@ -30,7 +30,7 @@ class CreateConsultationsTable extends Migration
             $table->time('end_time');          // Consultation end time (renamed from hora_fim)
             $table->string('professional');    // Professional responsible for the consultation
             $table->text('notes')->nullable(); // Consultation notes (renamed from observacoes)
-            $table->decimal('price', 10, 2)->comment('Preço da consulta');
+            $table->integer('price')->comment('Preço em centavos');
 
             $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending'); // Consultation status (renamed values)
 

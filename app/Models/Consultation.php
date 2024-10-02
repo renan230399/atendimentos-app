@@ -22,15 +22,15 @@ class Consultation extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'company_id',          // Ajustado de 'empresa_id' para 'company_id'
-        'patient_id',          // Ajustado de 'pacient_id' para 'patient_id'
-        'date',                // Ajustado de 'data' para 'date'
-        'start_time',          // Ajustado de 'hora_inicio' para 'start_time'
-        'end_time',            // Ajustado de 'hora_fim' para 'end_time'
+        'company_id',          // Empresa associada à consulta
+        'patient_id',          // Paciente associado à consulta
+        'date',                // Data da consulta
+        'start_time',          // Hora de início da consulta
+        'end_time',            // Hora de término da consulta
         'professional',        // Profissional responsável pela consulta
-        'notes',               // Ajustado de 'observacoes' para 'notes'
-        'status',  
-        'price',              // Status da consulta: 'pending', 'completed', ou 'cancelled'
+        'notes',               // Notas sobre a consulta
+        'status',              // Status da consulta: 'pending', 'completed', ou 'cancelled'
+        'price',               // Preço da consulta (em centavos)
     ];
 
     /**
@@ -52,6 +52,42 @@ class Consultation extends Model
      */
     public function patient()
     {
-        return $this->belongsTo(Patient::class); // Ajustado de 'Pacient' para 'Patient'
+        return $this->belongsTo(Patient::class); // Paciente relacionado à consulta
+    }
+
+    /**
+     * Relacionamento polimórfico inverso com transações.
+     * Permite associar várias transações a uma consulta.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function transactions()
+    {
+        return $this->morphMany(Transaction::class, 'related');
+    }
+
+    /**
+     * Setter para o campo 'price'.
+     * Armazena o preço em centavos no banco de dados.
+     *
+     * @param float|int $value Valor em reais que será convertido para centavos.
+     */
+    public function setPriceAttribute($value)
+    {
+        // Multiplica o valor por 100 para armazenar em centavos
+        $this->attributes['price'] = (int) ($value * 100);
+    }
+
+    /**
+     * Getter para o campo 'price'.
+     * Retorna o valor do preço em reais.
+     *
+     * @param int $value Valor em centavos armazenado no banco de dados.
+     * @return float Retorna o valor convertido em reais.
+     */
+    public function getPriceAttribute($value)
+    {
+        // Divide o valor por 100 para retornar em reais
+        return $value / 100;
     }
 }

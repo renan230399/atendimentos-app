@@ -20,11 +20,30 @@ class FinancialController extends Controller
         $companyId = auth()->user()->company_id;
         $user = $request->user()->load('company');
 
-        // Busque os dados necessários para o dashboard financeiro
+        // Verifique se as datas de início e fim foram enviadas
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Obtenha todas as contas e categorias relacionadas à empresa
         $accounts = Account::where('company_id', $companyId)->get();
         $categories = TransactionCategory::where('company_id', $companyId)->get();
-        $transactions = Transaction::where('company_id', $companyId)->get();
-        $cashFlows = CashFlow::where('company_id', $companyId)->get();
+        
+        // Se as datas de início e fim forem fornecidas, filtre as transações e o fluxo de caixa
+        if ($startDate && $endDate) {
+            // Filtra as transações dentro do intervalo de datas
+            $transactions = Transaction::where('company_id', $companyId)
+                ->whereBetween('transaction_date', [$startDate, $endDate])
+                ->get();
+
+            // Filtra o fluxo de caixa dentro do intervalo de datas
+            $cashFlows = CashFlow::where('company_id', $companyId)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->get();
+        } else {
+            // Caso as datas não sejam fornecidas, busque todos os dados sem filtragem
+            $transactions = Transaction::where('company_id', $companyId)->get();
+            $cashFlows = CashFlow::where('company_id', $companyId)->get();
+        }
 
         // Retorne a view com os dados agregados
         return Inertia::render('Financial/FinancialDashboard', [
@@ -35,6 +54,10 @@ class FinancialController extends Controller
             'categories' => $categories,
             'transactions' => $transactions,
             'cashFlows' => $cashFlows,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
         ]);
     }
 }

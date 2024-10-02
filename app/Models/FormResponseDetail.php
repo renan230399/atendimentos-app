@@ -27,4 +27,10 @@ class FormResponseDetail extends Model
     {
         return $this->belongsTo(FormField::class);
     }
+
+    // Relacionamento: um detalhe de resposta pode ter um arquivo associado
+    public function file()
+    {
+        return $this->hasOne(Files::class, 'form_response_detail_id');
+    }
 }
