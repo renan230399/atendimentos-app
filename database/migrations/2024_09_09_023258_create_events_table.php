@@ -16,16 +16,19 @@ class CreateEventsTable extends Migration
         Schema::create('events', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('categoria_id')->index();
+            $table->unsignedBigInteger('user_id')->nullable(); // Adiciona a coluna user_id
+            $table->unsignedBigInteger('company_id')->nullable(); // Adiciona a coluna user_id
+
             $table->string('title');
             $table->text('descricao')->nullable();
             $table->integer('status');
             $table->timestamp('start'); // Usar timestamp para facilitar com o big-calendar
             $table->timestamp('end')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable(); // Adiciona a coluna user_id
 
             // Definir as chaves estrangeiras corretamente
             $table->foreign('categoria_id')->references('id')->on('events_categories')->onDelete('cascade'); // Supondo que categoria_id se refere a uma tabela 'categorias'
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade'); // Chave estrangeira para a tabela users
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade'); // Chave estrangeira para a tabela users
 
             $table->timestamps();
         });

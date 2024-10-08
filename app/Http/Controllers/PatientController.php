@@ -65,6 +65,8 @@ class PatientController extends Controller
             'patient_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'birth_date' => 'required|date',
+            'gender' => 'nullable|string',
+
             'neighborhood' => 'nullable|string|max:100',
             'street' => 'nullable|string|max:200',
             'house_number' => 'nullable|string|max:10',

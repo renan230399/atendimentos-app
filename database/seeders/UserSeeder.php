@@ -55,7 +55,7 @@ class UserSeeder extends Seeder
         // Cadastrar uma empresa com fornecedores categorizados e locais de estoque
         $company = Company::create([
             'company_name' => 'Empresa Exemplo Ltda.',
-            'company_logo' => null, 
+            'company_logo' => 'https://keyar-atendimentos.s3.amazonaws.com/logos_empresas/Z1z2yPHQj7ps6gDoIFBS1WeE3GA2FhUPpaD7nMbU.png', 
             'suppliers' => json_encode($suppliers), // Armazenando fornecedores categorizados
             'stock_locals' => json_encode($stockLocals),
         ]);

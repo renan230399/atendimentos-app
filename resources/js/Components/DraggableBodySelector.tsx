@@ -25,9 +25,13 @@ const DraggableBodySelector = ({ imageSrc, label, onPositionChange, initialPosit
 
     // Finaliza o arraste
     const handleMouseUp = () => setIsDragging(false);
-
+ // Desativa a seleção de texto
+ const disableTextSelection = () => {
+    document.body.classList.add('no-select');
+  };
     // Move o círculo enquanto o mouse estiver pressionado
     const handleMouseMove = (e) => {
+        disableTextSelection();
         if (!isDragging) return;
         const rect = e.target.getBoundingClientRect();
         const x = e.clientX - rect.left;

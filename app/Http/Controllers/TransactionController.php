@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\Account;
 use App\Models\Patient;
 use App\Models\Consultation;
+use App\Models\CashFlow;
 
 use App\Models\TransactionCategory;
 use Illuminate\Http\Request;
@@ -48,9 +49,10 @@ class TransactionController extends Controller
     }
     public function filter(Request $request)
     {
+        //dd($request);
+
         $user = auth()->user();
         $companyId = $user->company_id;
-    
         // Filtra transações por datas se os filtros forem passados e não forem nulos
         $transactionsQuery = Transaction::with([
             'related' => function ($morphTo) {
@@ -79,6 +81,16 @@ class TransactionController extends Controller
                 // Adiciona o nome do paciente ao array da transação
                 $transaction->related->patient_name = $transaction->related->patient->name;
             }
+    
+            // Verifica se o status da transação é true e consulta o cash flow relacionado
+            if ($transaction->status) {
+                $cashFlow = CashFlow::where('transaction_id', $transaction->id)->first();
+                if ($cashFlow) {
+                    // Adiciona os detalhes do cash flow à transação
+                    $transaction->cash_flow = $cashFlow;
+                }
+            }
+    
             return $transaction;
         });
     
@@ -104,36 +116,38 @@ class TransactionController extends Controller
     
     
     
+    
     /**
      * Store a newly created transaction in storage.
      */
     public function store(Request $request)
     {
-        // Validação dos dados recebidos
+        // Validação dos dados gerais e das transações individuais
         $validatedData = $request->validate([
-            'transactions.*.account_id' => 'required|exists:accounts,id',
-            'transactions.*.category_id' => 'required|exists:transaction_categories,id',
-            'transactions.*.type' => 'required|in:income,expense,transfer',
-            'transactions.*.amount' => 'required|numeric',
+            'category_id' => 'required|exists:transaction_categories,id',
+            'type' => 'required|in:income,expense,transfer',
+            'amount' => 'required|numeric',
+            'description' => 'nullable|string',
+            'account_id' => 'required|exists:accounts,id',
+            'transactions' => 'required|array|min:1',
             'transactions.*.transaction_date' => 'required|date',
-            'transactions.*.description' => 'nullable|string',
             'transactions.*.status' => 'required|boolean',
         ]);
     
-        // Verifique se existe o array transactions
-        if (!isset($validatedData['transactions'])) {
-            return redirect()->back()->withErrors(['transactions' => 'Nenhuma transação foi enviada.']);
-        }
-    
-        // Processar múltiplas transações
+        // Iterar sobre cada transação no array de transações
         foreach ($validatedData['transactions'] as $transactionData) {
-            // Adicionar o 'company_id' do usuário autenticado
+            // Adicionar dados gerais a cada transação
+            $transactionData['category_id'] = $validatedData['category_id'];
+            $transactionData['type'] = $validatedData['type'];
+            $transactionData['amount'] = $validatedData['amount'];
+            $transactionData['description'] = $validatedData['description'];
+            $transactionData['account_id'] = $validatedData['account_id'];
             $transactionData['company_id'] = auth()->user()->company_id;
     
-            // Criar a transação
+            // Criar a transação no banco de dados
             $transaction = Transaction::create($transactionData);
     
-            // Atualizar o saldo da conta
+            // Atualizar o saldo da conta associada
             $account = Account::findOrFail($transactionData['account_id']);
             if ($transactionData['type'] == 'income') {
                 $account->balance += $transactionData['amount'];
@@ -143,8 +157,14 @@ class TransactionController extends Controller
             $account->save();
         }
     
+        // Redirecionar com uma mensagem de sucesso
         return redirect()->back()->with('success', 'Transações criadas e saldos atualizados!');
     }
+    
+    
+    
+    
+    
     
     
     
@@ -172,21 +192,69 @@ class TransactionController extends Controller
      */
     public function update(Request $request, Transaction $transaction)
     {
-        $this->authorize('update', $transaction);
-
+        $user = auth()->user();
+        $companyId = $user->company_id;
+        // Validação dos dados enviados
         $validatedData = $request->validate([
             'account_id' => 'required|exists:accounts,id',
             'category_id' => 'required|exists:transaction_categories,id',
-            'type' => 'required|in:income,expense',
-            'amount' => 'required|numeric',
+            'type' => 'required|in:income,expense,transfer',
+            'amount' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'transaction_date' => 'required|date',
+            'status' => 'required|boolean', // Verifica se o status é booleano (1 ou 0)
         ]);
-
-        $transaction->update($validatedData);
-
-        return redirect()->route('transactions.index')->with('success', 'Transação atualizada com sucesso!');
+    
+        // Atualiza os campos da transação
+        $transaction->update([
+            'account_id' => $validatedData['account_id'],
+            'category_id' => $validatedData['category_id'],
+            'type' => $validatedData['type'],
+            'amount' => $validatedData['amount'],
+            'description' => $validatedData['description'],
+            'transaction_date' => $validatedData['transaction_date'],
+            'status' => $validatedData['status'], // Atualiza o status
+        ]);
+    
+        // Verifica se a transação está marcada como realizada (status true)
+        if ($validatedData['status']) {
+            // Busca a conta associada à transação
+            $account = Account::find($validatedData['account_id']);
+            
+            // Saldo atual da conta
+            $balanceBefore = $account->balance;
+            
+            // Ajusta o saldo da conta com base no tipo de transação
+            if ($validatedData['type'] === 'income') {
+                // Se for entrada (income), adiciona o valor ao saldo
+                $account->balance += $validatedData['amount'];
+            } elseif ($validatedData['type'] === 'expense') {
+                // Se for despesa (expense), subtrai o valor do saldo
+                $account->balance -= $validatedData['amount'];
+            }
+    
+            // Atualiza o saldo da conta
+            $account->save();
+    
+            // Registra o saldo após a transação
+            $balanceAfter = $account->balance;
+    
+            // Cria um registro no fluxo de caixa (cash_flows)
+            CashFlow::create([
+                'account_id' => $account->id,
+                'company_id' => $companyId, // Use apenas o company_id do usuário autenticado
+                'transaction_id' => $transaction->id,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+            ]);
+        }
+    
+        // Redireciona para o dashboard financeiro com mensagem de sucesso
+        return redirect()->route('financial.dashboard')->with('success', 'Transação atualizada com sucesso!');
     }
+    
+    
+    
 
     /**
      * Remove the specified transaction from storage.

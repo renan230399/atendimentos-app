@@ -23,7 +23,7 @@ return new class extends Migration
 
             // Birth information
             $table->date('birth_date'); // Patient's birth date
-            
+            $table->string('gender')->nullable(); // Patient's gender
             // Address information
             $table->string('neighborhood')->nullable(); // Neighborhood
             $table->string('street')->nullable(); // Street

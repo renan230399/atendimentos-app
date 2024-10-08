@@ -4,13 +4,12 @@ import CategoriesManager from '@/Pages/Financial/Partials/CategoriesManager';
 import AccountsManager from '@/Pages/Financial/Partials/AccountsManager';
 import TransfersManager from '@/Pages/Financial/Partials/TransfersManager';
 import { useForm } from '@inertiajs/react'; // Correção na importação do Inertia.js
-import { CSSTransition } from 'react-transition-group'; // Importar CSSTransition
-import TextInput from '@/Components/TextInput';
-import PrimaryButton from '@/Components/PrimaryButton';
 import TransactionsManager from './Partials/TransactionsManager';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid'; // Importar ícones do Heroicons
 import TransactionsAdd from './Partials/TransactionsAdd';
-
+import { MdAddShoppingCart } from "react-icons/md";
+import { FaMoneyBillTransfer } from "react-icons/fa6";
+import { FaSitemap, FaExclamationTriangle } from "react-icons/fa";
+import PictureInPictureComponent from '@/Layouts/PictureInPictureComponent';
 // Lazy load do PopupComponent para carregar apenas quando necessário
 const PopUpComponent = lazy(() => import('@/Layouts/PopupComponent'));
 
@@ -59,7 +58,8 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
   // Estados para lidar com o popup
   const [popupParams, setPopupParams] = useState<{ clientX: number; clientY: number } | null>(null);
   const [isAddTransactionPopupOpen, setIsAddTransactionPopupOpen] = useState(false);
-  const [ViewAccounts, setIsViewAccounts] = useState(false);
+  const [isViewAccounts, setIsViewAccounts] = useState(false); // Estado para controlar a visualização de contas
+  
 
   // Formulário do Inertia.js
   const { data, setData, reset, post, processing, errors } = useForm({
@@ -67,80 +67,72 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
     account_id: accounts.length > 0 ? accounts[0].id : '',
   });
 
-
-  
-
-  const HandleViewAccounts = useCallback(() => {
-    setIsViewAccounts((prev) => !prev);
+  // Função para alternar a exibição das contas
+  const handleToggleViewAccounts = useCallback(() => {
+    setIsViewAccounts(prevState => !prevState);
   }, []);
 
   const handleOpenAddTransactionPopup = useCallback((e: React.MouseEvent) => {
     setPopupParams({ clientX: e.clientX, clientY: e.clientY });
     setIsAddTransactionPopupOpen(true);
   }, []);
-
   const handleCloseAddTransactionPopup = useCallback(() => {
     setIsAddTransactionPopupOpen(false);
   }, []);
 
+
   return (
     <AuthenticatedLayout user={auth.user}>
-      <div className="p-3 mx-auto pt-4 flex flex-wrap gap-3">
-        <div className="flex justify-between w-full">
-          <div>
-            <button 
-              onClick={handleOpenAddTransactionPopup} 
-              className="bg-blue-500 text-white p-2 rounded"
-            >
-              Adicionar Transações
-            </button>
-          </div>
-          
-          {/* Gerenciador de Contas */}
-          <div className="w-full md:w-1/3">
-            <button
-              onClick={HandleViewAccounts}
-              className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
-            >
-              {/* Ícone alternado de olho para mostrar ou ocultar as contas */}
-              {ViewAccounts ? (
-                <EyeSlashIcon className="h-5 w-5 mr-2" aria-hidden="true" />
-              ) : (
-                <EyeIcon className="h-5 w-5 mr-2" aria-hidden="true" />
-              )}
-              <span>{ViewAccounts ? 'Ocultar Caixas' : 'Mostrar Caixas'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Usar CSSTransition para animação de entrada/saída com max-height */}
-        <CSSTransition
-          in={ViewAccounts} // Animação de entrada/saída baseada no estado
-          timeout={500} // Duração da animação
-          classNames={{
-            enter: 'max-h-0 overflow-hidden',
-            enterActive: 'animate-slide-down-height',
-            exit: 'max-h-0 overflow-hidden',
-            exitActive: 'animate-slide-up-height',
-          }}
-          unmountOnExit // Desmontar quando não estiver visível
+      <div className="fixed right-0 pl-2 justify-items-end text-right ml-5 h-screen w-[5vw] ">
+        <div
+          className="hover:bg-blue-900 text-center bg-blue-500 right-0 w-[5vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md"
+          title="Adicionar nova transação"
+          onClick={handleOpenAddTransactionPopup}
         >
-          <div className="w-full">
-            <AccountsManager accounts={memoizedAccounts} />
-          </div>
-        </CSSTransition>
+          <MdAddShoppingCart size={30} className="text-white" />
+        </div>
+        <div
+          className="bg-red-500 w-[5vw] cursor-pointer mt-2 p-2 shadow-xl rounded-l-md"
+          title="Adicionar nova compra"
+        >
+          <FaExclamationTriangle size={30} className="m-auto text-white" />
+        </div>
+        <div
+          className="bg-blue-500 w-[5vw] cursor-pointer mt-2 p-2 shadow-xl rounded-l-md"
+          title="Mostrar/Ocultar Contas"
+          onClick={handleToggleViewAccounts} // Alterna entre mostrar e ocultar as contas
+        >
+          <FaSitemap size={30} className="m-auto text-white" />
+        </div>
+      </div>
+             {/* Exibir o AccountsManager somente se isViewAccounts for verdadeiro */}
+             {isViewAccounts && (
+              <PictureInPictureComponent
+                id="view-accounts"
+                width="400px"  // Defina a largura que deseja
+                height="300px" // Defina a altura que deseja
+                onClose={() => setIsViewAccounts(false)} // Fechar o Picture-in-Picture
+                classPip=''
+              >
+                <AccountsManager accounts={memoizedAccounts} />
+              </PictureInPictureComponent>
+            )}
 
-        <div className="w-full">
-          <TransactionsManager accounts={memoizedAccounts} categories={memoizedCategories} />
+      <div className="p-2  pt-4 flex flex-wrap gap-3 bg-white shadow-xl w-[95vw] overflow-hidden">
+ 
+
+        <div className="w-full p-0">
+          <TransactionsManager 
+            accounts={memoizedAccounts} 
+            categories={memoizedCategories} 
+            auth={auth}
+            />
         </div>
 
         {/* Gerenciador de Categorias e Transferências */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="hidden w-full grid grid-cols-1 md:grid-cols-2 gap-4">
           <CategoriesManager categories={memoizedCategories} />
-          <TransfersManager 
-            accounts={memoizedAccounts} 
-            transfers={memoizedTransfers}
-          />
+          <TransfersManager accounts={memoizedAccounts} transfers={memoizedTransfers} />
         </div>
       </div>
 
@@ -155,19 +147,10 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
             paddingTop="100px"
             paddingLeft="100px"
             params={popupParams}
+            classPopup='bg-white w-[80vw] h-[90vh]'
             onClose={handleCloseAddTransactionPopup}
+            
           >
-            <div className="pt-6">
-              {auth.user.company?.company_logo ? (
-                <img
-                  src={auth.user.company.company_logo}
-                  alt="logo da empresa"
-                  className="h-auto w-28 m-auto"
-                />
-              ) : (
-                <div></div>
-              )}
-            </div>
             <TransactionsAdd
               data={data}
               setData={(field, value) => setData(field, value)}
@@ -175,10 +158,13 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
               categories={memoizedCategories}
               loading={processing}
               errors={errors}
+              logo={auth.user.company?.company_logo ? (auth.user.company.company_logo):('')}
+
             />
           </PopUpComponent>
         </Suspense>
       )}
+
     </AuthenticatedLayout>
   );
 };

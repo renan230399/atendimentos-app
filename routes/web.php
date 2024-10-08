@@ -56,6 +56,9 @@ Route::middleware('auth')->group(function () {
     // Rotas para formulários dinâmicos
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
     Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
+    Route::post('/form/update', [FormController::class, 'update'])->name('form.update');
+    Route::put('/forms/{form}', [FormController::class, 'update'])->name('forms.update');
+
     Route::get('/forms/{form}/fields', [FormController::class, 'getFields'])->name('forms.fields');
 
     // Rota para enviar respostas do formulário
@@ -118,6 +121,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/transfers', [TransferController::class, 'store'])->name('transfers.store');
         Route::put('/transfers/{transfer}', [TransferController::class, 'update'])->name('transfers.update');
         Route::delete('/transfers/{transfer}', [TransferController::class, 'destroy'])->name('transfers.destroy');
+        Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
 
         Route::get('/cash-flows', [CashFlowController::class, 'index'])->name('cash_flows.index');
         Route::post('/cash-flows', [CashFlowController::class, 'store'])->name('cash_flows.store');

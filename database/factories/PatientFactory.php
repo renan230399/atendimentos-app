@@ -24,9 +24,9 @@ class PatientFactory extends Factory
         // Specific fictional patients
         $fictionalPatients = [
             [
-                'patient_name' => 'Kelly Braga',
-                'phone' => '(11) 98765-4321',
-                'birth_date' => '1980-07-01',
+                'patient_name' => 'Kelly Braga Ferreira',
+                'phone' => '5535999923631',
+                'birth_date' => '2003-07-01',
                 'neighborhood' => 'Centro',
                 'street' => 'Rua das Flores',
                 'house_number' => '123',
@@ -35,14 +35,14 @@ class PatientFactory extends Factory
                 'state' => 'SP',
                 'cpf' => '123.456.789-01',
                 'contacts' => json_encode([
-                    ['name' => 'Rosely', 'relation' => 'Mãe', 'phone' => '(11) 99876-5432'],
+                    ['name' => 'Rosely', 'relation' => 'Mãe', 'phone' => '5535999923631'],
                 ]),
                 'notes' => 'PAciente de teste',
                 'profile_picture' => 'https://keyar-atendimentos.s3.amazonaws.com/patient_photos/mlAbH5Wsog0z8wsSDOTUHmU9sdM0RDJbty28kxkj.png',
                 'status' => true,
             ],
             [
-                'patient_name' => 'João Lima',
+                'patient_name' => 'Renan',
                 'phone' => '(21) 91234-5678',
                 'birth_date' => '1975-06-30',
                 'neighborhood' => 'Copacabana',

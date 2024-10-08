@@ -27,6 +27,7 @@ class Patient extends Model
         'patient_name',  // Renamed to 'patient_name'
         'phone',         // Renamed to 'phone'
         'birth_date',    // Renamed to 'birth_date'
+        'gender',    // Renamed to 'birth_date'
         'neighborhood',  // Renamed to 'neighborhood'
         'street',        // Renamed to 'street'
         'house_number',  // Renamed to 'house_number'

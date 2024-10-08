@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { IoIosClose } from 'react-icons/io';
 import ModalBackground from '@/Components/ModalBackground';
 
-const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', params = {}, children, onClose }) => {
+const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', params = {}, classPopup = 'bg-white w-[90vw] h-auto resize max-h-[90vh] max-w-[98vw]', children, onClose }) => {
     const [visible, setVisible] = useState(false);
     const contentRef = useRef(null);
 
@@ -50,7 +50,7 @@ const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', p
     }, [id, onClose]);
 
     return ReactDOM.createPortal(
-        <div>
+        <>
             <ModalBackground
                 id_fundo_modal={`modal_background_${id}`}
                 visible={true}
@@ -64,15 +64,9 @@ const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', p
                 role="dialog"
                 aria-labelledby={`popup_${id}_label`}
                 aria-modal="true"
-                className={`${visible ? 'open' : ''}`}
+                className={`${visible ? 'open' : ''} ${classPopup} `}
                 style={{
-                    width, // Aqui a width será corretamente aplicada
-                    height,
-                    backgroundColor: 'white',
-                    paddingTop: params.paddingTop || '0px',
-                    paddingBottom: params.paddingBottom || '0px',
-                    paddingRight: params.paddingRight || '0px',
-                    paddingLeft: params.paddingLeft || '0px',
+                    backgroundColor: '',
                     overflow: params.overflow || 'auto',
                     borderRadius: params.borderRadius || '10px',
                     boxShadow: params.boxShadow || '0px 4px 15px rgba(0, 0, 0, 0.2)',
@@ -89,14 +83,14 @@ const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', p
                 <button
                     onClick={handleClose}
                     aria-label="Fechar popup"
-                    className="fixed z-[1001] top-2 right-2 cursor-pointer bg-transparent border-none"
+                    className={`fixed z-[1001] top-2 right-2 cursor-pointer bg-transparent border-none`}
                 >
                     <IoIosClose size={24} />
                 </button>
 
                 {children}
             </div>
-        </div>,
+        </>,
         document.body
     );
 };

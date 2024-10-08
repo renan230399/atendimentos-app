@@ -9,7 +9,19 @@ class FormField extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['form_id', 'label', 'type', 'required', 'options', 'class', 'order', 'step'];
+    protected $fillable = [
+        'form_id',
+        'label',
+        'label_view',  // Novo campo
+        'photo_select', // Novo campo
+        'default_value', // Novo campo
+        'type',
+        'required',
+        'options',
+        'class',
+        'order',
+        'step'
+    ];
 
     // Casts to ensure 'options' is treated as an array when accessed in PHP
     protected $casts = [

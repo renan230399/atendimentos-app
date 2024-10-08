@@ -17,6 +17,9 @@ class CreateFormFieldsTable extends Migration
             $table->id();
             $table->foreignId('form_id')->constrained()->onDelete('cascade'); // Relacionamento com a tabela forms
             $table->string('label'); // Rótulo do campo (ex.: Nome, Email, etc.)
+            $table->string('label_view')->nullable();; // Rótulo do campo (ex.: Nome, Email, etc.)
+            $table->string('photo_select')->nullable();; // Rótulo do campo (ex.: Nome, Email, etc.)
+            $table->string('default_value')->nullable();; // Rótulo do campo (ex.: Nome, Email, etc.)
             $table->string('type'); // Tipo do campo (ex.: text, email, number, etc.)
             $table->boolean('required')->default(false); // Se o campo é obrigatório ou não
             $table->json('options')->nullable(); // Opções adicionais (por exemplo, para campos select ou radio)

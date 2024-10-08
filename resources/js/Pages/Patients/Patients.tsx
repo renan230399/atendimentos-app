@@ -6,7 +6,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import PopUpComponent from '@/Layouts/PopupComponent';
-import CreatePatient from './CreatePatient';
+import CreatePatient from './FormPatient/CreatePatient';
 import ViewPatient from './ViewPatient';
 import PatientListItem from '@/Pages/Patients/PatientListItem';
 import DynamicForm from '@/Pages/Forms/DynamicForm';
@@ -15,7 +15,10 @@ import PropTypes from 'prop-types';
 import { formatDateAndAge } from '@/Components/Utils/dateUtils';
 import ReactPaginate from 'react-paginate';
 import { FaUserPlus } from 'react-icons/fa';
-
+import { LiaBirthdayCakeSolid } from "react-icons/lia";
+import Birthdays from './Birthdays';
+import PopupHeader from '@/Layouts/PopupHeader';
+import Dashboard from '../Dashboard';
 const Patients = ({ auth, patients = [], employees = [], forms = [], search }) => {
     const { data, setData, get, post, put, errors } = useForm({
         search: search || '',
@@ -26,7 +29,7 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
 
     // Estados para paginação
     const [currentPage, setCurrentPage] = useState(0);
-    const patientsPerPage = 10;
+    const patientsPerPage = 18;
     const offset = currentPage * patientsPerPage;
     const currentPatients = patients.slice(offset, offset + patientsPerPage);
     const pageCount = Math.ceil(patients.length / patientsPerPage);
@@ -40,14 +43,20 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
     const [isViewPopupOpen, setIsViewPopupOpen] = useState(false);
     const [isAddConsultationPopupOpen, setIsAddConsultationPopupOpen] = useState(false);
     const [isAddFormPopupOpen, setIsAddFormPopupOpen] = useState(false);
+    const [isBirthdaysPopupOpen, setIsBirthdaysPopupOpen] = useState(false);
 
+    
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [selectedForm, setSelectedForm] = useState(null);
     const [loading, setLoading] = useState(false);
     const [popupParams, setPopupParams] = useState({});
 
     const handleOpenPopup = useCallback((e, popupType, patient = null) => {
-        setPopupParams({ clientX: e.clientX, clientY: e.clientY });
+        setPopupParams({
+            clientX: e.clientX,
+            clientY: e.clientY,
+            classPopup: 'h-[98vh] bg-white w-[96vw]',
+          });
         if (popupType === 'create') {
             setIsCreatePopupOpen(true);
         }
@@ -79,12 +88,19 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
         setIsAddFormPopupOpen(true);
     }, []);
 
+    const handleOpenBirthdaysPopup = useCallback((e) => {
+        setPopupParams({ clientX: e.clientX, clientY: e.clientY });
+        setIsBirthdaysPopupOpen(true);
+    }, []);
+    const handleCloseBirthdaysPopup = useCallback(() => {
+        setIsBirthdaysPopupOpen(false);
+    }, []);
+
     const handleOpenAddConsultationPopup = useCallback((e, patient) => {
         setSelectedPatient(patient);
         setPopupParams({
             clientX: e.clientX,
             clientY: e.clientY,
-            paddingBottom: '0px',
         });
         setIsAddConsultationPopupOpen(true);
     }, []);
@@ -99,6 +115,7 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
 
     const handleSearchChange = useCallback((e) => {
         setData('search', e.target.value);
+        handleSearchSubmit(e);
     }, [setData]);
 
     const handleSearchSubmit = useCallback((e) => {
@@ -125,15 +142,13 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
             onSuccess: () => handleCloseEditPopup(),
         });
     }, [put, selectedPatient, handleCloseEditPopup]);
-
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title="Patients" />
-
-            <div className="p-10">
-                <form onSubmit={handleSearchSubmit} className="mb-5">
-                    <div>
-                        <InputLabel htmlFor="search" value="Pesquisar pacientes" />
+            <Head title="Pacientes" />
+ 
+            <div className="flex flex-wrap bg-white">
+                <form onSubmit={handleSearchSubmit} className="w-4/5 pr-6 h-[10vh] overflow-hidden w-[80%] shadow-lg rounded-br-xl bg-blue-500 ">
+                    <div className='w-[50%] pl-5 pt-2'>
                         <TextInput
                             id="search"
                             value={data.search}
@@ -143,52 +158,56 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
                             autoComplete="off"
                         />
                         <InputError message={errors.search} className="mt-2" />
-
-                        {loading ? (
-                            <div className="loading-spinner">Loading...</div>
-                        ) : (
-                            <PrimaryButton className="mt-2" onClick={handleSearchSubmit}>
-                                Buscar
-                            </PrimaryButton>
-                        )}
                     </div>
                 </form>
-
-                <button
-    onClick={(e) => handleOpenPopup(e, 'create')}
-    className="ml-auto flex bg-green-500 text-white px-6 py-3 rounded-lg mb-5 inline-block font-semibold shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105"
-  >
-    <FaUserPlus className="mr-2 m-auto" />
-    Cadastrar novo Paciente
-  </button>
-
-
-                {/* Renderizando pacientes da página atual */}
-                {currentPatients.map((patient) => (
-                    <PatientListItem
-                        key={patient.id}
-                        patient={patient}
-                        handleOpenEditPopup={(e) => handleOpenPopup(e, 'edit', patient)}
-                        handleOpenViewPopup={(e) => handleOpenPopup(e, 'view', patient)}
-                        formatDateAndAge={formatDateAndAge}
-                    />
-                ))}
-
-                {/* Componente de paginação */}
-                <div className="mt-6 flex justify-center">
-                    <ReactPaginate
-                        previousLabel={'← Anterior'}
-                        nextLabel={'Próxima →'}
-                        pageCount={pageCount}
-                        onPageChange={handlePageClick}
-                        containerClassName={'pagination flex flex-wrap space-x-2 justify-center'}
-                        activeClassName={'active bg-blue-500 text-white px-3 py-1 rounded-md'}
-                        pageClassName={'page-item px-3 py-1 border rounded-md text-sm'}
-                        previousClassName={'page-item px-3 py-1 border rounded-md text-sm'}
-                        nextClassName={'page-item px-3 py-1 border rounded-md text-sm'}
-                        disabledClassName={'disabled opacity-50 cursor-not-allowed'}
-                    />
+                <div className='fixed justify-items-end right-0 z-50'  >
+                    <div 
+                        className=' bg-blue-900 w-[4vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md'
+                        title='Cadastrar novo paciente'
+                        onClick={(e) => handleOpenPopup(e, 'create')}>
+                        <FaUserPlus  size={30} className='m-auto  text-white' />
+                    </div>
+                    <div 
+                        className=' bg-pink-600 w-[4vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md'
+                        title='Cadastrar novo paciente'
+                        onClick={(e) => handleOpenBirthdaysPopup(e)}>
+                        <LiaBirthdayCakeSolid   size={30} className='m-auto text-white' />
+                    </div>
                 </div>
+ 
+
+                <div className='w-[94vw] h-[75vh] overflow-x-hidden overflow-y-auto'>
+                     {/* Renderizando pacientes da página atual */}
+                     <div className='flex flex-wrap'>
+                        {currentPatients.map((patient) => (
+                            <PatientListItem
+                                key={patient.id}
+                                patient={patient}
+                                handleOpenEditPopup={(e) => handleOpenPopup(e, 'edit', patient)}
+                                handleOpenViewPopup={(e) => handleOpenPopup(e, 'view', patient)}
+                                formatDateAndAge={formatDateAndAge}
+                            />
+                        ))}
+                     </div>
+
+
+                    {/* Componente de paginação */}
+                    <div className="mt-6 flex justify-center">
+                        <ReactPaginate
+                            previousLabel={'← Anterior'}
+                            nextLabel={'Próxima →'}
+                            pageCount={pageCount}
+                            onPageChange={handlePageClick}
+                            containerClassName={'pagination flex flex-wrap space-x-2 justify-center'}
+                            activeClassName={'active bg-blue-500 text-white px-3 py-1 rounded-md'}
+                            pageClassName={'page-item px-3 py-1 border rounded-md text-sm'}
+                            previousClassName={'page-item px-3 py-1 border rounded-md text-sm'}
+                            nextClassName={'page-item px-3 py-1 border rounded-md text-sm'}
+                            disabledClassName={'disabled opacity-50 cursor-not-allowed'}
+                        />
+                    </div>
+                </div>
+               
             </div>
 
             {/* Popups para criar, editar, visualizar e adicionar consulta */}
@@ -217,6 +236,7 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
                     id="view_patient_popup"
                     zindex="99"
                     params={popupParams}
+                    classPopup='bg-white w-[95vw] h-[98vh]'
                     onClose={handleCloseViewPopup}
                 >
                     <ViewPatient
@@ -232,18 +252,22 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
             {isAddConsultationPopupOpen && selectedPatient && (
                 <PopUpComponent
                     id="add_consultation_popup"
-                    width="80vw"
-                    height="80vh"
                     zindex="100"
                     params={popupParams}
                     onClose={handleCloseAddConsultationPopup}
                 >
-                    <AddConsultation
+                    <Dashboard
                         patient={selectedPatient}
                         employees={employees}
                         auth={auth}
                         onClose={handleCloseAddConsultationPopup}
                     />
+                    {/*<AddConsultation
+                        patient={selectedPatient}
+                        employees={employees}
+                        auth={auth}
+                        onClose={handleCloseAddConsultationPopup}
+                    />*/}
                 </PopUpComponent>
             )}
 
@@ -262,6 +286,25 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
                         auth={auth}
                         onClose={handleCloseAddFormPopup}
                     />
+                </PopUpComponent>
+            )}
+            {isBirthdaysPopupOpen && (
+                <PopUpComponent
+                    id="add_form_popup"
+                    width="95vw"
+                    height="95vh"
+                    zindex="100"
+                    params={popupParams}
+                    onClose={handleCloseBirthdaysPopup}
+                >
+
+                <PopupHeader 
+                    icone='/images/icons/birthdays_icon.png'
+                    titulo='Aniversariantes'
+                    bgColor='bg-pink-500 '
+                    />
+                <Birthdays patients={patients} />
+
                 </PopUpComponent>
             )}
         </AuthenticatedLayout>

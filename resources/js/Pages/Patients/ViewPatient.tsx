@@ -5,7 +5,9 @@ import { UserIcon, PhoneIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import PrimaryButton from '@/Components/PrimaryButton';
 import ConsultationsList from '@/Pages/Consultations/ConsultationsList';
 import FormResponseList from './FormResponseList';
-
+import { FaTransgender } from "react-icons/fa6";
+import PopupHeader from '@/Layouts/PopupHeader';
+import InputLabel from '@/Components/InputLabel';
 const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPopup, handleOpenAddFormPopup, forms }) => {
     const [consultations, setConsultations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,8 +61,13 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
     }
     return (
         <>
+        <PopupHeader 
+        icone='/images/icons/icone_ficha.png'
+        titulo='Ficha do paciente'
+        />
             {/* Detalhes do Paciente */}
-            <div className="p-1 rounded-lg bg-white flex flex-wrap space-y-6 pb-10">
+            <div className="rounded-lg bg-white flex flex-wrap space-y-6 pb-10 pl-20">
+
                 <h2 className="w-full text-2xl font-bold text-gray-800 mb-4">Detalhes do Paciente</h2>
 
                 <div className="w-full md:w-1/4 flex justify-center md:justify-start">
@@ -77,21 +84,27 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                     )}
                 </div>
 
-                <div className="w-full md:w-3/4 text-left px-5 flex flex-wrap pb-10 shadow-lg">
+                <div className="w-full md:w-3/4 text-left px-5 flex flex-wrap pb-10 border-b border-gray-400">
                     <div className="w-[100%]">
                         <p className="text-sm font-medium text-gray-500">Nome</p>
                         <p className="text-3xl font-semibold text-gray-800">{patient.patient_name}</p>
                     </div>
 
                     <div className="w-[30%]">
-                        <p className="text-sm font-medium text-gray-500">Data de Nascimento</p>
                         <p className="text-lg">{formatDateAndAge(patient.birth_date)}</p>
                     </div>
                     <div className="flex items-center space-x-2 w-[30%]">
-                        <FaIdCard className="text-gray-600" />
+                        <FaIdCard className="w-8 text-blue-500 h-auto" />
                         <p className="text-lg">
-                            <strong>CPF:</strong>
-                            <br /> {patient.cpf ?? 'Não informado'}
+                            <InputLabel value='CPF'/>
+                            {patient.cpf ?? 'Não informado'}
+                        </p>
+                    </div>
+                    <div className="flex items-center space-x-2 w-[30%]">
+                        <FaTransgender className="text-gray-600" />
+                        <p className="text-lg">
+                            <strong>Gênero:</strong>
+                            <br /> {patient.gender ?? 'Não informado'}
                         </p>
                     </div>
                     <div className="flex items-center space-x-2 w-[30%]">
@@ -108,33 +121,11 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                     <PrimaryButton onClick={handleOpenAddConsultationPopup} className="mt-4 ml-4 bg-green-500">
                         Adicionar Consulta
                     </PrimaryButton>
+
                 </div>
             </div>
 
-            {forms.length > 0 ? (
-                <div className="flex m-auto flex-wrap">
-                    {forms.map((form) => (
-                        <div key={form.id} className="md:w-[18%] w-[50%] p-4 m-auto bg-gray-100 rounded-lg shadow">
-                        <img
-                            src={form.icon}
-                            alt={`Ícone  de ${form.name}`}
-                            className="w-[50%] md:w-16 md:h-16 m-auto"
-                        />
-                            <h2 className="font-semibold">{form.name}</h2>
-                            <div className="flex space-x-4">
-                                <PrimaryButton 
-                                    onClick={(e) => handleOpenAddFormPopup(e, form)} // Passando o evento 'e' e o formulário
-                                    className="mt-4 ml-4 bg-green-500"
-                                >
-                                    Preencher Formulário
-                                </PrimaryButton>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <p>Nenhum formulário encontrado.</p>
-            )}
+  
 
             {/* Detalhes de Localização */}
             <div className="flex flex-wrap bg-white shadow-lg rounded-lg p-6">
@@ -153,7 +144,7 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="flex flex-col">
-                            <p className="text-lg text-gray-700">
+                            <p className="text-lg text-gray-700">   
                                 <strong>Estado:</strong> {patient.state ?? 'Não informado'}
                             </p>
                             <p className="text-lg text-gray-700">
@@ -185,8 +176,6 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                     </div>
                 </div>
             </div>
-
-            {/* Detalhes de Contatos */}
             <div className="flex flex-wrap">
                 <div className="w-[100%] md:w-[20%] m-auto py-5">
                     <img src="https://keyar-atendimentos.s3.amazonaws.com/icones/contatos.png" className="m-auto w-20 h-20 md:w-40 md:h-40" />
@@ -204,16 +193,16 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                                         Array.isArray(contactsArray) && contactsArray.length > 0 ? (
                                             <div className="flex flex-wrap gap-4">
                                                 {contactsArray.map((contact, index) => (
-                                                    <div key={index} className="w-full md:w-[30%] p-4 bg-white shadow-md rounded-lg border border-gray-200">
-                                                        <div className="flex items-center mb-2">
+                                                    <div key={index} className="w-full md:w-[100%] py-3 bg-white flex shadow-md rounded-lg border border-gray-200">
+                                                        <div className="flex items-center  m-auto">
                                                             <UserIcon className="h-5 w-5 text-blue-500 mr-2" />
                                                             <p><strong>Nome:</strong> {contact.name}</p>
                                                         </div>
-                                                        <div className="flex items-center mb-2">
+                                                        <div className="flex items-center m-auto">
                                                             <UserGroupIcon className="h-5 w-5 text-green-500 mr-2" />
                                                             <p><strong>Relação:</strong> {contact.relation}</p>
                                                         </div>
-                                                        <div className="flex items-center">
+                                                        <div className="flex items-center m-auto">
                                                             <PhoneIcon className="h-5 w-5 text-red-500 mr-2" />
                                                             <p><strong>Telefone:</strong> {contact.phone}</p>
                                                         </div>
@@ -235,6 +224,32 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                     </div>
                 </div>
             </div>
+            {forms.length > 0 ? (
+                <div className="flex m-auto flex-wrap">
+                    {forms.map((form) => (
+                        <div key={form.id} className="md:w-[18%] w-[50%] p-4 m-auto bg-gray-100 rounded-lg shadow">
+                        <img
+                            src={form.icon}
+                            alt={`Ícone  de ${form.name}`}
+                            className="w-[50%] md:w-16 md:h-16 m-auto"
+                        />
+                            <h2 className="font-semibold">{form.name}</h2>
+                            <div className="flex space-x-4">
+                                <PrimaryButton 
+                                    onClick={(e) => handleOpenAddFormPopup(e, form)} // Passando o evento 'e' e o formulário
+                                    className="mt-4 ml-4 bg-green-500"
+                                >
+                                    Preencher Formulário
+                                </PrimaryButton>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p>Nenhum formulário encontrado.</p>
+            )}
+            {/* Detalhes de Contatos */}
+
 
             {/* Lista de Consultas do Paciente */}
             <ConsultationsList consultations={consultations} loading={loading} />

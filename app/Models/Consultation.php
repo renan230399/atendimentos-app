@@ -67,6 +67,16 @@ class Consultation extends Model
     }
 
     /**
+     * Relacionamento: uma consulta pode ter várias respostas de formulário associadas.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function formResponses()
+    {
+        return $this->hasMany(FormResponse::class);
+    }
+
+    /**
      * Setter para o campo 'price'.
      * Armazena o preço em centavos no banco de dados.
      *
@@ -89,5 +99,37 @@ class Consultation extends Model
     {
         // Divide o valor por 100 para retornar em reais
         return $value / 100;
+    }
+
+    /**
+     * Verifica se a consulta está completa.
+     *
+     * @return bool
+     */
+    public function isCompleted()
+    {
+        return $this->status === 'completed';
+    }
+
+    /**
+     * Define a consulta como concluída.
+     *
+     * @return void
+     */
+    public function complete()
+    {
+        $this->status = 'completed';
+        $this->save();
+    }
+
+    /**
+     * Define a consulta como cancelada.
+     *
+     * @return void
+     */
+    public function cancel()
+    {
+        $this->status = 'cancelled';
+        $this->save();
     }
 }

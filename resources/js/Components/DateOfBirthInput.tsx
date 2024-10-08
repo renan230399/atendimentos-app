@@ -30,7 +30,7 @@ const DateOfBirthInput = ({ value, onChange, errors = {} }) => {
             setAge(null); // Limpa a idade se não houver valor
         }
     }, [value]);
-
+console.log(value);
     return (
         <div className="w-full">
             <InputLabel htmlFor="data_nascimento" value="Data de Nascimento" />

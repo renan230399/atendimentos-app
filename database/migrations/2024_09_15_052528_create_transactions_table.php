@@ -18,6 +18,7 @@ return new class extends Migration
 
             $table->text('description')->nullable(); // Descrição adicional
             $table->date('transaction_date'); // Data da transação
+            
             $table->boolean('status'); // Status da transação
         
             // Relacionamento polimórfico para entidades dinâmicas (users, consultations, etc.)

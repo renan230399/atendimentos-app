@@ -1,17 +1,31 @@
-import { useState, PropsWithChildren, ReactNode } from 'react';
+import { useState, PropsWithChildren, ReactNode,useEffect } from 'react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link } from '@inertiajs/react';
 import { User } from '@/types';
+import moment from 'moment';
+import 'moment/locale/pt-br';
+
+import { Avatar } from 'primereact/avatar';
+import { AvatarGroup } from 'primereact/avatargroup';   //Optional for grouping
+import { Badge } from 'primereact/badge';
+
+moment.updateLocale('pt-br', {
+    weekdays: ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'],
+    weekdaysShort: ['dom', 'seg', 'ter', 'qua', 'quinta-feira', 'sex', 'sáb'],
+    months: ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'],
+    monthsShort: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+});
+moment.locale('pt-br');
 
 export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-
+  
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 z-1">
-            <nav className="fixed top-0 left-0 w-full bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 z-50">
+        <div className="h-screen bg-gray-100 dark:bg-gray-900 z-1 overflow-hidden">
+            <nav className="w-full bg-white h-[9vh] dark:bg-gray-800 shadow-lg border-b border-gray-300 dark:border-gray-700 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center w-full">
@@ -38,7 +52,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 </NavLink>
                                 {user.role === 1 && user.company && (
                                     <>
-                                        <NavLink href={route('forms.index')} active={route().current('forms.index')}>
+                                        <NavLink className='hidden' href={route('forms.index')} active={route().current('forms.index')}>
                                             Fichas
                                         </NavLink>
                                         <NavLink href={route('employees.index')} active={route().current('employees.index')}>
@@ -51,19 +65,26 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                         <NavLink href={route('financial.dashboard')} active={route().current('financial.dashboard')}>
                                             Financeiro
                                         </NavLink>
+          
                                     </>
                                 )}
                             </div>
                         </div>
-
+     
                         <div className="hidden sm:flex right-0 sm:items-center sm:ml-6">
+                            
                             <div className="ml-3 w-full relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
+                                        
+
                                         <span className="inline-flex rounded-md w-full">
+                                        <Avatar image="/images/avatar/onyamalimba.png" shape="circle" size='large' className="m-b-0 p-0  p-overlay-badge" />
+
+                              
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150"
+                                                className="hidden inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150"
                                             >
                                                 {user.name}
                                                 <svg
@@ -118,8 +139,8 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                     </div>
                 </div>
 
-                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
-                    <div className="pt-2 pb-3 space-y-1">
+                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden fixed bg-white right-0 w-[50vh]'}>
+                    <div className="pt-0 pb-3 space-y-1">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Agenda 
                        </ResponsiveNavLink>
@@ -173,7 +194,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
             )}
 
             {/* Add padding to main content to avoid overlap with fixed header */}
-            <main className="pt-16">{children}</main>
+            <main className="">{children}</main>
         </div>
     );
 }

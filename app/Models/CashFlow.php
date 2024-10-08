@@ -17,6 +17,7 @@ class CashFlow extends Model
     protected $fillable = [
         'account_id',
         'transaction_id',
+        'company_id', // Adiciona company_id como fillable
         'balance_before',
         'balance_after',
     ];
@@ -49,8 +50,8 @@ class CashFlow extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function empresa()
+    public function company()
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(Company::class); // Ajustado para Company em vez de Empresa
     }
 }

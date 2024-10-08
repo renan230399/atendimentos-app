@@ -10,11 +10,10 @@ export default function Edit({ auth, mustVerifyEmail, status }: PageProps<{ must
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Profile</h2>}
         >
             <Head title="Profile" />
 
-            <div className="flex flex-wrap max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div className="flex flex-wrap mx-auto sm:px-6 lg:px-8 h-screen overflow-y-auto pt-6">
                 {/* Formulário de Atualização de Perfil */}
                 <div className="w-1/2 p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                     <UpdateProfileInformationForm
@@ -25,7 +24,7 @@ export default function Edit({ auth, mustVerifyEmail, status }: PageProps<{ must
                 </div>
 
                 {/* Formulário de Atualização de Senha */}
-                <div className="p-4 w-1/2 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+                <div className=" p-4 w-1/2 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                     <UpdatePasswordForm className="max-w-xl" />
                 </div>
 

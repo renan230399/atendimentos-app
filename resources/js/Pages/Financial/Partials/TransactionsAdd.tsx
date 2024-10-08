@@ -1,32 +1,25 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import TransactionForm from './TransactionForm'; 
+import TransactionForm from './TransactionForm';
 import TextInput from '@/Components/TextInput';
 import { useForm } from '@inertiajs/react';
+import Dinero from 'dinero.js';
 
 interface Account {
   id: number;
   name: string;
+  type: string;
 }
 
 interface Category {
   id: number;
   name: string;
+  type: string; // Tipo de transação: 'income' ou 'expense'
 }
 
 interface TransactionsAddProps {
-  data: {
-    type: string; // Ajustei para string ao invés de booleano
-    category_id: number;
-    account_id: number;
-    amount: number;
-    description: string;
-    transaction_date: string;
-    status: boolean;
-  };
-  setData: (field: string, value: any) => void;
   accounts: Account[];
   categories: Category[];
   loading: boolean;
@@ -40,41 +33,110 @@ interface TransactionsAddProps {
 }
 
 const TransactionsAdd: React.FC<TransactionsAddProps> = ({
-  data,
-  setData,
   accounts,
   categories,
   loading,
   errors,
+  logo = '',
 }) => {
-  // Inicializa os campos obrigatórios para garantir que todas as transações contenham os dados necessários
-  const initialTransactionData = {
-    type: data.type || 'expense', 
-    account_id: data.account_id || '',
-    category_id: data.category_id || '',
-    amount: data.amount || 0,
-    description: data.description || '',
-    transaction_date: data.transaction_date || new Date().toISOString().split('T')[0], // Data padrão
-    status: data.status || false,
+  const { data, setData, post, reset } = useForm({
+    category_id: '',
+    type: '',
+    amount: 0,
+    description: '',
+    account_id: '',
+    transactions: [
+      {
+        transaction_date: '',
+        status: false,
+      },
+    ],
+  });
+  // Adicione este useEffect para rastrear mudanças no estado do data
+useEffect(() => {
+  console.log('Estado do data atualizado:', data);
+}, [data]);
+
+  
+  // Novo estado para gerenciar o valor do select diretamente
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+
+
+  const [transactions, setTransactions] = useState([{ transaction_date: '', status: false }]);
+  const [isFixedExpenses, setIsFixedExpenses] = useState(false);
+
+  const formatPrice = (value: number) => {
+    const price = Dinero({ amount: value || 0, currency: 'BRL' });
+    return price.toFormat('$0,0.00'); // Formata em R$
   };
 
-  const [transactions, setTransactions] = useState([initialTransactionData]);
-  const [isFixedExpenses, setIsFixedExpenses] = useState(false); // Para categoria "gastos fixos"
-  const [dateDefault, setDateDefault] = useState(initialTransactionData.transaction_date);
 
-  const { post, reset } = useForm({ transactions });
+// Função para atualizar os campos gerais do formulário
+// Função para atualizar os campos gerais do formulário
+const handleFormChange = (field: string, value: any) => {
+  const newValue = field === 'account_id' || field === 'category_id' ? parseInt(value, 10) : value;
+  setData(field, newValue);
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateDefault(e.target.value); 
-  };
+  // Atualizar a lista de transações apenas se o campo 'transaction_date' for alterado
+  if (field === 'transaction_date' && newValue) {
+    const newTransactions = data.transactions.map((transaction, index) => {
+      const date = new Date(newValue);
+      date.setMonth(date.getMonth() + index); // Adiciona meses conforme o índice
+      return {
+        ...transaction,
+        transaction_date: date.toISOString().split('T')[0], // Formato 'YYYY-MM-DD'
+      };
+    });
+
+    // Atualiza o estado de transações no formulário e o estado local
+    setData('transactions', newTransactions);
+    setSelectedDate(newValue); // Mova esta linha para fora do loop
+  }
+};
+
+
+
+
 
   const handleMultipleTransactions = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.max(1, parseInt(e.target.value)); 
+    const value = Math.max(1, parseInt(e.target.value, 10));
+    
+    // Cria um novo array de transações com a quantidade especificada
     const newTransactions = Array.from({ length: value }).map(() => ({
-      ...initialTransactionData,
-      transaction_date: dateDefault, 
+      transaction_date: '',
+      status: false,
     }));
+  
+    // Atualiza o estado local de transactions
     setTransactions(newTransactions);
+  
+    // Atualiza o estado do useForm com as novas transações
+    setData('transactions', newTransactions);
+  };
+  
+
+  const renderTransactionForms = () => {
+    return data.transactions.map((transaction, index) => (
+      <TransactionForm
+        key={index}
+        index={index}
+        data={data}
+        setData={(index, field, value) => updateTransaction(index, field, value)}
+        accounts={accounts}
+        errors={errors}
+        dateDefault={selectedDate}
+      />
+    ));
+  };
+  
+
+  const handleAddTransaction = (e: React.FormEvent) => {
+
+    post(route('transactions.store'), {
+      onSuccess: () => reset(),
+      onError: (error) => console.log('Error editing', error),
+    });
   };
 
   const updateTransaction = (index: number, field: string, value: any) => {
@@ -83,107 +145,133 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
     );
     setTransactions(updatedTransactions);
   };
+  const handleCategorySelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const categoryId = parseInt(e.target.value, 10);
+    setSelectedCategoryId(categoryId);
 
-  const renderTransactionForms = () => {
-    return transactions.map((transaction, index) => (
-      <TransactionForm
-        key={index}
-        index={index}
-        data={transaction}
-        setData={(field, value) => updateTransaction(index, field, value)}
-        accounts={accounts}
-        errors={errors}
-        dateDefault={dateDefault}
-      />
-    ));
-  };
-
-  // Função para adicionar uma nova transação
-  const handleAddTransaction = (e: React.FormEvent) => {
-    e.preventDefault();
-    post(route('transactions.store'), {
-      transactions, 
-      onSuccess: () => {
-        reset(); 
-        setTransactions([initialTransactionData]); 
-      },
-      onError: (errors) => {
-        console.error('Erro ao cadastrar transação', errors);
-      },
+    // Encontra a categoria selecionada com base no ID
+    const selectedCategory = categories.find((category) => category.id === categoryId);
+  
+    // Atualiza todos os campos relevantes de uma só vez
+    setData({
+      ...data, // Mantém o estado atual de data
+      category_id: categoryId,
+      type: selectedCategory ? selectedCategory.type : '', // Atualiza o campo 'type' se a categoria for encontrada
     });
+  
+    // Verifica se é uma despesa fixa (categoria com ID igual a 4)
+    const isFixed = categoryId === 4;
+    setIsFixedExpenses(isFixed);
+    /*handleMultipleTransactions({
+      target: { value: '1' }
+    } as React.ChangeEvent<HTMLInputElement>);*/
   };
-
-  const handleType = (category: number) => {
-    setIsFixedExpenses(category === 4); 
-  };
-
+  
   return (
     <form onSubmit={handleAddTransaction} className="mt-4 space-y-4">
       <div className="flex flex-wrap gap-3 w-full">
-        {/* Categoria */}
-        <div className="w-[70%] m-auto">
-          <InputLabel htmlFor="category_id" value="Categoria" />
-          <select
-            id="category_id"
-            value={data.category_id}
-            onChange={(e) => {
-              const categoryId = parseInt(e.target.value, 10);
-              setData('category_id', categoryId);
-              handleType(categoryId);
-
-              setTransactions([initialTransactionData]); 
-            }}
-            className="block w-full border-gray-300 rounded-md shadow-sm text-lg focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-
-          <InputError message={errors.category_id} className="mt-2" />
-
-          {/* Tipo de Transação */}
-          <InputLabel htmlFor="type" value="Tipo de Transação" />
-          <select
-            id="type"
-            value={data.type} 
-            onChange={(e) => setData('type', e.target.value)}
-            className="block w-full border-gray-300 rounded-md shadow-sm text-lg focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="income">Receita</option>
-            <option value="expense">Despesa</option>
-            <option value="transfer">Transferência</option>
-          </select>
+        <div className="w-[27%] items-center justify-center m-auto">
+          <img src={logo} alt="logo da empresa" className="m-auto w-[80%]" />
         </div>
 
-        {/* Se a categoria for "gastos fixos", mostre opções adicionais */}
-        {isFixedExpenses && (
-          <div className="md:w-[15%] w-[80%] m-auto">
-            <InputLabel htmlFor="months" value="Quantos meses?" />
+        <div className="w-[68%] flex flex-wrap m-auto">
+          <div className='w-[45%] m-auto mb-3'>
+            <InputLabel htmlFor="category_id" value="Categoria" />
+            <select
+              id="category_id"
+              required
+              value={selectedCategoryId}
+              onChange={handleCategorySelectChange}
+              className="block w-full border-gray-300 rounded-md shadow-sm text-lg focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Selecione uma categoria</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name} - {category.type === 'income' ? 'Receitas' : 'Despesas'}
+                </option>
+              ))}
+            </select>
+
+            <InputError message={errors.category_id} className="mt-2" />
+          </div>
+
+          <div className='w-[45%] m-auto mb-3'>
+            <InputLabel htmlFor="account_id" value="Conta" />
+            <select
+              id="account_id"
+              required
+              value={data.account_id || ''}
+              onChange={(e) => handleFormChange('account_id', e.target.value)}
+              className="block w-full border-gray-300 rounded-md shadow-sm text-lg focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Selecione uma conta</option>
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+            <InputError message={errors.account_id} className="mt-2" />
+          </div>
+          <div className=' m-auto'>
+            <InputLabel htmlFor="amount" value="Valor (R$)" />
             <TextInput
-              id="months"
-              type="number"
-              value={transactions.length}
-              onChange={handleMultipleTransactions} 
+              id="amount"
+              required
+              type="text"
+              value={formatPrice(data.amount)}
+              onChange={(e) => handleFormChange('amount', parseInt(e.target.value.replace(/\D/g, ''), 10))}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            />
-            <InputLabel htmlFor="date_default" value="Data Padrão" />
-            <TextInput
-              id="date_default"
-              type="date"
-              onChange={handleDateChange}
-              value={dateDefault}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="R$ 0,00"
             />
           </div>
-        )}
+          <div className=' m-auto'>
+            
+          <InputLabel htmlFor="transaction_date" value="Data da Transação" />
+          <TextInput
+            id="transaction_date"
+            required
+            type="date"
+            value={selectedDate}
+            onChange={(e) => handleFormChange('transaction_date', e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          />
+          </div>
+          <div className=' m-auto'>
+            
+            {isFixedExpenses && (
+              <>
+                <InputLabel htmlFor="months" value="Quantos meses?" />
+                <TextInput
+                  id="months"
+                  required
+                  type="number"
+                  value={transactions.length}
+                  onChange={handleMultipleTransactions}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </>
+            )}
+           
+            </div>
 
-        {/* Renderizar formulários de transações */}
-        <div className="w-full flex flex-wrap pl-4">
-          {renderTransactionForms()}
+
+
+          <div className='w-full' >
+          <InputLabel htmlFor="description" value="Descrição" />
+          <TextInput
+            id="description"
+            required
+            type="text"
+            value={data.description}
+            onChange={(e) => handleFormChange('description', e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          />
+          </div>
+
         </div>
+
+        <div className="w-full flex flex-wrap">{renderTransactionForms()}</div>
       </div>
 
       <PrimaryButton type="submit" className="mt-2" disabled={loading}>

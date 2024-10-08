@@ -37,8 +37,6 @@ export default function UpdateCompany({ className = '' }: { className?: string }
             data: formData,
             forceFormData: true, // Força o envio como FormData, necessário para uploads de arquivos
             onSuccess: () => {
-                // Após sucesso, você pode redefinir o logo se desejar
-                setData('company_logo', null);
             },
         });
     };

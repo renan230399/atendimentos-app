@@ -52,8 +52,6 @@ class FinancialController extends Controller
             ],
             'accounts' => $accounts,
             'categories' => $categories,
-            'transactions' => $transactions,
-            'cashFlows' => $cashFlows,
             'filters' => [
                 'start_date' => $startDate,
                 'end_date' => $endDate,

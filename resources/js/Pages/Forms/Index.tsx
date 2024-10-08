@@ -2,9 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { Link, usePage, Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import PropTypes from 'prop-types';
-import FormBuilder from '@/Pages/FormBuilder'; // Componente de criação de formulário
+import FormBuilder from '@/Pages/Forms/FormBuilder'; // Componente de criação de formulário
 import PopUpComponent from '@/Layouts/PopupComponent'; // Popup genérico
-import FormView from '@/Pages/Forms/FormView'; // Novo componente de visualização de formulário
+import FormEdit from '@/Pages/Forms/FormEdit' // Novo componente de visualização de formulário
+import { CiEdit } from "react-icons/ci";
 
 const Index = () => {
     const { auth, forms } = usePage().props; // Recebe 'auth' e 'forms' via Inertia
@@ -64,25 +65,31 @@ const Index = () => {
                 </button>
 
                 {forms.length > 0 ? (
-                    <ul className="space-y-4">
+                    <div className="flex flex-wrap">
                         {forms.map((form) => (
-                            <li key={form.id} className="p-4 bg-gray-100 rounded-lg shadow">
+                            <div key={form.id} className="w-[32%] m-auto border rounded-xl shadow-lg p-3 text-center mb-6">
+                                <img
+                                    src={form.icon}
+                                    alt={`Ícone  de ${form.name}`}
+                                    className="w-[50%] md:w-16 md:h-16 m-auto"
+                                />
                                 <h2 className="text-xl font-semibold">{form.name}</h2>
                                 <p>{form.description}</p>
                                 <div className="flex space-x-4">
-                                    <button
+                                    <div
                                         onClick={(e) => openViewPopup(e, form)}
-                                        className="text-blue-500 hover:underline"
+                                        className="text-white bg-blue-500 hover:bg-blue-600 cursor-pointer flex px-2 py-1 rounded-md m-auto"
                                     >
-                                        Ver Detalhes
-                                    </button>
-                                    <Link href={`/forms/${form.id}`} className="text-blue-500 hover:underline">
-                                        Editar Formulário
-                                    </Link>
+                                    <CiEdit 
+                                        className="text-white cursor-pointer m-auto" 
+                                        size={30} 
+                                    />
+                                        <p className='m-auto'>Ver Detalhes</p>
+                                    </div>
                                 </div>
-                            </li>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 ) : (
                     <p>Nenhum formulário encontrado.</p>
                 )}
@@ -106,12 +113,12 @@ const Index = () => {
             {isViewPopupOpen && selectedForm && (
                 <PopUpComponent 
                 id="formulario_visualizacao_popup" 
-                width="96vw"
-                height="90vh"
+                width="95vw"
+                height="95vh"
                 zindex="100"
                 params={popupParams} 
                 onClose={closePopup}>
-                    <FormView form={selectedForm} />
+                    <FormEdit form={selectedForm} />
                 </PopUpComponent>
             )}
         </AuthenticatedLayout>

@@ -20,21 +20,25 @@ interface AccountsManagerProps {
 // Componente responsável por renderizar o ícone correto com base no tipo da conta
 const AccountIcon: React.FC<{ type: string }> = ({ type }) => {
   let IconComponent;
+  let Color;
   switch (type) {
     case 'bank':
       IconComponent = FaUniversity; // Ícone de banco (universidade simbolizando uma instituição financeira)
+      Color='text-blue-500';
       break;
     case 'cash':
       IconComponent = FaMoneyBillWave; // Ícone de dinheiro
+      Color='text-green-500';
       break;
     case 'investment':
       IconComponent = FaChartLine; // Ícone de gráfico de investimento
+      Color='text-blue-500';
       break;
     default:
       IconComponent = FaMoneyBillWave; // Ícone padrão
   }
 
-  return <IconComponent className="h-6 w-6 text-gray-500" aria-hidden="true" />;
+  return <IconComponent className={`h-6 w-6 ${Color}`} aria-hidden="true" />;
 };
 
 const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts }) => {
@@ -76,14 +80,14 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts }) => {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6 text-center">
-      <div className="flex flex-wrap gap-5 mt-4">
+    <div className="bg-white shadow-xl rounded-lg p-6 m-0 absolute text-center w-[93%]">
+      <div className="flex flex-wrap gap-5">
         {accounts.map((account) => (
-          <div key={account.id} className="md:w-[24%] w-[47%] text-left border rounded p-2 shadow-lg flex items-center">
+          <div key={account.id} className="md:w-[23%] w-[47%] text-left border rounded p-2 shadow-lg flex flex-wrap items-center">
             {/* Exibindo o ícone baseado na categoria do caixa */}
             <AccountIcon type={account.type} />
 
-            <div className="ml-3">
+            <div className="m-auto">
               <div className="font-semibold text-gray-700">{account.name}</div>
               {/* Exibindo o saldo formatado em reais */}
               <div className="text-gray-700 text-xl">
@@ -109,7 +113,7 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts }) => {
       </div>
 
       {isAddingAccount && (
-        <form onSubmit={handleAddAccount} className="mt-4 text-left flex gap-4">
+        <form onSubmit={handleAddAccount} className="mt-4 text-left flex  gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome da conta</label>
             <TextInput

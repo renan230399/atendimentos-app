@@ -17,6 +17,7 @@ class CreateFormResponsesTable extends Migration
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->string('status')->default('incompleto'); // Status do preenchimento (ex: incomplete, completed)
             $table->timestamp('completed_at')->nullable(); // Data e hora de conclusão, se aplicável
+            $table->foreignId('consultation_id')->nullable()->constrained('consultations')->onDelete('set null');
 
             $table->timestamps();
         });

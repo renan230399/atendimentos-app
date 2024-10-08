@@ -14,7 +14,7 @@ const EnderecoSection = ({ data, setData, errors }) => {
             </div>
 
             {/* Seção de Inputs */}
-            <div className='w-[100%] md:w-[78%] flex flex-wrap gap-3 border-b-2 pb-5'>
+            <div className='w-[100%] md:w-[78%] flex flex-wrap gap-3 pb-5'>
 
                 {/* Campo Estado (Select) */}
                 <div className='w-[20%]'>

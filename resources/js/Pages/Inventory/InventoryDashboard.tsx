@@ -4,7 +4,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { FaPlusCircle } from 'react-icons/fa';
 import ProductWithStock from './Partials/ProductWithStock';
 import PopUpComponent from '@/Layouts/PopupComponent';
-import NewOrderForm from './NewOrderForm'; // Importação do NewOrderForm
+import NewOrderForm from './OrderItems/NewOrderForm'; // Importação do NewOrderForm
+import { MdAddShoppingCart } from "react-icons/md";
+import { FaSitemap } from "react-icons/fa";
+
 interface InventoryDashboardProps {
     auth: {
         user: {
@@ -41,6 +44,7 @@ export default function InventoryDashboard({ auth, categories, products, stocks 
     const suppliers = auth.user.company.suppliers ? JSON.parse(auth.user.company.suppliers) : [];
     const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false); // Controle do popup
     const [popupParams, setPopupParams] = useState({});
+    const [categoriesPopup, setcategoriesPopup] = useState(false); // Controle do popup
 
     const handleOpenOrderPopup = useCallback((e: React.MouseEvent) => {
         setPopupParams({ clientX: e.clientX, clientY: e.clientY });
@@ -50,31 +54,41 @@ export default function InventoryDashboard({ auth, categories, products, stocks 
     const handleCloseOrderPopup = useCallback(() => {
         setIsOrderPopupOpen(false);
     }, []);
+    const handleOpenCategoriesPopup = useCallback((e: React.MouseEvent) => {
+        setPopupParams({ clientX: e.clientX, clientY: e.clientY });
+        setcategoriesPopup(true);
+    }, []);
+
+    const handleCloseCategoriesPopup = useCallback(() => {
+        setcategoriesPopup(false);
+    }, []);
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title="Inventário" />
-  {/* Produtos Section */}
-  <div className="flex justify-between items-center mb-6 mt-4">
-                <h3 className="text-2xl font-bold text-gray-700">Produtos</h3>
-                <button
-                    onClick={handleOpenOrderPopup}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center shadow hover:bg-blue-600 hover:shadow-lg transition duration-300 ease-in-out"
-                >
-                    <FaPlusCircle className="mr-2" />
-                    Cadastrar Nova Compra
-                </button>
+        <div className="fixed right-0 pl-2 justify-items-end text-right ml-5 h-screen w-[5vw] ">
+            <div
+            className="hover:bg-blue-900 text-center bg-blue-500 right-0 w-[5vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md"
+            title="Adicionar nova transação"
+            onClick={handleOpenOrderPopup}
+            >
+                <MdAddShoppingCart size={30} className="text-white" />
             </div>
-            <div className="p-6 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-10 flex flex-wrap gap-6">
+            <div
+            className="hover:bg-blue-900 text-center bg-blue-500 right-0 w-[5vw] cursor-pointer mt-6 py-2 shadow-xl rounded-l-md"
+            title="Adicionar nova transação"
+            onClick={handleOpenOrderPopup}
+            >
+                <FaSitemap size={30} className="text-white m-auto" />
+            </div>
+        </div>
+            <Head title="Inventário" />
+            <div className="p-6  sm:px-6 lg:px-8 bg-white space-y-10 flex flex-wrap gap-6 h-screen w-[95vw]">
                 {/* Produtos Section */}
-                <div className="w-full">
-                    <ProductWithStock 
+                <ProductWithStock 
                         products={products} 
                         stocks={stocks} 
                         suppliers={suppliers} 
                         categories={categories} // Adiciona as categorias como props para o filtro
                     />
-                </div>
-
                 {/* Categorias Section */}
                 <div className="w-full md:w-[60%] bg-white shadow-lg rounded-lg p-6">
                     <div className="flex justify-between items-center mb-6">
@@ -98,14 +112,21 @@ export default function InventoryDashboard({ auth, categories, products, stocks 
             </div>          
                         {/* Popup para nova compra */}
                         {isOrderPopupOpen && (
-                <PopUpComponent id="new_order_popup" params={popupParams} onClose={handleCloseOrderPopup}>
-                    <NewOrderForm  
-                        products={products} 
-                        stocks={stocks} 
-                        suppliers={suppliers} 
-                        categories={categories}
-                        /> {/* Passando suppliers e products */}
-                </PopUpComponent>
+                            <PopUpComponent 
+                            width="98vw"
+                            height="98vh"
+                            zindex="100"
+                            id="new_order_popup" 
+                            params={popupParams}
+                            onClose={handleCloseOrderPopup}
+                            >
+                                <NewOrderForm  
+                                    products={products} 
+                                    stocks={stocks} 
+                                    suppliers={suppliers} 
+                                    categories={categories}
+                                    /> {/* Passando suppliers e products */}
+                            </PopUpComponent>
             )}
         </AuthenticatedLayout>
     );
