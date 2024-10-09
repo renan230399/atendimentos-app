@@ -51,8 +51,9 @@ Route::middleware('auth')->group(function () {
 
     // Rotas para pacientes (patients)
     Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
+    Route::get('/patients/for-consultation', [PatientController::class, 'getPatientsForAddConsultation'])->name('patients.consultation.add');
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
-
+    
     // Rotas para formulários dinâmicos
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
     Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
@@ -60,6 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/forms/{form}', [FormController::class, 'update'])->name('forms.update');
 
     Route::get('/forms/{form}/fields', [FormController::class, 'getFields'])->name('forms.fields');
+    Route::post('/dashboard/add-consultation', [ConsultationController::class, 'store'])->name('consultation.store');
 
     // Rota para enviar respostas do formulário
     Route::post('/forms/{form}/responses', [FormResponseController::class, 'store'])->name('form.responses.store');

@@ -76,6 +76,8 @@ class Consultation extends Model
         return $this->hasMany(FormResponse::class);
     }
 
+
+    
     /**
      * Setter para o campo 'price'.
      * Armazena o preço em centavos no banco de dados.

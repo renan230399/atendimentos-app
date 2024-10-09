@@ -8,6 +8,7 @@ import FormField from './FormField'; // Para renderizar o formulário preenchido
 import { CiEdit } from "react-icons/ci";
 import PictureInPictureComponent from '@/Layouts/PictureInPictureComponent';
 import { Inertia } from '@inertiajs/inertia';
+import { Sidebar } from 'primereact/sidebar';
 
 const FormEdit = ({ form }) => {
   const [formData, setFormData] = useState({
@@ -151,14 +152,14 @@ const FormEdit = ({ form }) => {
           {/* Editar os campos do formulário */}
           <div className="mb-5">
             <h3 className="text-xl font-semibold mb-2">Campos do Formulário</h3>
-            {formData.fields.map((field, index) => (
+            {/*formData.fields.map((field, index) => (
               <FieldEditor
                 key={index}
                 field={field}
                 onUpdate={(updatedField) => updateField(index, updatedField)} // Atualiza o campo
                 onRemove={() => removeField(index)}
               />
-            ))}
+            ))*/}
           </div>
 
           {/* Botão para adicionar novo campo */}
@@ -182,7 +183,9 @@ const FormEdit = ({ form }) => {
             />
           </PictureInPictureComponent>
 
+
       )}
+
         <div className="p-6 bg-white rounded-lg shadow-lg w-[100%] overflow-y-hidden">
           {/* Renderizar o formulário preenchido */}
           <div className="mb-5">

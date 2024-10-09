@@ -51,7 +51,7 @@ class TransactionCategorySeeder extends Seeder
                 ],
                 [
                     'name' => 'Compras Esporádicas',
-                    'type' => 'income', // Tipo: despesa
+                    'type' => 'expense', // Tipo: despesa
                     'company_id' => $company->id,
                 ],
                 [

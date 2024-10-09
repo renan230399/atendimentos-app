@@ -9,7 +9,7 @@ use App\Models\FormField;
 class FormFieldSeeder extends Seeder
 {
     public function run()
-    {
+    {/*
         // Cria o formulário principal de anamnese
         $form = Form::create([
             'company_id' => 1, // Associe a uma empresa (ajuste conforme necessário)
@@ -428,7 +428,7 @@ $fields_habitos = [
 // Adicionar os campos do formulário de Hábitos
 foreach ($fields_habitos as $field) {
     FormField::create(array_merge($field, ['form_id' => $form_habitos->id]));
-}
+}*/
 // Cria o formulário de exames
 $form_exames = Form::create([
     'company_id' => 1, // Associe a uma empresa (ajuste conforme necessário)
@@ -538,12 +538,21 @@ $fields_exames = [
         'class' => '',
         'step' => 0,
     ],
+    [
+        'label' => 'Resultados e observações',
+        'type' => 'textarea',
+        'required' => false,
+        'order' => 5,
+        'class' => '',
+        'step' => 0,
+    ],
 ];
 
 // Adicionar os campos do formulário de Exames
 foreach ($fields_exames as $field) {
     FormField::create(array_merge($field, ['form_id' => $form_exames->id]));
 }
+/*
 // Cria o formulário de procedimentos
 $form_procedimentos = Form::create([
     'company_id' => 1, // Associe a uma empresa (ajuste conforme necessário)
@@ -611,7 +620,7 @@ $fields_procedimentos = [
 // Adicionar os campos do formulário de Procedimentos
 foreach ($fields_procedimentos as $field) {
     FormField::create(array_merge($field, ['form_id' => $form_procedimentos->id]));
-}
+}*/
 
     }
 }

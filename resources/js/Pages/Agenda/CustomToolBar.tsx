@@ -65,7 +65,7 @@ const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
 
     return (
         <div className="flex xl:flex-col flex-wrap text-center items-center space-y-2">
-            <div className="toolbar-label text-lg font-semibold hidden m-auto">
+            <div className="toolbar-label text-lg font-semibold m-auto">
                 {label}
             </div>
 

@@ -131,7 +131,7 @@ const DynamicForm = ({auth, form, patient }) => {
                 </>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-20 h-[90%] overflow-y-auto">
+            <div className="flex flex-wrap h-[90%] overflow-y-auto">
                 {fields.length > 0 ? (
                     fields
                         .filter((field) => field.step === currentStep - 1)

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('account_id'); // Conta associada
+            $table->unsignedBigInteger('account_id')->nullable(); // Conta associada
             $table->unsignedBigInteger('category_id'); // Categoria da transação
             $table->unsignedBigInteger('company_id'); // Empresa associada
             $table->enum('type', ['income', 'expense', 'transfer']); // Tipo da transação

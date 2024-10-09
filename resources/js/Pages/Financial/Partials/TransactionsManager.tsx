@@ -158,7 +158,7 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
       {/* Filtros de Data */}
       <div className="flex flex-wrap space-x-4 h-[17vh]">
         <div className="w-[34%] flex flex-wrap">
-          <div className="w-full border-b pb-4">
+          <div className="w-full pb-4">
           <InputLabel value='Intervalo de datas'/>
           <DatePicker
               selected={filters.start_date}
@@ -229,7 +229,7 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
       </div>
 
       <div className="h-[65vh] py-0 my-0 border-black">
-        <TransactionsList transactions={{ data: transactions }} handleOpenConfirmedTransactionPopup={handleOpenConfirmedTransactionPopup} filters={filters} accounts={accounts}/>
+        <TransactionsList transactions={{ data: transactions }} handleOpenConfirmedTransactionPopup={handleOpenConfirmedTransactionPopup} filters={filters} accounts={accounts} categories={categories}/>
       </div>
 
       {/* Lazy loading do popup */}

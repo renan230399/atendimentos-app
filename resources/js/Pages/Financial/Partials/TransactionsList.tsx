@@ -3,19 +3,18 @@ import InputLabel from '@/Components/InputLabel';
 import ReactPaginate from 'react-paginate';
 import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; // Importando a localidade PT-BR para garantir que o formato seja brasileiro
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { FaCheckCircle, FaEye, FaClock } from 'react-icons/fa';
-import { IoReturnUpBackOutline, IoReturnUpForward  } from "react-icons/io5";
-import CustomSelect from '@/Components/CustomSelect'; // Certifique-se de que o caminho esteja correto
-import { MultiSelect } from 'primereact/multiselect';
-
-
+import { FaCheckCircle, FaClock } from 'react-icons/fa';
+import { FaExclamationTriangle } from "react-icons/fa";
+import TransactionFilters from './TransactionForm/TransactionFilters';
+import TransactionItem from './TransactionForm/TrasactionItem'; 
+import Pagination from '@/Components/Pagination';
+import CategoriesManager from './CategoriesManager';
 const statusOptions = [
-  { value: '', label: 'Todos', icon: <FaClock /> },
   { value: 'true', label: 'Realizada', icon: <FaCheckCircle className='text-green-500'/> },
-  { value: 'false', label: 'Pendente', icon: <FaClock /> },
+  { value: 'false', label: 'Pendente', icon: <FaExclamationTriangle className='text-red-500' /> },
 ];
+
 
 interface Transaction {
   id: number;
@@ -39,6 +38,10 @@ interface Account {
   id: number;
   name: string;
 }
+interface Category {
+  id: number;
+  name: string;
+}
 interface TransactionsListProps {
   transactions: {
     data: Transaction[];
@@ -49,9 +52,30 @@ interface TransactionsListProps {
     end_date: Date;
   };
   accounts:Account[];
-
+  categories:Category[];
 }
+// Função para renderizar as opções do Dropdown
+const statusOptionTemplate = (option) => {
+  return (
+    <div className="flex items-center">
+      {option.icon}
+      <span className="ml-2">{option.label}</span>
+    </div>
+  );
+};
 
+// Função para renderizar o valor selecionado
+const selectedStatusTemplate = (option) => {
+  if (option) {
+    return (
+      <div className="flex items-center">
+        {option.icon}
+        <span className="ml-2">{option.label}</span>
+      </div>
+    );
+  }
+  return <span>Selecione um status</span>;
+};
 // Função para definir a classe de borda com base no tipo de transação
 const getTransactionBorderClass = (type: string) => {
   switch (type) {
@@ -93,14 +117,13 @@ const getStatusBorderClass = (statusTransaction: boolean, type: string) => {
   }
 };
 
-const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handleOpenConfirmedTransactionPopup, filters, accounts='' }) => {
+const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handleOpenConfirmedTransactionPopup, filters, accounts='', categories='' }) => {
   // Estado para armazenar a data do filtro
   const [filterDate, setFilterDate] = useState<Date | null>(null); // Alterado para Date ou null
-  
-
   const [filterType, setFilterType] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<boolean | null>(null);
   const [filterAccountIds, setFilterAccountIds] = useState<number[]>([]);
+  const [filterCategory, setFilterCategory] = useState<number[]>([]);
 
   // Estado para paginação
   const [currentPage, setCurrentPage] = useState(0);
@@ -129,10 +152,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
     return new Date(a.transaction_date).getTime() - new Date(b.transaction_date).getTime();
   });
 
-  const filteredTransactions = useMemo(() => {
+  const filteredTransactions = useMemo(() => {  
     return sortedTransactions
-      .filter((transaction) => {
-
+      .filter((transaction) => {  
         // Filtrar por data
         if (filterDate) {
           const transactionDate = format(parseISO(transaction.transaction_date), 'yyyy-MM-dd');
@@ -146,182 +168,103 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
         }
   
         // Filtrar por status da transação
-        if (filterStatus !== null && transaction.status !== filterStatus) {
+        if (filterStatus !== null && filterStatus !== '' && String(transaction.status) !== filterStatus) {
           return false;
         }
-        // Filtrar por IDs de contas, se houver contas selecionadas e "Todas as Contas" não estiver selecionada
-        if (Array.isArray(filterAccountIds) && filterAccountIds.length > 0) {
-          // Se "Todas as Contas" estiver selecionada, não filtramos por conta
-          if (!filterAccountIds.includes(0) && !filterAccountIds.includes(transaction.account_id)) {
-              return false;
+ 
+        if (Array.isArray(filterCategory) && filterCategory.length > 0) {
+          console.log('Filter Category:', filterCategory, 'Transaction Category ID:', transaction.category_id);
+          if (!filterCategory.includes(0) && !filterCategory.includes(transaction.category_id)) {
+            return false;
           }
         }
+        
 
-
-
-
+  
+        // Filtrar por IDs de contas, se houver contas selecionadas e "Todas as Contas" não estiver selecionada
+        if (Array.isArray(filterAccountIds) && filterAccountIds.length > 0) {
+          if (!filterAccountIds.includes(0) && !filterAccountIds.includes(transaction.account_id)) {
+            return false;
+          }
+        }
   
         return true; // Se todos os filtros passarem, retorna true
       })
       .slice(offset, offset + transactionsPerPage) // Paginação
       .map((transaction) => {
-        const borderClass = getTransactionBorderClass(transaction.type);
-        const statusClass = getStatusBorderClass(transaction.status, transaction.type);
-        const transactionDate = new Date(transaction.transaction_date);
-        const formattedDate = format(parseISO(transaction.transaction_date), 'dd/MM/yyyy');
         return (
-          <div
+          <TransactionItem
             key={transaction.id}
-            className={`flex flex-wrap items-center mr-3 border-b border-l-4 ${borderClass}`}
-          >
-
-            <span className="md:w-[8%] w-[50%] border-r border-gray-300 text-center h-[100%] py-1 text-black">
-              {formattedDate}
-            </span>
-            <span className="md:w-[10%] w-[50%] font-semibold text-center">
-              {(Number(transaction.amount) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </span>
-            <span className="md:w-[15%] w-[50%] font-semibold text-center">
-              {accounts.find((account) => account.id === transaction.account_id)?.name || 'Conta não encontrada'}
-            </span>
-
-            <span className="text-center w-[100%] md:w-[40%] m-auto md:text-left">
-              {transaction.description || 'Sem descrição'}
-              {transaction.related && (
-                <>
-                  {' '} {transaction.related?.name || transaction.related?.description}
-                </>
-              )}
-            </span>
-            <span className={`md:w-[8%] w-[45%] ${statusClass}`}>
-              {transaction.status === true ? 'Realizada' : 'Pendente'}
-            </span>
-
-            <span className="md:w-[8%] w-[45%] m-auto text-center">
-            {!transaction.status ? (
-              <button
-                className="border rounded bg-blue-500 text-white p-1"
-                onClick={(e) => handleOpenConfirmedTransactionPopup(e, transaction)}
-              >
-                Executar
-              </button>
-            ) : (
-              <span className="md:w-[8%] w-[45%] text-center cursor-pointer">
-                <div onClick={() => toggleTransactionDetails(transaction.id)}>
-                  <FaEye className="text-blue-500 m-auto" />
-                </div>
-              </span>        
-            )}
-          </span>
-
-          <span className="text-green-500 ">
-                {!transaction.status ? (
-                  <span>⏳</span>  
-                ) : (
-                  <FaCheckCircle />
-                )}
-              </span>
-            {/* Exibição do cash flow relacionado, se a transação estiver no estado "openTransactions" */}
-            {transaction.status && openTransactions.includes(transaction.id) && transaction.cash_flow && (
-              <div className="bg-white p-4 mt-2 rounded w-full flex">
-                <div className='m-auto'>
-                  <IoReturnUpBackOutline className='m-auto text-red-500' size={30}/>
-                  <InputLabel value='Saldo Antes'/>
-                  <p>{(Number(transaction.cash_flow.balance_before) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                </div>
-                <div className='m-auto'>
-                  <IoReturnUpForward className='m-auto text-green-500' size={30}/>
-                  <InputLabel value='Saldo Depois:'/>
-                  <p>{(Number(transaction.cash_flow.balance_after) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                </div>
-
-              </div>
-            )}
-
-          </div>
-
-
+            transaction={transaction}
+            accounts={accounts}
+            categories={categories}
+            handleOpenConfirmedTransactionPopup={handleOpenConfirmedTransactionPopup}
+            toggleTransactionDetails={toggleTransactionDetails}
+            openTransactions={openTransactions}
+            getTransactionBorderClass={getTransactionBorderClass}
+            getStatusBorderClass={getStatusBorderClass}
+          />
         );
       });
-    }, [sortedTransactions, filterDate, filterType, filterStatus, filterAccountIds, offset, openTransactions]);
+  }, [sortedTransactions, filterDate, filterType, filterStatus, filterAccountIds,filterCategory, offset, openTransactions]);
+  
+
 
   // Contar páginas para a paginação
   const pageCount = Math.ceil(sortedTransactions.length / transactionsPerPage);
 
   return (
     <>
-      <div className="mb-4 w-full pl-5 flex">
-        <div className='m-auto'>
-        <InputLabel htmlFor="filter_date" className="w-full m-auto" value="Selecione um dos dias do intervalor" />
-        <DatePicker
-          id="filter_date"
-          selected={filterDate}
-          onChange={(date: Date | null) => setFilterDate(date)}
-          minDate={filters.start_date}  // Define a data mínima
-          maxDate={filters.end_date}    // Define a data máxima
-          locale="pt-BR"
+      <TransactionFilters
+        filterDate={filterDate}
+        setFilterDate={setFilterDate}
+        filterType={filterType}
+        setFilterType={setFilterType}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        filterAccountIds={filterAccountIds}
+        setFilterAccountIds={setFilterAccountIds}
+        statusOptions={statusOptions}
+        accounts={accounts}
+        categories={categories}
+        selectedStatusTemplate={selectedStatusTemplate}
+        statusOptionTemplate={statusOptionTemplate}
+      />
+      <div className={`flex flex-wrap items-center mr-3 border-l-4 bg-sky-950 border-sky-950 text-white rounded shadow-xl`}>
+        <span className="md:w-[8%] w-[50%] border-r border-gray-300 text-center h-[100%] font-semibold">
+          Data
+        </span>
+      <span className="md:w-[10%] w-[50%] font-semibold text-center">
+        Valor
+      </span>
+      <span className="md:w-[10%] w-[50%] font-semibold text-center">
+        Conta/Caixa
+      </span>
+      <span className="md:w-[10%] w-[50%] font-semibold text-center">
+        Categoria
+      </span>
 
-          isClearable
-          placeholderText="Selecione uma data"
-          dateFormat="dd/MM/yyyy"
-          className="w-full p-2 border rounded"
-        />
-        </div>
-{/* Filtro por Tipo de Transação */}
-<div className='m-auto'>
-    <InputLabel htmlFor="filter_type" value="Tipo de Transação" />
-    <select
-      id="filter_type"
-      value={filterType || ''}
-      onChange={(e) => setFilterType(e.target.value || null)}
-      className="w-full p-2 border rounded"
-    >
-      <option value="">Todos</option>
-      <option value="income">Receita</option>
-      <option value="expense">Despesa</option>
-      <option value="transfer">Transferência</option>
-    </select>
-  </div>
+      <span className="md:w-[40%] w-[50%] font-semibold text-center">
+        Descrição
+      </span>
 
-    {/* Filtro por Status */}
-    <div className='m-auto'>
-      <InputLabel htmlFor="filter_status" value="Status" />
-      <CustomSelect
-            options={statusOptions}
-            value={filterStatus !== null ? (filterStatus ? 'true' : 'false') : ''}
-            onChange={(value) => setFilterStatus(value !== '' ? value === 'true' : null)}
-            placeholder="Selecione o status"
-          />
+      <span className="md:w-[8%] w-[50%] font-semibold text-center">
+        Status
+      </span>
+
+      <span className="md:w-[8%] w-[45%] m-auto text-center">
+      
+      </span>
+
+      <span className="text-green-500 md:w-[3%]">
+          -
+      </span>
+
     </div>
-
-    {/* Filtro por Nome da Conta */}
-    <div className='m-auto'>
-    <InputLabel htmlFor="filter_account" value="Contas" />
-    <MultiSelect
-    value={filterAccountIds.includes(0) ? [0] : filterAccountIds}
-    options={accounts.map(account => ({ label: account.name, value: account.id }))} // Apenas IDs são passados para o value
-    onChange={(e) => {
-        // Se "Todas as Contas" for selecionada, limpa as outras seleções
-        if (e.value.includes(0)) {
-            setFilterAccountIds([0]); // Marca apenas "Todas as Contas"
-        } else {
-            setFilterAccountIds(e.value); // Atualiza com os IDs das contas selecionadas
-        }
-        console.log('Contas Selecionadas (IDs):', e.value); // Verifica os IDs das contas selecionadas
-    }}
-    placeholder="Selecione Contas"
-    className="w-full md:w-20rem bg-white border border-gray-600"
-    maxSelectedLabels={3}
-    display="chip"
-/>
-
-
-
-</div>
-
-      </div>
-
       <div className="overflow-y-auto rounded h-[80%] w-full mb-6 border-gray-300 border-5 shadow-xl">
+
         {/* Lista de transações filtradas */}
         {filteredTransactions?.length > 0 ? (
           filteredTransactions
@@ -331,20 +274,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
       </div>
 
       {/* Paginação */}
-      <div className="flex justify-center ">
-        <ReactPaginate
-          previousLabel={'← Anterior'}
-          nextLabel={'Próxima →'}
-          pageCount={pageCount}
-          onPageChange={handlePageClick}
-          containerClassName={'pagination flex flex-wrap space-x-2 justify-center'}
-          activeClassName={'active bg-blue-500 text-white px-3 py-1 rounded-md'}
-          pageClassName={'page-item px-3 py-1 border rounded-md text-sm'}
-          previousClassName={'page-item px-3 py-1 border rounded-md text-sm'}
-          nextClassName={'page-item px-3 py-1 border rounded-md text-sm'}
-          disabledClassName={'disabled opacity-50 cursor-not-allowed'}
-        />
-      </div>
+      <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
+
     </>
   );
 };

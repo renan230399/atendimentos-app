@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id'); // Chave estrangeira para empresa
-            $table->unsignedBigInteger('category_id'); // Chave estrangeira para empresa
+            $table->unsignedBigInteger('category_id'); // Chave estrangeira para categoria
 
             $table->string('name'); // Nome do produto
             $table->string('description');//Descrição do produto
             $table->string('measuring_unit');//Unidade de medida do estoque do produto
-            
+            $table->string('photo')->nullable();
             $table->timestamps();
             // Foreign keys
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');

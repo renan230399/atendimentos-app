@@ -28,9 +28,9 @@ class CreateConsultationsTable extends Migration
             $table->date('date');              // Consultation date (renamed from data)
             $table->time('start_time');        // Consultation start time (renamed from hora_inicio)
             $table->time('end_time');          // Consultation end time (renamed from hora_fim)
-            $table->string('professional');    // Professional responsible for the consultation
+            $table->string('professional')->nullable();    // Professional responsible for the consultation
             $table->text('notes')->nullable(); // Consultation notes (renamed from observacoes)
-            $table->integer('price')->comment('Preço em centavos');
+            $table->integer('price')->comment('Preço em centavos'); 
 
             $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending'); // Consultation status (renamed values)
 

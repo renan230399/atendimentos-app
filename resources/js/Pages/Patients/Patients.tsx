@@ -18,7 +18,8 @@ import { FaUserPlus } from 'react-icons/fa';
 import { LiaBirthdayCakeSolid } from "react-icons/lia";
 import Birthdays from './Birthdays';
 import PopupHeader from '@/Layouts/PopupHeader';
-import Dashboard from '../Dashboard';
+import { FloatLabel } from 'primereact/floatlabel';
+
 const Patients = ({ auth, patients = [], employees = [], forms = [], search }) => {
     const { data, setData, get, post, put, errors } = useForm({
         search: search || '',
@@ -147,17 +148,22 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
             <Head title="Pacientes" />
  
             <div className="flex flex-wrap bg-white">
-                <form onSubmit={handleSearchSubmit} className="w-4/5 pr-6 h-[10vh] overflow-hidden w-[80%] shadow-lg rounded-br-xl bg-blue-500 ">
-                    <div className='w-[50%] pl-5 pt-2'>
+
+                <form onSubmit={handleSearchSubmit} className="w-4/5 pr-6 h-[10vh] overflow-hidden w-[80%] rounded-br-xl ">
+                    <div className='md:w-[50%] w-[100%] pl-5 pt-2'>
+                    <FloatLabel>
                         <TextInput
                             id="search"
                             value={data.search}
                             className="mt-1 block w-full"
-                            placeholder="Digite o nome do paciente que você procura..."
+                            placeholder=""
                             onChange={handleSearchChange}
                             autoComplete="off"
-                        />
+                        />                
+                        <label htmlFor='username'>Digite o nome do paciente que você procura...</label>
+                    </FloatLabel>
                         <InputError message={errors.search} className="mt-2" />
+    
                     </div>
                 </form>
                 <div className='fixed justify-items-end right-0 z-50'  >
@@ -256,18 +262,18 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
                     params={popupParams}
                     onClose={handleCloseAddConsultationPopup}
                 >
-                    <Dashboard
-                        patient={selectedPatient}
-                        employees={employees}
-                        auth={auth}
-                        onClose={handleCloseAddConsultationPopup}
-                    />
-                    {/*<AddConsultation
+                  {/*   <Dashboard
                         patient={selectedPatient}
                         employees={employees}
                         auth={auth}
                         onClose={handleCloseAddConsultationPopup}
                     />*/}
+                   <AddConsultation
+                        patient={selectedPatient}
+                        employees={employees}
+                        auth={auth}
+                        onClose={handleCloseAddConsultationPopup}
+                    />
                 </PopUpComponent>
             )}
 
@@ -295,6 +301,7 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
                     height="95vh"
                     zindex="100"
                     params={popupParams}
+                    classPopup='bg-white w-[90vw] h-[90vh]'
                     onClose={handleCloseBirthdaysPopup}
                 >
 

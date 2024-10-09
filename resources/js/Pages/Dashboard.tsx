@@ -9,7 +9,7 @@ import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CustomToolbar from '@/Pages/Agenda/CustomToolBar';
 import EventPopup from '@/Pages/Agenda/EventPopup';
-import ConsultationAdd1 from './ConsultationAdd1'; // Importando o modal ConsultationAdd
+import EventAdd from './EventAdd'; // Importando o modal ConsultationAdd
 import PropTypes from 'prop-types';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -96,25 +96,44 @@ const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
         setNewEventData(null);  // Fecha o modal após a criação do evento
     }, [events]);
 
-    // Função para calcular o horário mínimo e máximo dos eventos do dia atual
-    const { minTime, maxTime } = useMemo(() => {
-        if (currentView !== Views.DAY) {
-            return { minTime: new Date(), maxTime: new Date() };
-        }
+// Função para calcular o horário mínimo e máximo apenas para a visualização de dias
+const { minTime, maxTime } = useMemo(() => {
+    // Só aplica a lógica quando a visualização atual for de dias
+    if (currentView !== Views.DAY) {
+        return { minTime: new Date().setHours(0, 0, 0), maxTime: new Date().setHours(23, 59, 59) }; // Horários padrão para outras views
+    }
 
-        const todayEvents = events.filter(event => moment(event.start).isSame(currentDate, 'day'));
-        if (todayEvents.length === 0) {
-            return {
-                minTime: new Date().setHours(6, 0, 0), // Define 6 AM como horário padrão se não houver eventos
-                maxTime: new Date().setHours(23, 59, 59),
-            };
-        }
+    const todayEvents = events.filter(event => moment(event.start).isSame(currentDate, 'day'));
+    if (todayEvents.length === 0) {
+        return {
+            minTime: new Date().setHours(6, 0, 0), // Define 6 AM como horário padrão se não houver eventos no dia
+            maxTime: new Date().setHours(23, 59, 59),
+        };
+    }
 
-        const minTime = new Date(Math.min(...todayEvents.map(event => event.start.getTime())));
-        const maxTime = new Date(Math.max(...todayEvents.map(event => event.end.getTime())));
+    const minEventTime = new Date(Math.min(...todayEvents.map(event => event.start.getTime())));
+    const maxEventTime = new Date(Math.max(...todayEvents.map(event => event.end.getTime())));
 
-        return { minTime, maxTime };
-    }, [events, currentDate, currentView]);
+    // Calcula a diferença em horas entre os horários mínimo e máximo dos eventos
+    const eventDuration = (maxEventTime - minEventTime) / (1000 * 60 * 60); // Diferença em horas
+
+    // Se a duração dos eventos for menor que 12 horas, ajusta os horários para mostrar um intervalo de pelo menos 12 horas
+    if (eventDuration < 12) {
+        const hoursToAdd = (12 - eventDuration) / 2;
+        const adjustedMinTime = new Date(minEventTime);
+        adjustedMinTime.setHours(adjustedMinTime.getHours() - Math.floor(hoursToAdd));
+
+        const adjustedMaxTime = new Date(maxEventTime);
+        adjustedMaxTime.setHours(adjustedMaxTime.getHours() + Math.ceil(hoursToAdd));
+
+        return { minTime: adjustedMinTime, maxTime: adjustedMaxTime };
+    }
+
+    // Se a duração dos eventos for maior ou igual a 12 horas, usa os horários dos eventos normalmente
+    return { minTime: minEventTime, maxTime: maxEventTime };
+}, [events, currentDate, currentView]);
+
+
 
     const label = currentView === Views.MONTH 
         ? moment(currentDate).format('MMMM YYYY') 
@@ -138,14 +157,14 @@ const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
                         />
                     </div>
 
-                    <div className="z-30 w-[100%] xl:w-[77%] xl:h-[80vh] md:h-[80vh] mx-5 xl:mx-0 h-[50vh]">
+                    <div className="z-30 w-[96%] xl:w-[77%] xl:h-[80vh] md:h-[80vh] m-auto xl:mx-0 h-[50vh]">
                         <div className="place-items-center m-auto text-center">
                             {label}
                         </div>
                         
                         <DndProvider backend={HTML5Backend}>
                             <DragAndDropCalendar
-                                className="w-[95%] m-auto"
+                                className="w-[95%] m-auto shadow-lg"
                                 localizer={localizer}
                                 events={events}
                                 onSelectEvent={handleEventClick}
@@ -156,7 +175,6 @@ const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
                                 resizable
                                 startAccessor="start"
                                 endAccessor="end"
-                                style={{ height: '100%' }}
                                 view={currentView}
                                 date={currentDate}
                                 min={minTime}  // Horário mínimo exibido
@@ -204,7 +222,7 @@ const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
 
                     {/* Exibe o modal para adicionar um novo evento */}
                     {newEventData && (
-                        <ConsultationAdd1
+                        <EventAdd
                             start={newEventData.start}
                             end={newEventData.end}
                             onClose={handleEventClose}

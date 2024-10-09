@@ -7,7 +7,7 @@ const PictureInPictureComponent = ({ id, children, width, height, onClose, class
   const [dimensions, setDimensions] = useState({ width: width || '300px', height: height || '300px' });
   const componentRef = useRef(null);
   const startPosition = useRef({ offsetX: 0, offsetY: 0 });
-
+  const [opacity,setOpacity] = useState(100);
   const minWidth = 200;
   const minHeight = 150;
   const maxWidth = window.innerWidth - 50;
@@ -90,12 +90,13 @@ const PictureInPictureComponent = ({ id, children, width, height, onClose, class
     <div
       id={id}
       ref={componentRef}
-      className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg"
+      className={`fixed z-50 bg-white  border border-gray-300 rounded-lg shadow-lg `}
       style={{
         width: dimensions.width,
         height: dimensions.height,
         left: `${position.x}px`,
         top: `${position.y}px`,
+        opacity: opacity / 100,
       }}
     >
       {/* Header com área de arraste */}
@@ -106,6 +107,7 @@ const PictureInPictureComponent = ({ id, children, width, height, onClose, class
         <div className="font-bold">Editar Campo</div>
         <button onClick={onClose} className="text-red-500 hover:text-red-700 font-bold">✖</button>
       </div>
+      <input type='range' min={25} max={100} value={opacity} onChange={(e)=>setOpacity(e.target.value)}/>
 
       {/* Conteúdo */}
       <div className="p-4 h-[calc(100%-40px)] overflow-y-auto">

@@ -116,6 +116,7 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
                     <textarea
                         className="mt-1 block w-full border-gray-300 rounded h-[100%] resize-none"
                         onChange={(e) => setData('description', e.target.value)}
+                        readOnly={data?.category_id === 4 || data?.category_id === 2}
                         value={data.description}
                     />
                     {errors.description && <InputError message={errors.description} />}

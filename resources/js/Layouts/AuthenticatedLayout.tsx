@@ -25,7 +25,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
   
     return (
         <div className="h-screen bg-gray-100 dark:bg-gray-900 z-1 overflow-hidden">
-            <nav className="w-full bg-white h-[9vh] dark:bg-gray-800 shadow-lg border-b border-gray-300 dark:border-gray-700 z-50">
+            <nav className="w-full bg-white  dark:bg-gray-800 shadow-lg border-b border-gray-300 dark:border-gray-700 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex items-center w-full">
@@ -71,17 +71,18 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                             </div>
                         </div>
      
-                        <div className="hidden sm:flex right-0 sm:items-center sm:ml-6">
+                        <div className="hidden sm:flex right-0 sm:items-center sm:w-auto sm:ml-6">
                             
                             <div className="ml-3 w-full relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         
 
-                                        <span className="inline-flex rounded-md w-full">
-                                        <Avatar image="/images/avatar/onyamalimba.png" shape="circle" size='large' className="m-b-0 p-0  p-overlay-badge" />
+                                        <span className="inline-flex rounded-md w-full zoom">
+                                            <Avatar image="https://keyar-atendimentos.s3.amazonaws.com/patient_photos/mlAbH5Wsog0z8wsSDOTUHmU9sdM0RDJbty28kxkj.png" 
+                                            shape="circle" size='large' className="my-auto p-0  p-overlay-badge" />
 
-                              
+                                            <h1 className='my-auto text-gray-600 w-auto whitespace-nowrap'> {user.name}</h1>
                                             <button
                                                 type="button"
                                                 className="hidden inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150"
@@ -139,7 +140,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                     </div>
                 </div>
 
-                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden fixed bg-white right-0 w-[50vh]'}>
+                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden relative bg-white right-0 w-[50vh] '}>
                     <div className="pt-0 pb-3 space-y-1">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Agenda 

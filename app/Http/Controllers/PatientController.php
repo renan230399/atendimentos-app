@@ -47,7 +47,21 @@ class PatientController extends Controller
         ]);
     }
     
-
+    public function getPatientsForAddConsultation(Request $request)
+    {
+        $user = $request->user()->load('company');
+        $companyId = $user->company->id; // Obtém o ID da empresa do usuário autenticado
+    
+        // Busca pacientes pela empresa do usuário e seleciona apenas os campos necessários
+        $patients = Patient::query()
+            ->where('company_id', $companyId)
+            ->select('id','patient_name', 'profile_picture') // Seleciona apenas os campos necessários
+            ->get();
+    
+        // Retorna os dados como JSON
+        return response()->json($patients);
+    }
+    
     /**
      * Show the form for creating a new resource.
      */

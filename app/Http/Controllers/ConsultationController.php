@@ -14,29 +14,27 @@ class ConsultationController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $request->user()->load('company');
+        $companyId = $user->company->id; // Obtém o ID da empresa do usuário autenticado
         // Validação dos dados da consulta de acordo com as colunas da tabela
         $validated = $request->validate([
-            'company_id' => 'required|exists:companies,id',  // Verifica se a empresa existe
             'patient_id' => 'required|exists:patients,id',   // Verifica se o paciente existe
             'date' => 'required|date',                       // Valida a data da consulta
             'start_time' => 'required',                      // Valida o horário de início
             'end_time' => 'required|after:start_time',       // Valida que o horário de fim é após o início
-            'professional' => 'required|string|max:255',     // Valida o nome do profissional
+            'professional' => 'string|max:255',     // Valida o nome do profissional
             'notes' => 'nullable|string',                    // Observações são opcionais
             'price' => 'required|numeric',
-            'status' => 'required|in:pending,completed,cancelled',  // Valida o status da consulta
         ]);
     
         // Criação da consulta
         $consultation = Consultation::create([
-            'company_id' => $validated['company_id'],        // ID da empresa vindo diretamente do request
+            'company_id' => $companyId,        // ID da empresa vindo diretamente do request
             'patient_id' => $validated['patient_id'],        // ID do paciente
             'date' => $validated['date'],                    // Data da consulta
             'start_time' => $validated['start_time'],        // Horário de início
             'end_time' => $validated['end_time'],            // Horário de fim
-            'professional' => $validated['professional'],    // Profissional
             'notes' => $validated['notes'] ?? null,          // Observações
-            'status' => $validated['status'], 
             'price' => $validated['price'],                  // Preço da consulta
         ]);
     
@@ -44,7 +42,7 @@ class ConsultationController extends Controller
         Transaction::create([
             'account_id' => 2,        // Conta associada à transação
             'category_id' => 2,      // Categoria da transação
-            'company_id' => $validated['company_id'],        // Empresa associada
+            'company_id' => $companyId,        // Empresa associada
             'type' => 'income',                              // Transação de receita para a consulta
             'amount' => $validated['price'],           // Valor da consulta em centavos (por exemplo)
             'description' => 'Receita gerada pela consulta', // Descrição da transação
