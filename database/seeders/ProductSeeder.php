@@ -57,7 +57,7 @@ class ProductSeeder extends Seeder
                 'company_id' => $product->company_id,
                 'order_number' => 'ORD-' . strtoupper(uniqid()),
                 'order_date' => Carbon::now()->subDays(rand(1, 30)),
-                'supplier' => rand(1, 5), // Fornecedor fictício
+                'supplier_id' => 1, // Fornecedor fictício
                 'total_amount' => rand(100, 10000) / 10, // Valor total fictício
                 'notes' => 'Pedido gerado automaticamente para justificar estoque',
                 'delivery_date' => Carbon::now(),

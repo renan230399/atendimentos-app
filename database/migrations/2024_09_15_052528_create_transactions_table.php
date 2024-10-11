@@ -13,12 +13,13 @@ return new class extends Migration
             $table->unsignedBigInteger('account_id')->nullable(); // Conta associada
             $table->unsignedBigInteger('category_id'); // Categoria da transação
             $table->unsignedBigInteger('company_id'); // Empresa associada
+
             $table->enum('type', ['income', 'expense', 'transfer']); // Tipo da transação
             $table->integer('amount')->comment('Valor da transação');
 
             $table->text('description')->nullable(); // Descrição adicional
             $table->date('transaction_date'); // Data da transação
-            
+            $table->date('expected_date'); // Data prevista da transação
             $table->boolean('status'); // Status da transação
         
             // Relacionamento polimórfico para entidades dinâmicas (users, consultations, etc.)

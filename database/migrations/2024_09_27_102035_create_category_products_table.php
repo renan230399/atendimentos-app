@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('category_products', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('company_id'); // Chave estrangeira para empresa
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade'); // Autorreferência para categoria pai
+            $table->foreignId('parent_id')->nullable()->constrained('category_products')->onDelete('cascade'); // Autorreferência para categoria pai
             $table->string('name'); // Conta associada
             $table->timestamps();
             // Foreign keys
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
         });
     }
 

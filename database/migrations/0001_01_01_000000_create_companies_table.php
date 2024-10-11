@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('company_name'); // Nome da empresa
             $table->string('company_logo')->nullable(); // Permitir que a logo seja opcional
-            $table->json('suppliers')->nullable(); // Permitir que os fornecedores sejam opcionais
             $table->json('stock_locals')->nullable(); // Permitir que os locais sejam opcionais
 
             $table->timestamps();

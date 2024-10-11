@@ -55,15 +55,16 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                         <NavLink className='hidden' href={route('forms.index')} active={route().current('forms.index')}>
                                             Fichas
                                         </NavLink>
-                                        <NavLink href={route('employees.index')} active={route().current('employees.index')}>
-                                            Funcionários
-                                        </NavLink>
+
                                         <NavLink href={route('inventory.dashboard')} active={route().current('inventory.dashboard')}>
                                             Inventário
                                         </NavLink>
 
                                         <NavLink href={route('financial.dashboard')} active={route().current('financial.dashboard')}>
                                             Financeiro
+                                        </NavLink>
+                                        <NavLink href={route('company')} active={route().current('company')}>
+                                            Empresa
                                         </NavLink>
           
                                     </>
@@ -195,7 +196,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
             )}
 
             {/* Add padding to main content to avoid overlap with fixed header */}
-            <main className="">{children}</main>
+            <main className="h-[100%]">{children}</main>
         </div>
     );
 }

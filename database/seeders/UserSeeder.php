@@ -14,37 +14,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Definindo fornecedores com categorização em formato JSON
-        $suppliers = [
-            'nacionais' => [
-                [
-                    'id' => 1,
-                    'name' => 'Mercado Livre',
-                    'contact' => 'contato@mercadolivre.com',
-                    'phone' => '123456789',
-                    'address' => 'Rua Exemplo, 123, São Paulo, SP',  // Adicionando um endereço
-                    'product_types' => ['Eletrônicos', 'Roupas']  // Adicionando tipos de produtos fornecidos
-                ],
-                [
-                    'id' => 2,
-                    'name' => 'Loja Brasil',
-                    'contact' => 'contato@lojabrasil.com',
-                    'phone' => '987654321',
-                    'address' => 'Avenida Brasil, 456, Rio de Janeiro, RJ',
-                    'product_types' => ['Alimentos', 'Utensílios']
-                ]
-            ],
-            'internacionais' => [
-                [
-                    'id' => 3,
-                    'name' => 'Alibaba',
-                    'contact' => 'contact@alibaba.com',
-                    'phone' => '+86123456789',
-                    'address' => '123 Alibaba Road, Hangzhou, China',
-                    'product_types' => ['Vestuário', 'Eletrônicos']
-                ]
-            ]
-        ];
+
 
         $stockLocals = [
             'Depósito A',
@@ -56,7 +26,6 @@ class UserSeeder extends Seeder
         $company = Company::create([
             'company_name' => 'Empresa Exemplo Ltda.',
             'company_logo' => 'https://keyar-atendimentos.s3.amazonaws.com/logos_empresas/Z1z2yPHQj7ps6gDoIFBS1WeE3GA2FhUPpaD7nMbU.png', 
-            'suppliers' => json_encode($suppliers), // Armazenando fornecedores categorizados
             'stock_locals' => json_encode($stockLocals),
         ]);
 

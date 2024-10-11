@@ -48,6 +48,7 @@ class ConsultationSeeder extends Seeder
                 'amount' => $consultation->price, // Converte para reais
                 'description' => "Receita de consulta para o paciente:", // Descrição com detalhes da consulta
                 'transaction_date' => $consultation->date, // Usa a data da consulta como data da transação
+                'expected_date' => $consultation->date, // Usa a data da consulta como data da transação
                 'status' => false, // Status da transação (por exemplo, pago)
                 'related_id' => $consultation->id, // ID da consulta associada
                 'related_type' => Consultation::class, // Tipo de entidade relacionada (Consulta)

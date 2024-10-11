@@ -15,6 +15,7 @@ class CategoryProduct extends Model
     // Indica os campos que podem ser preenchidos
     protected $fillable = [
         'company_id',
+        'parent_id',
         'name',
     ];
 
@@ -34,5 +35,23 @@ class CategoryProduct extends Model
     public function products()
     {
         return $this->hasMany(Product::class, 'category_id');
+    }
+
+    /**
+     * Relacionamento com a categoria pai
+     * Uma categoria pode ter uma categoria pai.
+     */
+    public function parentCategory()
+    {
+        return $this->belongsTo(CategoryProduct::class, 'parent_id');
+    }
+
+    /**
+     * Relacionamento com as subcategorias (filhas)
+     * Uma categoria pode ter muitas subcategorias.
+     */
+    public function subcategories()
+    {
+        return $this->hasMany(CategoryProduct::class, 'parent_id');
     }
 }

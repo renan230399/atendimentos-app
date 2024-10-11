@@ -3,8 +3,31 @@ import { MultiSelect } from 'primereact/multiselect';
 import { Dropdown } from 'primereact/dropdown';
 import DatePicker from 'react-datepicker';
 import InputLabel from '@/Components/InputLabel';
+import { TreeSelect } from 'primereact/treeselect';
+import CategoryTreeBuilder from '@/Components/Utils/CategoryTreeBuilder';
+// Função para transformar categorias em uma estrutura de árvore para o TreeSelect
 
-const TransactionFilters = ({
+
+// Definindo a interface para os props
+interface TransactionFiltersProps {
+  filterDate: Date | null;
+  setFilterDate: (date: Date | null) => void;
+  filterType: string | null;
+  setFilterType: (type: string | null) => void;
+  filterStatus: string | null;
+  setFilterStatus: (status: string | null) => void;
+  filterCategory: number[];
+  setFilterCategory: (categories: number[]) => void;
+  filterAccountIds: number[];
+  setFilterAccountIds: (accountIds: number[]) => void;
+  statusOptions: { value: string; label: string }[];
+  accounts: { id: number; name: string }[];
+  categories: { id: number; name: string; parent_id: number | null }[];
+  selectedStatusTemplate: (option: any) => JSX.Element;
+  statusOptionTemplate: (option: any) => JSX.Element;
+}
+
+const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   filterDate,
   setFilterDate,
   filterType,
@@ -19,18 +42,21 @@ const TransactionFilters = ({
   accounts,
   categories,
   selectedStatusTemplate,
-  statusOptionTemplate
+  statusOptionTemplate,
 }) => {
+  const groupedCategories = CategoryTreeBuilder({ categories });
+
   return (
-    <div className="mb-4 w-full pl-5 flex flex-wrap">
+    <div className="w-full flex flex-wrap">
       {/* Filtro por Data */}
-      <div className='m-auto'>
-        <InputLabel htmlFor="filter_date" className="w-full m-auto" value="Selecione um dos dias do intervalo" />
+      <div className='m-auto w-[12%]'>
+        <InputLabel htmlFor="filter_date" className="w-full m-auto" value="Selecione um dia" />
         <DatePicker
           id="filter_date"
           selected={filterDate}
           onChange={(date) => setFilterDate(date)}
           isClearable
+          autoComplete='off'
           placeholderText="Selecione uma data"
           dateFormat="dd/MM/yyyy"
           className="w-full p-2 border rounded"
@@ -38,7 +64,7 @@ const TransactionFilters = ({
       </div>
 
       {/* Filtro por Tipo de Transação */}
-      <div className='m-auto'>
+      <div className='m-auto md:w-[10%]'>
         <InputLabel htmlFor="filter_type" value="Tipo de Transação" />
         <select
           id="filter_type"
@@ -54,37 +80,32 @@ const TransactionFilters = ({
       </div>
 
       {/* Filtro por Status */}
-      <div className='m-auto'>
+      <div className='m-auto md:w-[13%]'>
         <InputLabel htmlFor="filter_status" value="Status" />
         <Dropdown
-            value={filterStatus} // Garantir que o valor inicial seja uma string vazia para evitar mostrar o ícone de limpar
-            onChange={(e) => setFilterStatus(e.value || '')} // Ajusta para string vazia se o valor for limpo
-            options={statusOptions}
-            optionLabel="label"
-            placeholder="Selecione o status"
-            valueTemplate={selectedStatusTemplate}
-            itemTemplate={statusOptionTemplate}
-            showClear
-            className="w-full md:w-14rem border rounded border-gray-600"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.value || '')}
+          options={statusOptions}
+          optionLabel="label"
+          placeholder="Selecione o status"
+          valueTemplate={selectedStatusTemplate}
+          itemTemplate={statusOptionTemplate}
+          showClear
+          className="w-full md:w-14rem border rounded border-gray-600"
         />
-
-
-
-
-
-
       </div>
 
       {/* Filtro por Nome da Conta */}
-      <div className='m-auto'>
+      <div className='m-auto md:w-[30%]'>
         <InputLabel htmlFor="filter_account" value="Contas" />
         <MultiSelect
           value={filterAccountIds.includes(0) ? [0] : filterAccountIds}
-          options={accounts.map(account => ({ label: account.name, value: account.id }))}
+          options={[{ label: 'Ainda não definido', value: 0 }, ...accounts.map(account => ({ label: account.name, value: account.id }))]}
           onChange={(e) => {
             if (e.value.includes(0)) {
               setFilterAccountIds([0]);
             } else {
+
               setFilterAccountIds(e.value);
             }
           }}
@@ -92,29 +113,26 @@ const TransactionFilters = ({
           className="w-full md:w-20rem bg-white border border-gray-600"
           maxSelectedLabels={3}
           display="chip"
+showClear
         />
       </div>
-      <div className='m-auto'>
+
+      {/* Filtro por Categorias usando TreeSelect */}
+      <div className='m-auto md:w-[30%]'>
         <InputLabel htmlFor="filter_category" value="Categorias" />
-        <MultiSelect
-    showClear
-    value={filterCategory.includes(0) ? [0] : filterCategory}
-    options={categories.map(category => ({ label: category.name, value: category.id }))}
-    onChange={(e) => {
-        if (e.value.includes(0)) {
-            setFilterCategory([0]);
-        } else {
-            setFilterCategory(e.value);
-            console.log('Evento onChange chamado:', e.value); // Adiciona um log para depurar
-
-        }
-    }}
-    placeholder="Selecione Categorias"
-    className="w-full md:w-20rem bg-white border border-gray-600"
-    display="chip"
-/>
-
-        </div>
+        <TreeSelect
+          value={filterCategory}
+          options={groupedCategories}
+          onChange={(e) => setFilterCategory(e.value || {})} // Garantindo que nunca seja undefined
+          metaKeySelection={false}
+          className="w-full md:w-20rem bg-white border border-gray-600"
+          selectionMode="checkbox"
+          display="chip"
+          placeholder="Selecione Categorias"
+          showClear
+ 
+        />
+      </div>
     </div>
   );
 };

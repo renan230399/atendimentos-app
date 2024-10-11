@@ -24,11 +24,19 @@ interface Stock {
 
 interface NewOrderFormProps {
     products: Product[];
-    suppliers: string; // Agora suppliers será uma string JSON para ser parseada
+    suppliers:{
+        name:string;
+        category:string;
+        contacts:string;
+        address:string;
+        state:string;
+        notes:string;
+        status:boolean;
+    }[];
     stocks: Stock[];
 }
 
-const NewOrderForm: React.FC<NewOrderFormProps> = ({ products = [], suppliers = '', stocks = [] , categories = [] }) => {
+const NewOrderForm: React.FC<NewOrderFormProps> = ({ products = [], suppliers = [], stocks = [] , categories = [] }) => {
     const { data, setData, post, errors, processing } = useForm({
         order_number: '',
         order_date: '',
@@ -40,23 +48,7 @@ const NewOrderForm: React.FC<NewOrderFormProps> = ({ products = [], suppliers = 
 
     const [selectItemsPopup, setSelectItemsPopup] = useState(false);
     const [popupParams, setPopupParams] = useState({});
-    const [parsedSuppliers, setParsedSuppliers] = useState<{ nacionais: Supplier[], internacionais: Supplier[] }>({
-        nacionais: [],
-        internacionais: []
-    });
 
-    // Parseando os fornecedores apenas uma vez com `useEffect`
-    useEffect(() => {
-        if (typeof suppliers === 'string') {
-            try {
-                setParsedSuppliers(JSON.parse(suppliers));
-            } catch (error) {
-                console.error("Erro ao analisar JSON de suppliers:", error);
-            }
-        } else {
-            setParsedSuppliers(suppliers);
-        }
-    }, [suppliers]);
 
     const DEFAULT_PRODUCT_ID = 0;
 // Função para atualizar a quantidade ou o preço unitário
@@ -69,7 +61,14 @@ const handleUpdateItem = (index: number, field: string, value: number) => {
     };
     setData('items', updatedItems);
 };
-
+   // Função para organizar os fornecedores por categoria
+   const groupedSuppliers = suppliers.reduce((acc: { [key: string]: Supplier[] }, supplier) => {
+    if (!acc[supplier.category]) {
+        acc[supplier.category] = [];
+    }
+    acc[supplier.category].push(supplier);
+    return acc;
+}, {});
     // Função para adicionar o produto ao pedido
     const handleAddItem = (productId: number, unitPrice: number) => {
         const existingItem = data.items.find(item => item.product_id === productId);
@@ -158,24 +157,15 @@ const handleUpdateItem = (index: number, field: string, value: number) => {
                         required
                     >
                         <option value="">Selecione um fornecedor</option>
-                        {parsedSuppliers.nacionais.length > 0 && (
-                            <optgroup label="Nacionais">
-                                {parsedSuppliers.nacionais.map((supplier) => (
+                        {Object.entries(groupedSuppliers).map(([category, suppliers]) => (
+                            <optgroup key={category} label={category}>
+                                {suppliers.map((supplier) => (
                                     <option key={supplier.id} value={supplier.id}>
                                         {supplier.name}
                                     </option>
                                 ))}
                             </optgroup>
-                        )}
-                        {parsedSuppliers.internacionais.length > 0 && (
-                            <optgroup label="Internacionais">
-                                {parsedSuppliers.internacionais.map((supplier) => (
-                                    <option key={supplier.id} value={supplier.id}>
-                                        {supplier.name}
-                                    </option>
-                                ))}
-                            </optgroup>
-                        )}
+                        ))}
                     </select>
                     {renderError('supplier_id')}
                 </div>
@@ -223,17 +213,16 @@ const handleUpdateItem = (index: number, field: string, value: number) => {
             {selectItemsPopup && (
                 <PopupComponent
                     id="select_items_popup"
-                    width="95vw"
-                    height="95vh"
+
                     zindex="101"
-                    classPopup="p-6 bg-black"
+                    classPopup="p-6 bg-white w-[90vw] h-[96vh]"
                     params={popupParams}
                     onClose={handleCloseSelectedItemsPopup}
                 >
                     <ProductWithStock
                         products={products || []}
                         stocks={stocks || []}
-                        suppliers={parsedSuppliers}
+                        suppliers={suppliers}
                         categories={categories || []}
                         onProductSelect={handleAddItem}
                     />

@@ -1,4 +1,5 @@
 import React from 'react';
+import CategoryTreeSelect from '../Categories/CategoryTreeSelect'; // Ajuste o caminho conforme necessário
 
 interface ProductFilterProps {
     productNameFilter: string;
@@ -7,7 +8,7 @@ interface ProductFilterProps {
     setMinStockFilter: (value: number) => void;
     selectedCategory: string;
     setSelectedCategory: (value: string) => void;
-    categories: { id: number; name: string }[];
+    categories: { id: number; name: string; parent_id: number | null }[];
 }
 
 const ProductFilter: React.FC<ProductFilterProps> = ({
@@ -28,7 +29,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                 <input
                     type="text"
                     id="productNameFilter"
-                    className="mt-1 block w-full border border-gray-300 rounded-md -sm p-2"
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                     value={productNameFilter}
                     onChange={(e) => setProductNameFilter(e.target.value)}
                     placeholder="Filtrar por nome"
@@ -51,19 +52,11 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                 <label htmlFor="categoryFilter" className="block text-sm font-medium text-gray-700">
                     Categoria
                 </label>
-                <select
-                    id="categoryFilter"
-                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                    <option value="">Todas as Categorias</option>
-                    {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                            {category.name}
-                        </option>
-                    ))}
-                </select>
+                <CategoryTreeSelect
+                    categories={categories}
+                    filterCategory={selectedCategory}
+                    setFilterCategory={setSelectedCategory}
+                />
             </div>
         </div>
     );

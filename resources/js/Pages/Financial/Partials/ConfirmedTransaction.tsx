@@ -3,9 +3,12 @@ import { useForm } from '@inertiajs/react'; // Use Inertia.js para submissão
 import PriceInput from '@/Components/PriceInput';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import { FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
-import CustomSelect from '@/Components/CustomSelect';
-
+import { FaCheckCircle, FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
+import { Dropdown } from 'primereact/dropdown';
+const statusOptions = [
+    { value: 'true', label: 'Realizada', icon: <FaCheckCircle className='text-green-500'/> },
+    { value: 'false', label: 'Pendente', icon: <FaExclamationTriangle className='text-red-500' /> },
+  ];
 interface Account {
     id: number;
     name: string;
@@ -21,6 +24,7 @@ interface ConfirmedTransactionProps {
         amount: number;
         description: string;
         transaction_date: string;
+        expected_date: string;
         related?: {
             name?: string;
             description?: string;
@@ -43,16 +47,15 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
         amount: transaction.amount,
         description: transaction.description,
         transaction_date: transaction.transaction_date.split('T')[0], // Formato correto para o campo date
+        expected_date: transaction.expected_date.split('T')[0], // Formato correto para o campo date
+
         related_name: transaction.related?.name || '',
         related_description: transaction.related?.description || '',
-        status: transaction.status ? '1' : '0', // Armazena o status como '1' ou '0'
+        status: transaction.status ? 'true' : 'false', // Armazena o status como '1' ou '0'
+   
     });
 
-    const statusOptions = [
-        { value: '1', label: 'Realizada', icon: <FaCheckCircle className='text-green-500' /> },
-        { value: '0', label: 'Pendente', icon: <FaExclamationCircle className='text-red-500' /> },
-    ];
-
+    console.log(data);
     const handleSubmit = (e: React.FormEvent) => {
 
         put(route('transactions.update', transaction.id), {
@@ -65,7 +68,28 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
             },
         });
     };
-
+// Função para renderizar as opções do Dropdown
+const statusOptionTemplate = (option) => {
+    return (
+      <div className="flex items-center">
+        {option.icon}
+        <span className="ml-2">{option.label}</span>
+      </div>
+    );
+  };
+  
+  // Função para renderizar o valor selecionado
+  const selectedStatusTemplate = (option) => {
+    if (option) {
+      return (
+        <div className="flex items-center">
+          {option.icon}
+          <span className="ml-2">{option.label}</span>
+        </div>
+      );
+    }
+    return <span>Selecione um status</span>;
+  };
     return (
         <form onSubmit={handleSubmit} className="p-4 flex flex-wrap gap-6 m-auto">
             <div className='w-[32%]'>
@@ -84,7 +108,7 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
                     {errors.amount && <InputError message={errors.amount} />}
                 </div>
                 <div className='w-[48%]'>
-                    <InputLabel htmlFor={`transaction_date`} value="Data da Transação" />
+                    <InputLabel htmlFor={`transaction_date`} value="Data prevista" />
                     <input
                         type="date"
                         className="mt-1 block w-full border-gray-300 rounded"
@@ -93,6 +117,16 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
                     />
                     {errors.transaction_date && <InputError message={errors.transaction_date} />}
                 </div>
+                <div className='w-[48%]'>
+                    <InputLabel htmlFor={`transaction_date`} value="Data da Transação" />
+                    <input
+                        type="date"
+                        className="mt-1 block w-full border-gray-300 rounded"
+                        value={data.expected_date} // Remove a parte do tempo
+                        onChange={(e) => setData('expected_date', e.target.value)}
+                    />
+                    {errors.expected_date && <InputError message={errors.expected_date} />}
+                </div>
                 <div className='w-full'>
                     <InputLabel htmlFor={`account_id`} value="Conta" />
                     <select
@@ -100,7 +134,9 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
                         value={data.account_id}
                         onChange={(e) => setData('account_id', Number(e.target.value))}
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        required
                     >
+                        <option value=''>Selecione uma conta</option>
                         {accounts.map((account) => (
                             <option key={account.id} value={account.id}>
                                 {account.name}
@@ -124,13 +160,17 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
                 <div className='w-[30%] m-auto'>
                     <InputLabel value="Status" />
                     <div className="relative m-auto">
-                        <CustomSelect
+
+                        <Dropdown
+                            value={data.status}
+                            onChange={(e) => setData('status', e.value || '')}
                             options={statusOptions}
-                            onChange={(value) => setData('status', value)} // Atualiza diretamente no data
                             placeholder="Selecione o status"
-                            value={data.status} // Sincroniza o valor do status
+                            valueTemplate={selectedStatusTemplate}
+                            itemTemplate={statusOptionTemplate}
+                            className="w-full md:w-14rem border rounded border-gray-600"
                         />
-                    </div>
+                                </div>
                     {data.category_id === 1 && (
                         <>
                             <InputLabel htmlFor={`category_id`} value="Categoria" />

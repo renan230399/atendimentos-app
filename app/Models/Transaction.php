@@ -22,6 +22,7 @@ class Transaction extends Model
         'amount',
         'description',
         'transaction_date',
+        'expected_date',
         'related_id',
         'related_type',
         'status',

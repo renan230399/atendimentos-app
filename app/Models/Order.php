@@ -18,7 +18,7 @@ class Order extends Model
         'company_id',
         'order_number',
         'order_date',
-        'supplier',
+        'supplier_id', // Atualizado para referenciar a chave estrangeira correta
         'total_amount',
         'notes',
         'delivery_date',
@@ -44,5 +44,16 @@ class Order extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Definir relacionamento com o modelo `Supplier`.
+     * Um pedido pertence a um fornecedor.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
     }
 }

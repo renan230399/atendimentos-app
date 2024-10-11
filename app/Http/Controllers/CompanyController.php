@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\User;
+use App\Models\PaymentMethod;
+use App\Models\PaymentMethodFee;
+use App\Models\Account;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
@@ -141,6 +145,7 @@ class CompanyController extends Controller
         $company = $request->user()->company;
         $employees = $company ? $company->users : [];
 
+
         return Inertia::render('Companies/Employees', [
             'employees' => $employees,
             'auth' => [
@@ -148,7 +153,32 @@ class CompanyController extends Controller
             ],
         ]);
     }
+    public function companyDashboard(Request $request)
+    {
+        $company = auth()->user()->company;
+        $companyId = auth()->user()->company_id;
+    
+        // Obtendo os funcionários da empresa
+        $employees = $company ? $company->users : [];
+    
+        // Obtendo os métodos de pagamento da empresa
+        $paymentMethods = PaymentMethod::where('company_id', $companyId)->get();
+        $accounts = Account::where('company_id', $companyId)->get();
 
+        // Obtendo as taxas dos métodos de pagamento associados à empresa
+        $paymentMethodsFees = PaymentMethodFee::whereIn('payment_method_id', $paymentMethods->pluck('id'))->get();
+    
+        return Inertia::render('Companies/CompanyDashboard', [
+            'employees' => $employees,
+            'paymentMethods' => $paymentMethods,
+            'paymentMethodsFees' => $paymentMethodsFees,
+            'accounts' => $accounts,
+            'auth' => [
+                'user' => $request->user(),
+            ],
+        ]);
+    }
+    
     /**
      * Add a new employee to the authenticated user's company.
      */

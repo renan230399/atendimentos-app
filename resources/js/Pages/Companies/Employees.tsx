@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import NewEmployeeForm from '@/Pages/Companies/Partials/NewEmployeeForm';
+import NewEmployeeForm from '@/Pages/Companies/Employees/EmployeesManager/NewEmployeeForm';
 import PopUpComponent from '@/Layouts/PopupComponent';
 import { Inertia } from '@inertiajs/inertia';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';

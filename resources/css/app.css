@@ -397,3 +397,34 @@ transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
       .no-select {
         user-select: none;
       }
+      /* Estiliza apenas o dropdown do MultiSelect */
+.p-multiselect-panel {
+    background-color: #f0f0f0; /* Muda a cor de fundo do dropdown */
+    border: 1px solid #888; /* Define a cor da borda do dropdown */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona uma sombra */
+    padding: 8px; /* Ajusta o espaçamento interno */
+}
+
+/* Estilização dos itens dentro do dropdown */
+.p-multiselect-item {
+    color: #333; /* Define a cor do texto */
+    padding: 8px; /* Ajusta o espaçamento de cada item */
+}
+.p-multiselect-header {
+    background-color: #b9b9b9; /* Cor de fundo ao passar o mouse sobre o item */
+    
+}
+
+/* Ajusta o estilo dos itens do dropdown do AutoComplete */
+.p-autocomplete-panel .p-autocomplete-item {
+    background-color: #ffffff !important; /* Força o fundo branco */
+    color: #000000 !important; /* Força o texto preto */
+    padding: 8px; /* Adiciona espaço para melhorar a visualização */
+    border-bottom: 1px solid #e0e0e0; /* Adiciona uma borda inferior para separação */
+}
+
+.p-autocomplete-panel .p-autocomplete-item:hover {
+    background-color: #e0e0e0 !important; /* Cor de fundo ao passar o mouse */
+    color: #000000 !important; /* Mantém a cor do texto preta */
+}
+

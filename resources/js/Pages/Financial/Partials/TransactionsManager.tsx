@@ -36,10 +36,24 @@ interface Transaction {
   };
   status: boolean;
 }
-
+interface PaymentMethod {
+  id: number;
+  account_id: number;
+  name: string;
+  type: string;
+}
+interface PaymentMethodFee {
+  id: number;
+  payment_method_id: number;
+  installments: number;
+  fixed_fee: number;
+  percentage_fee: number;
+}
 interface TransactionsManagerProps {
   accounts: Account[];
   categories: Category[];
+  paymentMethods:PaymentMethod[];
+  paymentMethodsFees:PaymentMethodFee[];
   auth: {
     user: {
       name: string;
@@ -62,7 +76,7 @@ const getCurrentMonthDates = (year = new Date().getFullYear(), month = new Date(
 };
 
 
-const TransactionsManager: React.FC<TransactionsManagerProps> = ({ accounts, categories, auth }) => {
+const TransactionsManager: React.FC<TransactionsManagerProps> = ({ accounts, categories, auth, paymentMethods, paymentMethodsFees }) => {
   const { firstDay, lastDay } = getCurrentMonthDates();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -153,10 +167,10 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
   }, 0);
 
   return (
-    <div className="px-0 h-[94vh]">
+    <div className="px-0 h-screen">
       
       {/* Filtros de Data */}
-      <div className="flex flex-wrap space-x-4 h-[17vh]">
+      <div className="flex flex-wrap space-x-4 mt-0 pt-0 h-[10%]">
         <div className="w-[34%] flex flex-wrap">
           <div className="w-full pb-4">
           <InputLabel value='Intervalo de datas'/>
@@ -181,7 +195,7 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
               withPortal
               className="w-full h-12 py-2 text-md border rounded-lg"
             />
-            <PrimaryButton onClick={handleFilterTransactions} className="h-10 bg-green-500 hover:bg-green-700 focus:bg-green-500">
+            <PrimaryButton onClick={handleFilterTransactions} className="hidden h-10 bg-green-500 hover:bg-green-700 focus:bg-green-500">
               {loading ? 'Carregando...' : 'Filtrar'}
             </PrimaryButton>
             
@@ -189,8 +203,8 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
         </div>
 
         {/* Mostrar o total de despesas e receitas */}
-        <div className="flex w-[64%] m-auto">
-          <div className="bg-white px-4 rounded-md border-b mx-3 border-gray-300 text-center w-[48%]">
+        <div className="flex w-[64%]">
+          <div className="bg-white px-4 rounded-md mx-3 text-center w-[48%]">
             <h2 className="text-lg font-semibold mb-3">Despesas:</h2>
             <div className="flex">
               <div className="w-[60%]">
@@ -208,8 +222,8 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
             </div>
           </div>
 
-          <div className="bg-white h-auto px-4 rounded border-b mx-3 border-gray-300 text-center w-[48%] text-left">
-            <h2 className="text-lg font-semibold mb-3">Receitas:</h2>
+          <div className="bg-white h-auto px-4 rounded mx-3 text-center w-[48%]">
+            <h2 className="text-lg font-semibold">Receitas:</h2>
             <div className="flex">
               <div className="w-[60%]">
                 <p className="text-sm text-gray-600">Já faturado</p>
@@ -228,8 +242,13 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
         </div>
       </div>
 
-      <div className="h-[65vh] py-0 my-0 border-black">
-        <TransactionsList transactions={{ data: transactions }} handleOpenConfirmedTransactionPopup={handleOpenConfirmedTransactionPopup} filters={filters} accounts={accounts} categories={categories}/>
+      <div className="h-[75%] py-0 mt-3 border-black">
+        <TransactionsList 
+          transactions={{ data: transactions }} 
+          handleOpenConfirmedTransactionPopup={handleOpenConfirmedTransactionPopup} 
+          filters={filters} 
+          accounts={accounts} 
+          categories={categories}/>
       </div>
 
       {/* Lazy loading do popup */}

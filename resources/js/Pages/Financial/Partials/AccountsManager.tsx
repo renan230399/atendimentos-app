@@ -15,6 +15,7 @@ interface Account {
 
 interface AccountsManagerProps {
   accounts: Account[];
+  company_logo:string;
 }
 
 // Componente responsável por renderizar o ícone correto com base no tipo da conta
@@ -41,7 +42,7 @@ const AccountIcon: React.FC<{ type: string }> = ({ type }) => {
   return <IconComponent className={`h-6 w-6 ${Color}`} aria-hidden="true" />;
 };
 
-const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts }) => {
+const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_logo }) => {
   const { data, setData, post, reset, errors } = useForm({
     name: '',
     type: 'bank',
@@ -80,10 +81,13 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts }) => {
   };
 
   return (
-    <div className="bg-white shadow-xl rounded-lg p-6 m-0 absolute text-center w-[93%]">
+    <div className="bg-white  px-6 m-0 absolute text-center w-[93%] overflow-auto">
       <div className="flex flex-wrap gap-5">
+        {company_logo &&(
+          <img src={company_logo} className='h-16 w-auto m-auto'/>
+        )}
         {accounts.map((account) => (
-          <div key={account.id} className="md:w-[23%] w-[47%] text-left border rounded p-2 shadow-lg flex flex-wrap items-center">
+          <div key={account.id} className="md:w-[100%] w-[47%] text-left border rounded p-2 shadow-lg flex flex-wrap items-center">
             {/* Exibindo o ícone baseado na categoria do caixa */}
             <AccountIcon type={account.type} />
 
@@ -113,7 +117,7 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts }) => {
       </div>
 
       {isAddingAccount && (
-        <form onSubmit={handleAddAccount} className="mt-4 text-left flex  gap-4">
+        <form onSubmit={handleAddAccount} className="mt-4 text-left flex flex-wrap gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome da conta</label>
             <TextInput

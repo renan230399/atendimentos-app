@@ -4,10 +4,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { FaPlusCircle } from 'react-icons/fa';
 import ProductWithStock from './Partials/ProductWithStock';
 import PopUpComponent from '@/Layouts/PopupComponent';
+import SuppliersManager from './Suppliers/SuppliersManager';
 import NewOrderForm from './OrderItems/NewOrderForm'; // Importação do NewOrderForm
 import { MdAddShoppingCart } from "react-icons/md";
 import { FaSitemap } from "react-icons/fa";
-
+import { TbTruckDelivery } from "react-icons/tb";
+import { Sidebar } from 'primereact/sidebar';
+import CategoriesManager from './Categories/CategoriesManager';
+import IconButton from '@/Components/Utils/IconButton';
 interface InventoryDashboardProps {
     auth: {
         user: {
@@ -38,13 +42,23 @@ interface InventoryDashboardProps {
         location: string;
         cost_price?: number;
     }[];
+
+    suppliers:{
+        name:string;
+        category:string;
+        contacts:string;
+        address:string;
+        state:string;
+        notes:string;
+        status:boolean;
+    }[];
 }
 
-export default function InventoryDashboard({ auth, categories, products, stocks }: InventoryDashboardProps) {
-    const suppliers = auth.user.company.suppliers ? JSON.parse(auth.user.company.suppliers) : [];
+export default function InventoryDashboard({ auth, categories, products, stocks, suppliers }: InventoryDashboardProps) {
     const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false); // Controle do popup
     const [popupParams, setPopupParams] = useState({});
-    const [categoriesPopup, setcategoriesPopup] = useState(false); // Controle do popup
+    const [categoriesSideBar, setCategoriesSideBar] = useState(false); // Controle do popup
+    const [suppliersPopupOpen, setSuppliersPopupOpen] = useState(false); // Controle do popup
 
     const handleOpenOrderPopup = useCallback((e: React.MouseEvent) => {
         setPopupParams({ clientX: e.clientX, clientY: e.clientY });
@@ -54,31 +68,33 @@ export default function InventoryDashboard({ auth, categories, products, stocks 
     const handleCloseOrderPopup = useCallback(() => {
         setIsOrderPopupOpen(false);
     }, []);
-    const handleOpenCategoriesPopup = useCallback((e: React.MouseEvent) => {
-        setPopupParams({ clientX: e.clientX, clientY: e.clientY });
-        setcategoriesPopup(true);
-    }, []);
 
-    const handleCloseCategoriesPopup = useCallback(() => {
-        setcategoriesPopup(false);
+    const handleOpenSuppliersPopup = useCallback((e: React.MouseEvent) => {
+        setSuppliersPopupOpen(true);
     }, []);
+    const handleCloseSuppliersPopup = useCallback(() => {
+        setSuppliersPopupOpen(false);
+    }, []);
+console.log(categories);
+
     return (
         <AuthenticatedLayout user={auth.user}>
-        <div className="fixed right-0 pl-2 justify-items-end text-right ml-5 h-screen w-[5vw] ">
-            <div
-            className="hover:bg-blue-900 text-center bg-blue-500 right-0 w-[5vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md"
-            title="Adicionar nova transação"
-            onClick={handleOpenOrderPopup}
-            >
-                <MdAddShoppingCart size={30} className="text-white" />
-            </div>
-            <div
-            className="hover:bg-blue-900 text-center bg-blue-500 right-0 w-[5vw] cursor-pointer mt-6 py-2 shadow-xl rounded-l-md"
-            title="Adicionar nova transação"
-            onClick={handleOpenOrderPopup}
-            >
-                <FaSitemap size={30} className="text-white m-auto" />
-            </div>
+        <div className="fixed right-0 pl-2 ml-5 h-screen w-[5vw] ">
+            <IconButton
+                icon={<MdAddShoppingCart size={30} className="text-white" />}
+                title="Adicionar nova transação"
+                onClick={handleOpenOrderPopup}
+            />
+            <IconButton
+                icon={<FaSitemap size={30} className="text-white" />}
+                title="Categorias de Itens"
+                onClick={() => setCategoriesSideBar(true)}
+            />
+            <IconButton
+                icon={<TbTruckDelivery size={30} className="text-white" />}
+                title="Fornecedores"
+                onClick={handleOpenSuppliersPopup}
+            />
         </div>
             <Head title="Inventário" />
             <div className="p-6  sm:px-6 lg:px-8 bg-white space-y-10 flex flex-wrap gap-6 h-screen w-[95vw]">
@@ -110,24 +126,43 @@ export default function InventoryDashboard({ auth, categories, products, stocks 
                     </div>
                 </div>
             </div>          
-                        {/* Popup para nova compra */}
-                        {isOrderPopupOpen && (
-                            <PopUpComponent 
-                            width="98vw"
-                            height="98vh"
-                            zindex="100"
-                            id="new_order_popup" 
-                            params={popupParams}
-                            onClose={handleCloseOrderPopup}
-                            >
-                                <NewOrderForm  
-                                    products={products} 
-                                    stocks={stocks} 
-                                    suppliers={suppliers} 
-                                    categories={categories}
-                                    /> {/* Passando suppliers e products */}
-                            </PopUpComponent>
+
+                {/* Popup para nova compra */}
+                {isOrderPopupOpen && (
+                <PopUpComponent 
+                classPopup='w-[96vw] h-[94vh]'
+
+                zindex="100"
+                id="new_order_popup" 
+                params={popupParams}
+                onClose={handleCloseOrderPopup}
+                >
+                    <NewOrderForm  
+                        products={products} 
+                        stocks={stocks} 
+                        suppliers={suppliers} 
+                        categories={categories}
+                        /> {/* Passando suppliers e products */}
+                </PopUpComponent>
             )}
+            <Sidebar 
+                visible={suppliersPopupOpen}
+                position="left" 
+                className='pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] overflow-auto bg-white' 
+                onHide={() => setSuppliersPopupOpen(false)}>
+                    <SuppliersManager 
+                        suppliers={suppliers}
+                    />
+             </Sidebar>
+             <Sidebar 
+                visible={categoriesSideBar}
+                position="bottom" 
+                className='pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-auto bg-white' 
+                onHide={() => setCategoriesSideBar(false)}>
+                    <CategoriesManager 
+                        categories={categories}
+                    />
+             </Sidebar>
         </AuthenticatedLayout>
     );
 }

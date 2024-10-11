@@ -5,6 +5,8 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SuppliersController;
+
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
@@ -54,6 +56,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/patients/for-consultation', [PatientController::class, 'getPatientsForAddConsultation'])->name('patients.consultation.add');
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
     
+
+    Route::post('/suppliers', [SuppliersController::class, 'store'])->name('suppliers.store');
+    Route::put('/suppliers/{id}', [SuppliersController::class, 'update'])->name('suppliers.update');
+
+
+
     // Rotas para formulários dinâmicos
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
     Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
@@ -84,6 +92,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
         Route::post('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
         Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
+        
+        
+        
+        Route::get('/company', [CompanyController::class, 'companyDashboard'])->name('company');
 
         // Rotas para gerenciar funcionários da empresa do usuário autenticado
         Route::get('/employees', [CompanyController::class, 'employeesIndex'])->name('employees.index');

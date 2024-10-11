@@ -17,10 +17,12 @@ class DatabaseSeeder extends Seeder
             PatientSeeder::class, // Adiciona o PatientSeeder aqui
             FormFieldSeeder::class, // Adiciona o FormFieldSeeder aqui
             CategoryProductSeeder::class,
+            SupplierSeeder::class,
             ProductSeeder::class,
             TransactionCategorySeeder::class,
             AccountSeeder::class,
             ConsultationSeeder::class,
+            PaymentMethodSeeder::class,
         ]);
     }
 }

@@ -6,6 +6,8 @@ import TransactionForm from './TransactionForm';
 import TextInput from '@/Components/TextInput';
 import { useForm } from '@inertiajs/react';
 import Dinero from 'dinero.js';
+import CategoryTreeBuilder from '@/Components/Utils/CategoryTreeBuilder';
+import { TreeSelect } from 'primereact/treeselect';
 
 interface Account {
   id: number;
@@ -145,7 +147,7 @@ const handleFormChange = (field: string, value: any) => {
     );
     setTransactions(updatedTransactions);
   };
-  const handleCategorySelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCategorySelectChange1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const categoryId = parseInt(e.target.value, 10);
     setSelectedCategoryId(categoryId);
 
@@ -166,7 +168,23 @@ const handleFormChange = (field: string, value: any) => {
       target: { value: '1' }
     } as React.ChangeEvent<HTMLInputElement>);*/
   };
-  
+  const groupedCategories = CategoryTreeBuilder({ categories });
+ // Função para tratar a mudança de seleção no TreeSelect
+// Função para tratar a mudança de seleção no TreeSelect
+const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
+
+
+  const selectedCategoryId = event.value;
+  setSelectedCategoryId(selectedCategoryId);
+    // Encontra a categoria selecionada com base no ID
+    const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
+  // Atualiza o estado do formulário com a categoria selecionada
+  setData({
+    ...data, // Mantém o estado atual de data
+    category_id: selectedCategoryId,
+    type: selectedCategory ? selectedCategory.type : '', // Atualiza o campo 'type' se a categoria for encontrada
+  });
+};
   return (
     <form onSubmit={handleAddTransaction} className="mt-4 space-y-4">
       <div className="flex flex-wrap gap-3 w-full">
@@ -177,21 +195,18 @@ const handleFormChange = (field: string, value: any) => {
         <div className="w-[68%] flex flex-wrap m-auto">
           <div className='w-[45%] m-auto mb-3'>
             <InputLabel htmlFor="category_id" value="Categoria" />
-            <select
-              id="category_id"
-              required
+ 
+            <div className="card flex justify-content-center">
+            <TreeSelect
               value={selectedCategoryId}
               onChange={handleCategorySelectChange}
-              className="block w-full border-gray-300 rounded-md shadow-sm text-lg focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Selecione uma categoria</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name} - {category.type === 'income' ? 'Receitas' : 'Despesas'}
-                </option>
-              ))}
-            </select>
-
+              options={groupedCategories}
+              className="md:w-20rem w-full border border-gray-300 rounded"
+              selectionMode="single"
+              placeholder="Selecione uma Categoria"
+              display="chip"
+            />
+            </div>
             <InputError message={errors.category_id} className="mt-2" />
           </div>
 

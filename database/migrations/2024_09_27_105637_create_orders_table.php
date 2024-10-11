@@ -13,18 +13,17 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('company_id'); // Chave estrangeira para empresa
+            $table->foreignId('company_id')->constrained('companies')->onDelete('cascade'); // Chave estrangeira para companies
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('cascade'); // Chave estrangeira para suppliers
 
             $table->string('order_number')->unique()->comment('Número único do pedido');
             $table->date('order_date')->comment('Data do pedido');
-            $table->integer('supplier')->nullable()->comment('Fornecedor responsável pelo pedido');
             $table->decimal('total_amount', 10, 2)->default(0)->comment('Valor total do pedido');
             $table->text('notes')->nullable()->comment('Observações adicionais sobre o pedido');
             $table->date('delivery_date')->nullable()->comment('Data de entrega do pedido, se aplicável');
 
             $table->timestamps();
 
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
 
         });
     }

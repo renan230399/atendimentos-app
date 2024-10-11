@@ -40,13 +40,13 @@ class ConsultationController extends Controller
     
         // Criação da transação associada à consulta
         Transaction::create([
-            'account_id' => 2,        // Conta associada à transação
             'category_id' => 2,      // Categoria da transação
             'company_id' => $companyId,        // Empresa associada
             'type' => 'income',                              // Transação de receita para a consulta
             'amount' => $validated['price'],           // Valor da consulta em centavos (por exemplo)
             'description' => 'Receita gerada pela consulta', // Descrição da transação
             'transaction_date' => $validated['date'],        // Data da consulta como data da transação
+            'expected_date' => $validated['date'],        // Data da consulta como data da transação
             'status' => false,                                // Considerando que a transação está confirmada
             'related_id' => $consultation->id,               // ID da consulta criada
             'related_type' => Consultation::class,           // Classe relacionada

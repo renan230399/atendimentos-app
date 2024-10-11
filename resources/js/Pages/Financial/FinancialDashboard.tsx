@@ -10,6 +10,7 @@ import { MdAddShoppingCart } from "react-icons/md";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { FaSitemap, FaExclamationTriangle } from "react-icons/fa";
 import PictureInPictureComponent from '@/Layouts/PictureInPictureComponent';
+import { Sidebar } from 'primereact/sidebar';
 // Lazy load do PopupComponent para carregar apenas quando necessário
 const PopUpComponent = lazy(() => import('@/Layouts/PopupComponent'));
 
@@ -26,6 +27,8 @@ interface FinancialDashboardProps {
   accounts: Account[];
   categories: Category[];
   transfers: Transfer[];
+  paymentMethods:PaymentMethod[];
+  paymentMethodsFees:PaymentMethodFee[];
 }
 
 interface Account {
@@ -33,7 +36,19 @@ interface Account {
   name: string;
   balance: number;
 }
-
+interface PaymentMethod {
+  id: number;
+  account_id: number;
+  name: string;
+  type: string;
+}
+interface PaymentMethodFee {
+  id: number;
+  payment_method_id: number;
+  installments: number;
+  fixed_fee: number;
+  percentage_fee: number;
+}
 interface Category {
   id: number;
   name: string;
@@ -49,12 +64,15 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
   accounts,
   categories,
   transfers,
+  paymentMethods,
+  paymentMethodsFees,
 }) => {
   // Memoize dados que não mudam com frequência para evitar re-renderizações desnecessárias
   const memoizedAccounts = useMemo(() => accounts, [accounts]);
   const memoizedCategories = useMemo(() => categories, [categories]);
   const memoizedTransfers = useMemo(() => transfers, [transfers]);
-
+  const memoizedPaymentMethod = useMemo(() => paymentMethods, [paymentMethods]);
+  const memoizedPaymentMethodFees = useMemo(() => paymentMethodsFees, [paymentMethodsFees]);
   // Estados para lidar com o popup
   const [popupParams, setPopupParams] = useState<{ clientX: number; clientY: number } | null>(null);
   const [isAddTransactionPopupOpen, setIsAddTransactionPopupOpen] = useState(false);
@@ -105,18 +123,7 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
           <FaSitemap size={30} className="m-auto text-white" />
         </div>
       </div>
-             {/* Exibir o AccountsManager somente se isViewAccounts for verdadeiro */}
-             {isViewAccounts && (
-              <PictureInPictureComponent
-                id="view-accounts"
-                width="400px"  // Defina a largura que deseja
-                height="300px" // Defina a altura que deseja
-                onClose={() => setIsViewAccounts(false)} // Fechar o Picture-in-Picture
-                classPip=''
-              >
-                <AccountsManager accounts={memoizedAccounts} />
-              </PictureInPictureComponent>
-            )}
+ 
 
       <div className="p-2  pt-4 flex flex-wrap gap-3 bg-white shadow-xl w-[95vw] overflow-hidden">
  
@@ -126,6 +133,8 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
             accounts={memoizedAccounts} 
             categories={memoizedCategories} 
             auth={auth}
+            paymentMethods={memoizedPaymentMethod} 
+            paymentMethodsFees={memoizedPaymentMethodFees} 
             />
         </div>
 
@@ -164,6 +173,9 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
           </PopUpComponent>
         </Suspense>
       )}
+              <Sidebar visible={isViewAccounts} position="left" className='pt-0 xl:w-[30vw] md:w-[45vw] sm:w-[75vw] overflow-auto bg-white' onHide={() => setIsViewAccounts(false)}>
+                <AccountsManager accounts={memoizedAccounts} company_logo={auth.user.company.company_logo}/>
+              </Sidebar>
 
     </AuthenticatedLayout>
   );

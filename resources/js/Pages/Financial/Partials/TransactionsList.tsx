@@ -9,12 +9,64 @@ import { FaExclamationTriangle } from "react-icons/fa";
 import TransactionFilters from './TransactionForm/TransactionFilters';
 import TransactionItem from './TransactionForm/TrasactionItem'; 
 import Pagination from '@/Components/Pagination';
+import { BsFillQuestionSquareFill } from "react-icons/bs";
+
 import CategoriesManager from './CategoriesManager';
 const statusOptions = [
   { value: 'true', label: 'Realizada', icon: <FaCheckCircle className='text-green-500'/> },
   { value: 'false', label: 'Pendente', icon: <FaExclamationTriangle className='text-red-500' /> },
 ];
 
+// Função para converter categorias em uma estrutura de árvore para filtragem hierárquica
+const transformCategoriesToTree = (categories) => {
+  const categoryMap = new Map();
+
+  categories.forEach(category => {
+    categoryMap.set(category.id, {
+      key: category.id,
+      label: category.name,
+      children: [],
+      data: category
+    });
+  });
+
+  const treeNodes = [];
+  categories.forEach(category => {
+    if (category.parent_id === null) {
+      treeNodes.push(categoryMap.get(category.id));
+    } else {
+      const parentNode = categoryMap.get(category.parent_id);
+      if (parentNode) {
+        parentNode.children.push(categoryMap.get(category.id));
+      }
+    }
+  });
+
+  return treeNodes;
+};
+
+// Função para verificar correspondência de categorias usando a estrutura de árvore
+const isCategoryMatch = (transactionCategoryId, selectedCategories, categoryTree) => {
+  const checkCategoryMatch = (categoryId, selectedCategories) => {
+    if (selectedCategories.includes(categoryId)) {
+      return true; // Correspondência direta encontrada
+    }
+
+    const categoryNode = categoryTree.find(node => node.key === categoryId);
+    if (categoryNode && categoryNode.children.length > 0) {
+      return categoryNode.children.some(child => checkCategoryMatch(child.key, selectedCategories));
+    }
+
+    return false;
+  };
+
+  return checkCategoryMatch(transactionCategoryId, selectedCategories);
+};
+const getSelectedCategoryIds = (selectedCategories) => {
+  return Object.entries(selectedCategories)
+    .filter(([, value]) => value.checked)
+    .map(([key]) => parseInt(key, 10)); // Converte as chaves para inteiros
+};
 
 interface Transaction {
   id: number;
@@ -124,6 +176,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
   const [filterStatus, setFilterStatus] = useState<boolean | null>(null);
   const [filterAccountIds, setFilterAccountIds] = useState<number[]>([]);
   const [filterCategory, setFilterCategory] = useState<number[]>([]);
+  const groupedCategories = categories;
 
   // Estado para paginação
   const [currentPage, setCurrentPage] = useState(0);
@@ -153,6 +206,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
   });
 
   const filteredTransactions = useMemo(() => {  
+    const selectedCategoryIds = getSelectedCategoryIds(filterCategory); // Converte as categorias selecionadas para uma lista de IDs
+  
     return sortedTransactions
       .filter((transaction) => {  
         // Filtrar por data
@@ -171,15 +226,13 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
         if (filterStatus !== null && filterStatus !== '' && String(transaction.status) !== filterStatus) {
           return false;
         }
- 
-        if (Array.isArray(filterCategory) && filterCategory.length > 0) {
-          console.log('Filter Category:', filterCategory, 'Transaction Category ID:', transaction.category_id);
-          if (!filterCategory.includes(0) && !filterCategory.includes(transaction.category_id)) {
+  
+        // Filtragem de categorias usando a lista de IDs selecionados
+        if (Array.isArray(selectedCategoryIds) && selectedCategoryIds.length > 0) {
+          if (!selectedCategoryIds.includes(0) && !isCategoryMatch(transaction.category_id, selectedCategoryIds, groupedCategories)) {
             return false;
           }
         }
-        
-
   
         // Filtrar por IDs de contas, se houver contas selecionadas e "Todas as Contas" não estiver selecionada
         if (Array.isArray(filterAccountIds) && filterAccountIds.length > 0) {
@@ -206,7 +259,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
           />
         );
       });
-  }, [sortedTransactions, filterDate, filterType, filterStatus, filterAccountIds,filterCategory, offset, openTransactions]);
+  }, [sortedTransactions, filterDate, filterType, filterStatus, filterAccountIds, filterCategory, groupedCategories, offset, openTransactions]);
   
 
 
@@ -228,7 +281,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
         setFilterAccountIds={setFilterAccountIds}
         statusOptions={statusOptions}
         accounts={accounts}
-        categories={categories}
+        categories={groupedCategories}
         selectedStatusTemplate={selectedStatusTemplate}
         statusOptionTemplate={statusOptionTemplate}
       />
@@ -263,7 +316,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
       </span>
 
     </div>
-      <div className="overflow-y-auto rounded h-[80%] w-full mb-6 border-gray-300 border-5 shadow-xl">
+      <div className="overflow-y-auto rounded h-[75%] w-full mb-4 border-gray-300 border-5 shadow-xl">
 
         {/* Lista de transações filtradas */}
         {filteredTransactions?.length > 0 ? (

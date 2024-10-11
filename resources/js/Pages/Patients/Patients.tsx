@@ -150,7 +150,7 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
             <div className="flex flex-wrap bg-white">
 
                 <form onSubmit={handleSearchSubmit} className="w-4/5 pr-6 h-[10vh] overflow-hidden w-[80%] rounded-br-xl ">
-                    <div className='md:w-[50%] w-[100%] pl-5 pt-2'>
+                    <div className='md:w-[50%] w-[100%] pl-5 mt-6'>
                     <FloatLabel>
                         <TextInput
                             id="search"

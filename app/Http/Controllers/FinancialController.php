@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\TransactionCategory;
+use App\Models\PaymentMethod;
+use App\Models\PaymentMethodFee;
 use App\Models\Transaction;
 use App\Models\CashFlow;
 use Illuminate\Http\Request;
@@ -27,7 +29,14 @@ class FinancialController extends Controller
         // Obtenha todas as contas e categorias relacionadas à empresa
         $accounts = Account::where('company_id', $companyId)->get();
         $categories = TransactionCategory::where('company_id', $companyId)->get();
-        
+
+        // Obtendo os métodos de pagamento da empresa
+        $paymentMethods = PaymentMethod::where('company_id', $companyId)->get();
+
+        // Obtendo as taxas dos métodos de pagamento associados à empresa
+        $paymentMethodsFees = PaymentMethodFee::whereIn('payment_method_id', $paymentMethods->pluck('id'))->get();
+    
+
         // Se as datas de início e fim forem fornecidas, filtre as transações e o fluxo de caixa
         if ($startDate && $endDate) {
             // Filtra as transações dentro do intervalo de datas
@@ -51,6 +60,8 @@ class FinancialController extends Controller
                 'user' => $user, // Envia o usuário com a empresa para o frontend
             ],
             'accounts' => $accounts,
+            'paymentMethods' => $paymentMethods,
+            'paymentMethodsFees' => $paymentMethodsFees,
             'categories' => $categories,
             'filters' => [
                 'start_date' => $startDate,
