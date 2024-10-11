@@ -5,27 +5,37 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Stock extends Model
+class StockMovimentation extends Model
 {
     use HasFactory;
 
     // Define a tabela associada
-    protected $table = 'stocks';
+    protected $table = 'stock_movimentations';
 
     // Indica os campos que podem ser preenchidos em massa
     protected $fillable = [
+        'stock_id',
         'company_id',
         'product_id',
-        'local_id', // Novo campo para a referência ao local de estoque
+        'name',
+        'movement_type',
         'quantity',
-        'entry_date',
-        'expiration_date',
-        'cost_price',
+        'movement_date',
+        'notes',
     ];
 
     /**
+     * Relacionamento com o estoque (Stock)
+     * Uma movimentação pertence a um estoque específico.
+     */
+    public function stock()
+    {
+        return $this->belongsTo(Stock::class);
+    }
+
+    /**
      * Relacionamento com a empresa (Company)
-     * O estoque pertence a uma empresa.
+     * Uma movimentação de estoque pertence a uma empresa.
      */
     public function company()
     {
@@ -34,19 +44,10 @@ class Stock extends Model
 
     /**
      * Relacionamento com o produto (Product)
-     * O estoque pertence a um produto.
+     * Uma movimentação de estoque está associada a um produto.
      */
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    /**
-     * Relacionamento com o local de estoque (StockLocal)
-     * O estoque pertence a um local específico.
-     */
-    public function stockLocal()
-    {
-        return $this->belongsTo(StockLocal::class, 'local_id');
     }
 }

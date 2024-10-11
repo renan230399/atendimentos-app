@@ -31,6 +31,7 @@ class CreateConsultationsTable extends Migration
             $table->string('professional')->nullable();    // Professional responsible for the consultation
             $table->text('notes')->nullable(); // Consultation notes (renamed from observacoes)
             $table->integer('price')->comment('Preço em centavos'); 
+            $table->integer('cost')->nullable()->comment('Preço em centavos'); 
 
             $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending'); // Consultation status (renamed values)
 

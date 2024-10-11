@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CategoryProduct;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 class CategoryProductController extends Controller
 {
     /**
@@ -15,28 +15,25 @@ class CategoryProductController extends Controller
         $categories = CategoryProduct::with('company')->get();
         return view('categories.index', compact('categories'));
     }
-
-    /**
-     * Show the form for creating a new category product.
-     */
-    public function create()
-    {
-        return view('categories.create');
-    }
-
     /**
      * Store a newly created category product in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        // Obtém o ID da empresa associada ao usuário autenticado
+        $companyId = auth()->user()->company_id;
+        // Validação dos dados de entrada
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'company_id' => 'required|exists:companies,id',
+            'parent_id' => 'required|exists:category_products,id',
         ]);
-
-        CategoryProduct::create($request->all());
-
-        return redirect()->route('categories.index')->with('success', 'Category created successfully');
+       // Cria um novo registro de fornecedor
+        $category = CategoryProduct::create([
+            'company_id' => $companyId,
+            'name' => $validatedData['name'],
+            'parent_id' => $validatedData['parent_id'] ?? null,
+        ]);
+        return redirect()->route('inventory.dashboard')->with('success', 'Categoria criada com sucesso!');
     }
 
     /**
@@ -47,18 +44,39 @@ class CategoryProductController extends Controller
         return view('categories.edit', compact('category'));
     }
 
-    /**
-     * Update the specified category product in storage.
+ /**
+     * Atualiza várias categorias de uma vez.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, CategoryProduct $category)
+    public function update(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
+        // Valida os dados recebidos para garantir que o campo 'editedCategories' seja um array
+        $validatedData = $request->validate([
+            'editedCategories' => 'required|array',
+            'editedCategories.*' => 'required|string|max:255', // Valida cada nome de categoria
         ]);
 
-        $category->update($request->all());
+        // Usar uma transação para garantir a integridade dos dados
+        DB::beginTransaction();
 
-        return redirect()->route('categories.index')->with('success', 'Category updated successfully');
+        try {
+            // Loop para atualizar cada categoria individualmente
+            foreach ($validatedData['editedCategories'] as $id => $name) {
+                // Atualiza a categoria correspondente
+                CategoryProduct::where('id', $id)->update([
+                    'name' => $name,
+                ]);
+            }
+
+            // Confirma a transação se todas as atualizações foram bem-sucedidas
+            DB::commit();
+        } catch (\Exception $e) {
+            // Reverte a transação em caso de falha
+            DB::rollBack();
+            return redirect()->route('inventory.dashboard')->with('success', 'Erro!');
+        }
     }
 
     /**

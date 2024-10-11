@@ -19,6 +19,10 @@ class Product extends Model
         'name',
         'description',
         'measuring_unit',
+        'quantities_per_unit',
+        'measuring_unit_of_unit',
+        'photo',
+        'status'
     ];
 
     /**
@@ -48,4 +52,21 @@ class Product extends Model
         return $this->hasMany(Stock::class);
     }
 
+    /**
+     * Acessor para obter as fotos do produto.
+     * Converte a coluna JSON para um array.
+     */
+    public function getPhotoAttribute($value)
+    {
+        return json_decode($value, true);
+    }
+
+    /**
+     * Mutator para definir as fotos do produto.
+     * Converte o valor para JSON antes de salvar.
+     */
+    public function setPhotoAttribute($value)
+    {
+        $this->attributes['photo'] = json_encode($value);
+    }
 }

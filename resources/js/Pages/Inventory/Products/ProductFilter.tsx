@@ -1,5 +1,5 @@
 import React from 'react';
-import CategoryTreeSelect from '../Categories/CategoryTreeSelect'; // Ajuste o caminho conforme necessário
+import CategoryTreeSelect from './CategoryTreeSelect'; // Ajuste o caminho conforme necessário
 
 interface ProductFilterProps {
     productNameFilter: string;
@@ -8,7 +8,16 @@ interface ProductFilterProps {
     setMinStockFilter: (value: number) => void;
     selectedCategory: string;
     setSelectedCategory: (value: string) => void;
+    selectedStockLocal: string;
+    setSelectedStockLocal: (value: string) => void;
     categories: { id: number; name: string; parent_id: number | null }[];
+    stockLocals:{
+        id: number;
+        company_id: number;
+        parent_id: number | null;
+        name: string;
+        description: string;
+    }[];
 }
 
 const ProductFilter: React.FC<ProductFilterProps> = ({
@@ -18,10 +27,14 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
     setMinStockFilter,
     selectedCategory,
     setSelectedCategory,
+    selectedStockLocal,
+    setSelectedStockLocal,
     categories,
+    stockLocals,
 }) => {
+    console.log();
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex flex-wrap gap-6">
             <div>
                 <label htmlFor="productNameFilter" className="block text-sm font-medium text-gray-700">
                     Nome do Produto
@@ -56,8 +69,26 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
                     categories={categories}
                     filterCategory={selectedCategory}
                     setFilterCategory={setSelectedCategory}
+                    placeHolder='Selecione categorias'
                 />
             </div>
+           
+                {stockLocals &&(
+                     <div>
+                        <label htmlFor="categoryFilter" className="block text-sm font-medium text-gray-700">
+                        Local de estoque
+                    </label>
+                    
+                    <CategoryTreeSelect
+                        categories={stockLocals}
+                        filterCategory={selectedStockLocal}
+                        setFilterCategory={setSelectedStockLocal}
+                        placeHolder='Filtre por locais'
+                    />
+                         </div>
+                )}
+   
+       
         </div>
     );
 };

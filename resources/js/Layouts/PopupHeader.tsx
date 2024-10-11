@@ -3,7 +3,7 @@ import { FaFileWaveform } from "react-icons/fa6";
 
 const PopupHeader = ({ icone, titulo, bgColor='bg-blue-400' }) => {
     return (
-        <div className={`${bgColor} absolute rounded-b-lg shadow-xl flex flex-col w-[90%]`}>
+        <div className={`${bgColor} absolute top-0 left-0 rounded-b-lg shadow-xl flex flex-col w-[90%]`}>
             {/* Ícone */}
             {icone && (
                 <div className="w-32 h-32 absolute mt-0 pt-0 overflow-hidden  text-left">

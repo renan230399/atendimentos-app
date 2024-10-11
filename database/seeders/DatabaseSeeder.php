@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             FormFieldSeeder::class, // Adiciona o FormFieldSeeder aqui
             CategoryProductSeeder::class,
             SupplierSeeder::class,
+            StockLocalSeeder::class,
             ProductSeeder::class,
             TransactionCategorySeeder::class,
             AccountSeeder::class,

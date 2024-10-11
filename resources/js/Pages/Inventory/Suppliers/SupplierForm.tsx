@@ -17,8 +17,8 @@ const siglasEstados = [
     'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'
 ];
 const statusOptions = [
-    { value: false, label: 'Ativo', icon: <FaCheckCircle className='text-green-500'/> },
-    { value: true, label: 'Inativo', icon: <FaExclamationTriangle className='text-red-500' /> },
+    { value: true, label: 'Ativo', icon: <FaCheckCircle className='text-green-500'/> },
+    { value: false, label: 'Inativo', icon: <FaExclamationTriangle className='text-red-500' /> },
 ];
 
 const statusOptionTemplate = (option) => (
@@ -56,7 +56,6 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
 
     const [visible, setVisible] = useState(false);
     const [filterCategories, setFilterCategories] = useState([categories]);
-console.log(filterCategories);
     const accept = () => {
         // Lógica para deletar o fornecedor
         toast.current.show({ severity: 'info', summary: 'Fornecedor deletado', detail: 'O fornecedor foi excluído com sucesso.', life: 3000 });
@@ -102,7 +101,7 @@ console.log(filterCategories);
             contacts: filteredContacts,
         };
     
-        console.log(updatedData);
+        //console.log(updatedData);
     
         if (initialData && initialData.id) {
             // Modo de edição - use a rota para atualizar um fornecedor existente
@@ -112,6 +111,8 @@ console.log(filterCategories);
                     reset();
                     onClose();
                     setSaveSupplier(true);
+                    console.log('data enviada', updatedData);
+
                 },
             });
             
@@ -127,7 +128,6 @@ console.log(filterCategories);
             });
         }
     };
-    
 
     return (
         <div className="p-4 h-[100%]">
@@ -164,7 +164,6 @@ console.log(filterCategories);
                                 category.toLowerCase().includes(e.query.toLowerCase())
                             );
                             setFilterCategories(filteredCategories); // Atualiza as sugestões com base no filtro
-                            console.log('Filtered Categories:', filteredCategories); // Verifica se os dados estão corretos
                         }}
                         onChange={(e) => setData('category', e.target.value)} 
                         placeholder="Selecione ou digite uma categoria"
@@ -257,9 +256,14 @@ console.log(filterCategories);
                             onHide={() => setVisible(false)} 
                             message="Tem certeza de que deseja deletar este fornecedor?" 
                             icon="pi pi-exclamation-triangle" 
+                            acceptLabel="Sim, deletar Fornecedor" // Texto personalizado para o botão de aceite
+                            rejectLabel="Cancelar" // Texto personalizado para o botão de rejeição
+                            acceptClassName="p-button-success bg-red-500 text-white p-1 m-auto" // Classe para estilizar o botão de aceite
+                            rejectClassName="p-button-success bg-green-500 text-white p-1 mx-5" // Classe para estilizar o botão de rejeição
                             accept={accept} 
                             reject={reject} 
                         />
+
                         <div
                             ref={buttonEl}
                             className="px-4 flex items-center gap-2 py-2 bg-red-500 text-white rounded cursor-pointer"

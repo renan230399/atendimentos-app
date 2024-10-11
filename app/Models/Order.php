@@ -16,16 +16,17 @@ class Order extends Model
      */
     protected $fillable = [
         'company_id',
-        'order_number',
+        'supplier_id',
         'order_date',
-        'supplier_id', // Atualizado para referenciar a chave estrangeira correta
         'total_amount',
         'notes',
         'delivery_date',
+        'delivery_status',
+        'file',
     ];
 
     /**
-     * Definir relacionamento com o modelo `Company`.
+     * Relacionamento com o modelo `Company`.
      * Um pedido pertence a uma empresa.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -36,18 +37,7 @@ class Order extends Model
     }
 
     /**
-     * Definir relacionamento com o modelo `OrderItem`.
-     * Um pedido pode ter muitos itens.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function orderItems()
-    {
-        return $this->hasMany(OrderItem::class);
-    }
-
-    /**
-     * Definir relacionamento com o modelo `Supplier`.
+     * Relacionamento com o modelo `Supplier`.
      * Um pedido pertence a um fornecedor.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -55,5 +45,16 @@ class Order extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /**
+     * Relacionamento com o modelo `OrderItem`.
+     * Um pedido pode ter muitos itens.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

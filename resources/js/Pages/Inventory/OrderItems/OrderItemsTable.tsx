@@ -26,7 +26,7 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({ items, products, hand
     const cartTotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
 
     return (
-        <div className="w-[90%] h-[50%] m-auto shadow-xl h-auto overflow-y-auto resize-y border-b border-black">
+        <div className="w-[90%] mx-auto shadow-xl h-auto overflow-y-auto resize-y border-b border-black">
             <h3 className="text-lg font-semibold">Itens do Pedido</h3>
             {items.length > 0 ? (
                 <>

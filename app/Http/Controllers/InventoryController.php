@@ -6,6 +6,8 @@ use App\Models\CategoryProduct;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\Supplier;
+
+use App\Models\StockLocal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -25,6 +27,7 @@ class InventoryController extends Controller
         $products = Product::where('company_id', $companyId)->with('category')->get();
         $stocks = Stock::where('company_id', $companyId)->with('product')->get();
         $suppliers = Supplier::where('company_id', $companyId)->get();
+        $stockLocals = StockLocal::where('company_id', $companyId)->get();
 
         // Retorne a view com os dados do inventário
         return Inertia::render('Inventory/InventoryDashboard', [
@@ -35,6 +38,7 @@ class InventoryController extends Controller
             'products' => $products,
             'stocks' => $stocks,
             'suppliers' => $suppliers,
+            'stockLocals' => $stockLocals,
         ]);
     }
 }

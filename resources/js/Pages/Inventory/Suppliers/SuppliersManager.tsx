@@ -3,6 +3,7 @@ import { Sidebar } from 'primereact/sidebar';
 import NewSupplierForm from './SupplierForm';
 import { FaPlusCircle, FaEdit } from "react-icons/fa";
 import ContactsInput from '@/Components/ContactsInput';
+
 interface Supplier {
     name: string;
     category: string;
@@ -22,11 +23,21 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
     const [categories, setCategories] = useState<string[]>([]);
     const [saveSupplier, setSaveSupplier] = useState(false);
+
     useEffect(() => {
         // Extrair categorias únicas dos fornecedores
         const uniqueCategories = Array.from(new Set(suppliers.map(supplier => supplier.category)));
         setCategories(uniqueCategories);
     }, [suppliers]);
+
+    // Função para agrupar os fornecedores por categoria
+    const groupedSuppliers = suppliers.reduce((acc, supplier) => {
+        if (!acc[supplier.category]) {
+            acc[supplier.category] = [];
+        }
+        acc[supplier.category].push(supplier);
+        return acc;
+    }, {} as Record<string, Supplier[]>);
 
     const handleOpenPopup = () => {
         setSelectedSupplier(null); // Resetamos o supplier para null quando estamos criando um novo
@@ -41,6 +52,7 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
         setSelectedSupplier(formattedSupplier); // Carrega os dados do fornecedor selecionado com contatos formatados
         setIsPopupVisible(true);
     };
+
     const handleClosePopup = () => {
         setIsPopupVisible(false);
         setSelectedSupplier(null); // Limpa o supplier selecionado ao fechar o popup
@@ -60,28 +72,23 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
     // Função para converter a string JSON de contatos em um array de objetos
     const convertContactsToArray = (contacts: any) => {
         try {
-            // Se 'contacts' já for um array, retorne-o diretamente
             if (Array.isArray(contacts)) {
                 return contacts;
             }
-    
-            // Caso contrário, trate como uma string JSON e tente converter
+
             const parsedContacts = JSON.parse(contacts);
             return Array.isArray(parsedContacts)
                 ? parsedContacts
                 : Object.entries(parsedContacts).map(([key, value]) => ({
                     type: key,
-                    value: value?.value ?? '', // Usa string vazia se value for null ou undefined
-                    category: value?.category ?? '', // Usa string vazia se category for null ou undefined
+                    value: value?.value ?? '',
+                    category: value?.category ?? '',
                 }));
         } catch (error) {
             console.error('Erro ao converter contatos:', error);
             return [{ type: 'Telefone Principal', value: '' }];
         }
     };
-    
-    
-    
 
     return (
         <div className="w-full px-3">
@@ -103,57 +110,44 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
                 </div>
             </div>
 
-            <div className="overflow-x-auto mt-20">
-                <table className="min-w-full bg-white border border-gray-200">
-                    <thead>
-                        <tr>
-                            <th className="px-4 py-2 border-b">Nome</th>
-                            <th className="px-4 py-2 border-b">Categoria</th>
-                            <th className="px-4 py-2 border-b">Endereço</th>
-                            <th className="px-4 py-2 border-b">Estado</th>
-                            <th className="px-4 py-2 border-b">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {suppliers.map((supplier, index) => (
-
-                            <tr key={index} className="hover:bg-gray-100">
-                                <td className="px-4 py-2 border-b">{supplier.name}</td>
-                                <td className="px-4 py-2 border-b">{supplier.category}</td>
-                                <td className="px-4 py-2 border-b">{supplier.address}</td>
-                                <td className="px-4 py-2 border-b">{supplier.state}</td>
-                                <td className="px-4 py-2 border-b">{supplier.status ? 'true' : 'false'}</td>
-                                <td className="px-4 py-2 border-b">
-                                    {convertContactsToArray(supplier.contacts).map((contact, index) => (
-                                        <div key={index}>
-                                            <strong>{contact.type}:</strong> {contact.value}
-                                        </div>
-                                    ))}
-                                </td>
-
-                                    
-
-                                <td className="px-4 py-2 border-b text-center">
+            <div className="mt-20">
+                {Object.entries(groupedSuppliers).map(([category, suppliers]) => (
+                    <div key={category} className="mb-6">
+                        <h3 className="text-xl font-semibold mb-4 bg-blue-100 p-2 rounded">{category}</h3>
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            {suppliers.map((supplier, index) => (
+                                <div key={index} className="bg-white shadow-md rounded p-4 hover:shadow-lg transition-shadow border border-gray-200">
+                                    <h4 className="text-lg font-bold mb-2">{supplier.name}</h4>
+                                    <p><strong>Endereço:</strong> {supplier.address}</p>
+                                    <p><strong>Estado:</strong> {supplier.state}</p>
+                                    <p><strong>Status:</strong> {supplier.status ? 'Ativo' : 'Inativo'}</p>
+                                    <div className="mt-2">
+                                        {convertContactsToArray(supplier.contacts).map((contact, index) => (
+                                            <p key={index}>
+                                                <strong>{contact.type}:</strong> {contact.value}
+                                            </p>
+                                        ))}
+                                    </div>
                                     <button
                                         onClick={() => handleEditSupplier(supplier)}
-                                        className="text-yellow-500 hover:text-yellow-700"
+                                        className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded flex items-center justify-center hover:bg-yellow-600 transition"
                                         title="Editar Fornecedor"
                                     >
-                                        <FaEdit />
+                                        <FaEdit className="mr-2" /> Editar
                                     </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
             </div>
 
             <Sidebar visible={isPopupVisible} position="right" className='xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-hidden' onHide={handleClosePopup}>
                 <NewSupplierForm
                     onClose={handleClosePopup}
                     setSaveSupplier={setSaveSupplier}
-                    initialData={selectedSupplier} // Passa os dados do fornecedor selecionado para edição
-                    categories={categories} // Passa as categorias únicas para o formulário de fornecedor
+                    initialData={selectedSupplier}
+                    categories={categories}
                 />
             </Sidebar>
         </div>

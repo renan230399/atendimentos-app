@@ -47,12 +47,12 @@ class SupplierSeeder extends Seeder
                 'contacts' => json_encode([
                     ['type' => 'primary_phone', 'value' => '+55 35 3332-9090', 'category' => 'phone'],
                     ['type' => 'secondary_phone', 'value' => '+55 35 99877-5566', 'category' => 'phone'],
-                    ['type' => 'email', 'value' => 'contato@mercadinhojose.com', 'category' => 'email']
+                    ['type' => 'email', 'value' => 'contato@mercadinhojose.com', 'category' => 'string']
                 ]),
                 'address' => 'Rua das Laranjeiras, 89 - Bairro do Carmo',
                 'state' => 'MG',
                 'notes' => 'Pequeno mercado que atende a comunidade local.',
-                'status' => false,
+                'status' => true,
             ],
         ];
 

@@ -16,9 +16,13 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade'); // Autorreferência para categoria pai
             $table->foreignId('category_id')->nullable()->constrained('category_products')->onDelete('cascade'); // Autorreferência para categoria pai
             $table->string('name'); // Nome do produto
-            $table->string('description');//Descrição do produto
-            $table->string('measuring_unit');//Unidade de medida do estoque do produto
-            $table->string('photo')->nullable();
+            $table->string('description')->nullable();//Descrição do produto
+            $table->enum('measuring_unit', ['unidade', 'peso', 'volume'])->nullable(); // Tipo da transação
+            $table->integer('quantities_per_unit')->nullable();;//Unidade de medida do estoque do produto
+            $table->string('measuring_unit_of_unit')->nullable();; // Tipo da transação
+            $table->boolean('status');
+
+            $table->json('photo')->nullable();
             $table->timestamps();
         });
     }

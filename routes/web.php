@@ -6,6 +6,10 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuppliersController;
+use App\Http\Controllers\CategoryProductController;
+use App\Http\Controllers\ProductController;
+
+use App\Http\Controllers\StockLocalController;
 
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\TransactionCategoryController;
@@ -58,9 +62,17 @@ Route::middleware('auth')->group(function () {
     
 
     Route::post('/suppliers', [SuppliersController::class, 'store'])->name('suppliers.store');
-    Route::put('/suppliers/{id}', [SuppliersController::class, 'update'])->name('suppliers.update');
+    Route::put('/suppliers/{product}', [SuppliersController::class, 'update'])->name('suppliers.update');
+
+    Route::post('/categories', [CategoryProductController::class, 'store'])->name('categories.store');
+    Route::put('/categories', [CategoryProductController::class, 'update'])->name('categories.update');
 
 
+    Route::post('/products', [ProductController::class, 'store'])->name('product.store');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('product.update');
+
+    Route::post('/stock-locals', [StockLocalController::class, 'store'])->name('stockLocals.store');
+    Route::put('/stock-locals', [StockLocalController::class, 'update'])->name('stockLocals.update');
 
     // Rotas para formulários dinâmicos
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');

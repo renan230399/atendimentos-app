@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TreeSelect } from 'primereact/treeselect';
 
-const CategoryTreeSelect = ({ categories, filterCategory, setFilterCategory }) => {
+const CategoryTreeSelect = ({ categories, filterCategory, setFilterCategory, placeHolder }) => {
     // Estado para armazenar as categorias agrupadas
     const [groupedCategories, setGroupedCategories] = useState([]);
 
@@ -49,7 +49,7 @@ const CategoryTreeSelect = ({ categories, filterCategory, setFilterCategory }) =
             className="w-full md:w-20rem bg-white border border-gray-600"
             selectionMode="checkbox"
             display="chip"
-            placeholder="Selecione Categorias"
+            placeholder={placeHolder}
             showClear
         />
     );

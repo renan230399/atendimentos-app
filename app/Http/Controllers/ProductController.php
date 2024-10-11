@@ -29,17 +29,75 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        // Validação dos dados recebidos
+        $validatedData = $request->validate([
+            'category_id' => 'nullable|exists:category_products,id',
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'measuring_unit' => 'required|string|max:50',
-            'company_id' => 'required|exists:companies,id',
+            'description' => 'nullable|string',
+            'measuring_unit' => 'nullable|in:unidade,peso,volume',
+            'quantities_per_unit' => 'nullable|integer',
+            'measuring_unit_of_unit' => 'nullable|string|max:50',
+            'status' => 'required|boolean',
+            'photo' => 'nullable|json',
         ]);
+        // Obtém o ID da empresa associada ao usuário autenticado
+        $companyId = auth()->user()->company_id;
 
-        Product::create($request->all());
+       // Cria um novo registro de fornecedor
+       $supplier = Product::create([
+        'company_id' => $companyId,
+        'category_id' => $validatedData['category_id'],
+        'name' => $validatedData['name'] ?? null,
+        'description' => $validatedData['description'] ?? null,
+        'measuring_unit' => $validatedData['address'] ?? null,
+        'quantities_per_unit' => $validatedData['state'] ?? null,
+        'measuring_unit_of_unit' => $validatedData['notes'] ?? null,
+        'status' => $validatedData['status'],
+        'photo' => $validatedData['photo'] ?? null,
 
-        return redirect()->route('products.index')->with('success', 'Product created successfully');
+    ]);
+
+
+
+        return redirect()->route('inventory.dashboard')->with('success', 'Produto cadastrado com sucesso!');
     }
+
+    /**
+     * Update the specified product in storage.
+     */
+    public function update(Request $request, Product $product)
+    {
+        //dd($request);
+        // Validação dos dados recebidos
+        $validatedData = $request->validate([
+            'category_id' => 'nullable|exists:category_products,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'measuring_unit' => 'nullable|in:unidade,peso,volume',
+            'quantities_per_unit' => 'nullable|integer',
+            'measuring_unit_of_unit' => 'nullable|string|max:50',
+            'status' => 'required|boolean',
+            'photo' => 'nullable|json',
+        ]);
+    
+        // Obtém o ID da empresa associada ao usuário autenticado
+        $companyId = auth()->user()->company_id;
+    
+        // Atualização do produto com os dados validados
+        $product->update([
+            'category_id' => $validatedData['category_id'] ?? null,
+            'name' => $validatedData['name'],
+            'description' => $validatedData['description'] ?? null,
+            'measuring_unit' => $validatedData['measuring_unit'] ?? null,
+            'quantities_per_unit' => $validatedData['quantities_per_unit'] ?? null,
+            'measuring_unit_of_unit' => $validatedData['measuring_unit_of_unit'] ?? null,
+            'status' => $validatedData['status'],
+            'photo' => $validatedData['photo'] ?? null,
+        ]);
+    
+        return redirect()->route('inventory.dashboard')->with('success', 'Produto atualizado com sucesso!');
+    }
+    
 
     /**
      * Show the form for editing the specified product.
@@ -49,21 +107,7 @@ class ProductController extends Controller
         return view('products.edit', compact('product'));
     }
 
-    /**
-     * Update the specified product in storage.
-     */
-    public function update(Request $request, Product $product)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'measuring_unit' => 'required|string|max:50',
-        ]);
 
-        $product->update($request->all());
-
-        return redirect()->route('products.index')->with('success', 'Product updated successfully');
-    }
 
     /**
      * Remove the specified product from storage.

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import ProductFilter from './ProductFilter';
+import { Sidebar } from 'primereact/sidebar';
+import ProductForm from './ProductForm/ProductForm';
 
 interface Stock {
     id: number;
@@ -14,11 +16,17 @@ interface Stock {
 
 interface Product {
     id: number;
+    company_id: number | null; // ID da empresa, pode ser nulo
+    category_id: number | null; // ID da categoria, pode ser nulo
     name: string;
     description: string;
-    measuring_unit: string;
-    category_id: number; // Campo de categoria no produto
+    measuring_unit: 'unidade' | 'peso' | 'volume' | null; // Campo enum para unidade de medida
+    quantities_per_unit: number | null; // Quantidade por unidade
+    measuring_unit_of_unit: string | null; // Unidade de medida da unidade
+    status: boolean; // Status do produto
+    photo: string[] | null; // Fotos do produto, armazenadas como array de strings
 }
+
 
 interface Supplier {
     id: number;
@@ -36,29 +44,52 @@ interface ProductWithStockProps {
     suppliers: Supplier[];
     categories: Category[]; // Lista de categorias
     onProductSelect: (productId: number, quantity: number) => void; // Função de adicionar produto
+    stockLocals:{
+        id: number;
+        company_id: number;
+        parent_id: number | null;
+        name: string;
+        description: string;
+    }[];
 }
 
-const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, suppliers, categories, onProductSelect }) => {
+const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, suppliers, categories, onProductSelect,stockLocals }) => {
     const [productNameFilter, setProductNameFilter] = useState('');
     const [minStockFilter, setMinStockFilter] = useState(0);
-    const [selectedCategory, setSelectedCategory] = useState(''); // Filtro de categoria
+    const [selectedCategory, setSelectedCategory] = useState([]); // Filtro de categoria
+    const [selectedStockLocal, setSelectedStockLocal] = useState([]); // Filtro de categoria
+    const [formAddProduct, setFormAddProduct] = useState(false); // Form produto
     const [showModal, setShowModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Produto selecionado
     const [successMessage, setSuccessMessage] = useState(''); // Mensagem de sucesso
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null); // Produto que está sendo editado
 
-    // Filtragem de produtos por nome e categoria
-    const filteredProducts = products.filter((product) => {
+// Ordena e filtra os produtos por nome e categoria
+const filteredProducts = products
+    .sort((a, b) => a.name.localeCompare(b.name)) // Ordena os produtos em ordem alfabética
+    .filter((product) => {
         const matchesName = product.name.toLowerCase().includes(productNameFilter.toLowerCase());
-        const matchesCategory = selectedCategory ? product.category_id === Number(selectedCategory) : true;
+
+        // Verifica se a categoria do produto está marcada no TreeSelect
+        const matchesCategory =
+            selectedCategory && Object.keys(selectedCategory).length > 0
+                ? selectedCategory[product.category_id]?.checked
+                : true;
+
         return matchesName && matchesCategory;
     });
 
+    
     // Função para abrir o modal e definir o produto selecionado
     const handleAddProductClick = (product: Product) => {
         setSelectedProduct(product);
         setShowModal(true);
     };
-
+   // Função para abrir o formulário para adicionar ou editar produto
+   const handleOpenForm = (product?: Product) => {
+    setEditingProduct(product || null); // Se houver um produto, significa que estamos editando
+    setFormAddProduct(true); // Abre o formulário
+};
     // Função para confirmar a adição do produto
     const handleConfirmAddProduct = () => {
         if (selectedProduct) {
@@ -70,7 +101,6 @@ const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, s
             setTimeout(() => setSuccessMessage(''), 3000);
         }
     };
-
     return (
         <div className="w-full h-full md:w-full flex flex-col">
             {/* Filtro de Produtos - Parte fixa */}
@@ -82,29 +112,59 @@ const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, s
                     setMinStockFilter={setMinStockFilter}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
+                    selectedStockLocal={selectedStockLocal}
+                    setSelectedStockLocal={setSelectedStockLocal}
                     categories={categories}
+                    stockLocals={stockLocals}
                 />
             </div>
-    
+            {onProductSelect && (
+                <div
+                onClick={() => setFormAddProduct(true)}
+                className="mt-4 text-sm cursor-pointer text-blue-500 flex items-center hover:underline"
+            >
+                <FaPlus className="mr-1" />
+                Cadastrar Novo produto 
+            </div>
+            )}
             {/* Lista de Produtos - Parte rolável */}
             <div className="mb-14 overflow-y-auto border border-gray-300 rounded-xl  flex-grow">
                 <ul className="h-auto shadow-lg px-6">
                     {filteredProducts.map((product) => {
-                        const stockForProduct = stocks.filter(stock => stock.product_id === product.id && stock.quantity >= minStockFilter);
+                        const stockForProduct = stocks.filter(stock => {
+                            const matchesProduct = stock.product_id === product.id;
+                            const matchesStockQuantity = stock.quantity >= minStockFilter;
+
+                            // Verifica se o local de estoque do produto está marcado no TreeSelect
+                            const matchesStockLocal = selectedStockLocal && Object.keys(selectedStockLocal).length > 0
+                                ? selectedStockLocal[stock.local_id]?.checked
+                                : true;
+
+                            return matchesProduct && matchesStockQuantity && matchesStockLocal;
+                        });                        
                         return (
                             <li
                                 key={product.id}
-                                className="bg-white text-left px-6 border-b border-b-gray-200 justify-between ease-in-out my-5"
+                                className="bg-white text-left px-6 border-b border-b-gray-200 justify-between ease-in-out my-1"
                             >
                                 <div className="flex justify-between">
                                     <h4 className="font-semibold text-2xl text-left text-gray-800">{product.name}</h4>
                                     <div
+                                        onClick={() => handleOpenForm(product)} // Editar Produto
+                                        className="text-sm cursor-pointer text-blue-500 hover:underline"
+                                    >
+                                        Editar
+                                    </div>
+                                    {onProductSelect && (
+                                        <div
                                         onClick={() => handleAddProductClick(product)}
                                         className="mt-4 text-sm cursor-pointer text-blue-500 flex items-center hover:underline"
                                     >
                                         <FaPlus className="mr-1" />
                                         Adicionar Produto ao pedido
                                     </div>
+                                    )}
+    
                                 </div>
                                 <p className="text-gray-600 mb-2">{product.description}</p>
     
@@ -116,6 +176,7 @@ const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, s
                                                 <tr>
                                                     <th className="px-4 py-2">Local</th>
                                                     <th className="px-4 py-2">Quantidade</th>
+                                                    <th className="px-4 py-2">Total</th>
                                                     <th className="px-4 py-2">Entrada</th>
                                                     <th className="px-4 py-2">Validade</th>
                                                     <th className="px-4 py-2">Preço de Custo</th>
@@ -125,10 +186,21 @@ const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, s
                                                 {stockForProduct.map((stock) => (
                                                     <tr key={stock.id} className="border-t">
                                                         <td className="px-4 py-2">{stock.location || 'Não especificado'}</td>
-                                                        <td className="px-4 py-2">{stock.quantity} {product.measuring_unit}</td>
+                                                        <td className="px-4 py-2">
+                                                            {stock.quantity} unidades de {product.quantities_per_unit} {product.measuring_unit_of_unit}
+                                                        </td>
+                                                        <td className="px-4 py-2">
+                                                            {stock.quantity && product.quantities_per_unit
+                                                                ? stock.quantity * product.quantities_per_unit
+                                                                : 0}{' '}
+                                                            {product.measuring_unit_of_unit || ''}
+                                                        </td>
+
                                                         <td className="px-4 py-2">{new Date(stock.entry_date).toLocaleDateString()}</td>
                                                         <td className="px-4 py-2">{stock.expiration_date ? new Date(stock.expiration_date).toLocaleDateString() : 'Sem validade'}</td>
-                                                        <td className="px-4 py-2">{stock.cost_price ? `R$${Number(stock.cost_price).toFixed(2)}` : 'N/A'}</td>
+                                                        <td className="px-4 py-2">{(Number(stock.cost_price) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                                                        
+
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -173,6 +245,18 @@ const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, s
                     {successMessage}
                 </div>
             )}
+            <Sidebar 
+                visible={formAddProduct}
+                position="left" 
+                className='pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-auto bg-white' 
+                onHide={() => setFormAddProduct(false)}>
+
+                <ProductForm 
+                    categories={categories} 
+                    initialData={editingProduct || undefined} 
+                    onHide={() => setFormAddProduct(false)} 
+                />
+             </Sidebar>
         </div>
     );
     

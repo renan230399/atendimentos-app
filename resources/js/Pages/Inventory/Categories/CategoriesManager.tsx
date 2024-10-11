@@ -4,7 +4,8 @@ import { Tree } from 'primereact/tree';
 import { Button } from 'primereact/button';
 import { Badge } from 'primereact/badge';
 import { InputText } from 'primereact/inputtext';
-import { Dialog } from 'primereact/dialog';
+import AddSubcategoryDialog from './AddSubcategoryDialog';
+import { useForm } from '@inertiajs/react'; // Importa useForm do Inertia.js
 
 interface Category {
     id: number;
@@ -18,14 +19,19 @@ interface CategoriesManagerProps {
 }
 
 export default function CategoriesManager({ categories }: CategoriesManagerProps) {
-    const [addCategoriesForm, setAddCategoriesForm] = useState(false);
     const [nodes, setNodes] = useState([]);
     const [expandedKeys, setExpandedKeys] = useState({});
     const [isEditing, setIsEditing] = useState(false);
     const [editedCategories, setEditedCategories] = useState({});
     const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
     const [selectedParentCategory, setSelectedParentCategory] = useState([]);
-    const [newSubcategoryName, setNewSubcategoryName] = useState('');
+    const [saveAddCategory, setSaveAddCategory] = useState(false);
+    const [saveSuccessEditing, setSaveSuccessEditing] = useState(false);
+
+    // Configura o useForm para lidar com as categorias editadas
+    const { data, setData, put, processing } = useForm({
+        editedCategories: {},
+    });
 
     useEffect(() => {
         const groupedCategories = buildCategoryTree(categories);
@@ -34,17 +40,18 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
 
     const buildCategoryTree = (categories) => {
         const categoryMap = {};
-
-        // Função para calcular a profundidade do nó na árvore
+    
         const calculateDepth = (category, depth = 0) => {
             if (!category.parent_id) return depth;
             const parentCategory = categories.find(cat => cat.id === category.parent_id);
             return parentCategory ? calculateDepth(parentCategory, depth + 1) : depth;
         };
-
-        // Inicializa cada categoria no map
-        categories.forEach((category) => {
-            const depth = calculateDepth(category); // Calcula a profundidade do nó
+    
+        // Ordena as categorias em ordem alfabética com base no nome
+        const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
+    
+        sortedCategories.forEach((category) => {
+            const depth = calculateDepth(category);
             categoryMap[category.id] = {
                 key: category.id,
                 label: category.name,
@@ -54,33 +61,23 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                 style: { paddingLeft: `${depth * 15}px` },
             };
         });
-
-        // Adiciona cada categoria como filho da categoria pai correspondente
+    
         const tree = [];
-        categories.forEach((category) => {
+        sortedCategories.forEach((category) => {
             if (category.parent_id) {
                 categoryMap[category.parent_id]?.children.push(categoryMap[category.id]);
             } else {
                 tree.push(categoryMap[category.id]);
             }
         });
-
+    
         return tree;
     };
+    
 
-    const handleAddSubcategory = () => {
-        if (newSubcategoryName.trim() !== '') {
-            console.log('Nova subcategoria adicionada:', {
-                parentCategory: selectedParentCategory,
-                name: newSubcategoryName,
-            });
-            setShowAddSubcategoryDialog(false);
-        }
-    };
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
         if (!isEditing) {
-            // Ao iniciar o modo de edição, criar um clone dos nomes das categorias para edição
             const initialEditedCategories = categories.reduce((acc, category) => {
                 acc[category.id] = category.name;
                 return acc;
@@ -90,17 +87,31 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
     };
 
     const handleInputChange = (id, newName) => {
-        setEditedCategories({
+        // Atualiza o estado local com a nova edição
+        const updatedCategories = {
             ...editedCategories,
             [id]: newName,
+        };
+        setEditedCategories(updatedCategories);
+    
+        // Atualiza o estado global do Inertia com os dados locais
+        setData('editedCategories', updatedCategories);
+    };
+    
+    const handleSaveChanges = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Envia os dados editados para o backend
+        put(route('categories.update'), {
+            data,
+            onSuccess: () => {
+                setSaveSuccessEditing(true);
+                setIsEditing(false);
+            },
         });
     };
-
-    const handleSaveChanges = () => {
-        // Aqui você pode implementar a lógica para salvar as alterações no backend ou atualizar o estado
-        console.log('Categorias atualizadas:', editedCategories);
-        setIsEditing(false);
-    };
+    
+    
 
     const expandAll = () => {
         let _expandedKeys = {};
@@ -113,11 +124,12 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
     const collapseAll = () => {
         setExpandedKeys({});
     };
+
     const openAddSubcategoryDialog = (parentCategory) => {
         setSelectedParentCategory(parentCategory);
-        setNewSubcategoryName('');
         setShowAddSubcategoryDialog(true);
     };
+
     const expandNode = (node, _expandedKeys) => {
         if (node.children && node.children.length) {
             _expandedKeys[node.key] = true;
@@ -126,7 +138,6 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
             }
         }
     };
-
     return (
         <div className="w-full px-3">
             <div className="flex flex-wrap fixed top-0 justify-between items-center gap-5 p-4 bg-gray-100 shadow-lg rounded-md">
@@ -135,42 +146,42 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                     <h2 className="text-3xl font-bold text-gray-700">Categorias de Itens</h2>
                 </div>
                 <div className="flex gap-3">
+                {isEditing && (
+                        <Button
+                            icon="pi pi-undo"
+                            label={"Cancelar"}
+                            className={"px-2 py-1 rounded shadow text-white p-button-primary bg-red-500"}
+                            onClick={handleEditToggle}
+                        />
+                    )}
                     <Button
                         icon="pi pi-pencil"
-                        label={isEditing ? "Salvar Alterações" : "Editar Categorias"}
-                        className={isEditing ? "p-button-success" : "p-button-primary"}
+                        label={isEditing ? "Salvar Alterações" : "Editar Locais"}
+                        className={`px-2 py-1 rounded shadow text-white ${isEditing ? "p-button-success bg-green-500 " : "p-button-primary bg-blue-500"}`}
                         onClick={isEditing ? handleSaveChanges : handleEditToggle}
                     />
+ 
+                </div>
+            </div>
+            <div className="card flex flex-col items-center justify-center mt-6 ">
+                <h3 className="text-white text-lg font-semibold mb-4">Gerenciar Categorias</h3>
+                <div className="flex gap-4">
+                <Button
+                        type="button"
+                        icon="pi pi-angle-double-down"
+                        label="Expandir Tudo"
+                        className="p-button-raised p-button-rounded p-button-success bg-blue-500 text-white py-1 px-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                        onClick={expandAll}
+                    />
                     <Button
-                        icon="pi pi-plus"
-                        label="Cadastrar Categorias"
-                        className="p-button-raised p-button-primary"
-                        onClick={() => setAddCategoriesForm(true)}
+                        type="button"
+                        icon="pi pi-angle-double-up"
+                        label="Colapsar Tudo"
+                        className="p-button-raised p-button-rounded p-button-warning bg-red-500 text-white py-1 px-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                        onClick={collapseAll}
                     />
                 </div>
             </div>
-
-            <div className="card flex flex-col items-center justify-center mt-6 ">
-    <h3 className="text-white text-lg font-semibold mb-4">Gerenciar Categorias</h3>
-    <div className="flex gap-4">
-        <Button 
-            type="button" 
-            icon="pi pi-angle-double-down" 
-            label="Expandir Tudo" 
-            className="p-button-raised p-button-rounded p-button-success shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-            onClick={expandAll} 
-        />
-        <Button 
-            type="button" 
-            icon="pi pi-angle-double-up" 
-            label="Colapsar Tudo" 
-            className="p-button-raised p-button-rounded p-button-warning shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-            onClick={collapseAll} 
-        />
-    </div>
-</div>
-
-
             <Tree
                 value={nodes}
                 expandedKeys={expandedKeys}
@@ -178,13 +189,13 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                 className="w-full md:w-30rem bg-white shadow-md rounded-md p-4"
                 nodeTemplate={(node, options) => (
                     <div className={`flex items-center gap-2 border-b pb-1 bg-gray-100 p-1 ${options.className}`}>
-                        <i className={`pi ${node.children && node.children.length > 0 ? 'pi-th-large text-blue-500' : 'pi-box text-green-500'} mr-2`}></i>
+                        <i className={`pi my-auto ${node.children && node.children.length > 0 ? 'pi-th-large text-blue-500' : 'pi-box text-green-500'} mr-`}></i>
                         {isEditing ? (
                             <>
                                 <InputText
                                     value={editedCategories[node.key] || ''}
                                     onChange={(e) => handleInputChange(node.key, e.target.value)}
-                                    className="p-inputtext-sm w-full px-1 py-0"
+                                    className="p-inputtext-sm w-full py-0 m-0"
                                 />
                                 <Button
                                     icon="pi pi-plus"
@@ -201,32 +212,14 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                 )}
             />
 
-            <Dialog 
-                header="Adicionar Nova Subcategoria" 
-                visible={showAddSubcategoryDialog} 
-                className='w-[30vw]' 
-                modal 
-                footer={
-                    <div>
-
-                        <Button label="Cancelar" icon="pi pi-times" onClick={() => setShowAddSubcategoryDialog(false)} className="p-button-text" />
-                        <Button label="Adicionar" icon="pi pi-check" onClick={handleAddSubcategory} autoFocus />
-                    </div>
-                } 
+            <AddSubcategoryDialog
+                visible={showAddSubcategoryDialog}
                 onHide={() => setShowAddSubcategoryDialog(false)}
-            >
-                <p className='pb-3'>
-                    <strong>Categoria pai:</strong>
-                    
-                    {' '}{selectedParentCategory.name}
-                </p>
-                <InputText
-                    value={newSubcategoryName}
-                    onChange={(e) => setNewSubcategoryName(e.target.value)}
-                    placeholder="Nome da Subcategoria"
-                    className="w-full"
-                />
-            </Dialog>
+                parentCategoryName={selectedParentCategory.name}
+                parentCategoryId={selectedParentCategory.key}
+                setSaveAddCategory={setSaveAddCategory}
+                setIsEditing={setIsEditing}
+            />
         </div>
     );
 }

@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade')->comment('Referência para o pedido');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade')->comment('Referência para o produto');
             $table->integer('quantity')->comment('Quantidade do produto');
-            $table->decimal('unit_price', 10, 2)->comment('Preço unitário do produto');
-            $table->decimal('total_price', 10, 2)->comment('Preço total (quantidade * preço unitário)');
+            $table->integer('unit_price')->comment('Valor unitário do produto');
+            $table->integer('total_price')->comment('Valor total do produto');
             $table->timestamps();
         });
     }

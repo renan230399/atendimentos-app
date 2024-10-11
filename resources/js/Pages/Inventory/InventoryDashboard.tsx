@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { FaPlusCircle } from 'react-icons/fa';
-import ProductWithStock from './Partials/ProductWithStock';
+import ProductWithStock from './Products/ProductWithStock';
 import PopUpComponent from '@/Layouts/PopupComponent';
 import SuppliersManager from './Suppliers/SuppliersManager';
 import NewOrderForm from './OrderItems/NewOrderForm'; // Importação do NewOrderForm
@@ -12,6 +12,8 @@ import { TbTruckDelivery } from "react-icons/tb";
 import { Sidebar } from 'primereact/sidebar';
 import CategoriesManager from './Categories/CategoriesManager';
 import IconButton from '@/Components/Utils/IconButton';
+import { FaMagnifyingGlassLocation } from "react-icons/fa6";
+import StockLocalsManager from './StockLocals/StockLocalsManager';
 interface InventoryDashboardProps {
     auth: {
         user: {
@@ -42,7 +44,13 @@ interface InventoryDashboardProps {
         location: string;
         cost_price?: number;
     }[];
-
+    stockLocals:{
+        id: number;
+        company_id: number;
+        parent_id: number | null;
+        name: string;
+        description: string;
+    }[];
     suppliers:{
         name:string;
         category:string;
@@ -54,11 +62,12 @@ interface InventoryDashboardProps {
     }[];
 }
 
-export default function InventoryDashboard({ auth, categories, products, stocks, suppliers }: InventoryDashboardProps) {
+export default function InventoryDashboard({ auth, categories, products, stocks, suppliers,stockLocals }: InventoryDashboardProps) {
     const [isOrderPopupOpen, setIsOrderPopupOpen] = useState(false); // Controle do popup
     const [popupParams, setPopupParams] = useState({});
     const [categoriesSideBar, setCategoriesSideBar] = useState(false); // Controle do popup
     const [suppliersPopupOpen, setSuppliersPopupOpen] = useState(false); // Controle do popup
+    const [stockLocalsSideBar, setStockLocalsSideBar] = useState(false); // Controle do popup
 
     const handleOpenOrderPopup = useCallback((e: React.MouseEvent) => {
         setPopupParams({ clientX: e.clientX, clientY: e.clientY });
@@ -75,7 +84,6 @@ export default function InventoryDashboard({ auth, categories, products, stocks,
     const handleCloseSuppliersPopup = useCallback(() => {
         setSuppliersPopupOpen(false);
     }, []);
-console.log(categories);
 
     return (
         <AuthenticatedLayout user={auth.user}>
@@ -95,6 +103,11 @@ console.log(categories);
                 title="Fornecedores"
                 onClick={handleOpenSuppliersPopup}
             />
+            <IconButton
+                icon={<FaMagnifyingGlassLocation  size={30} className="text-white" />}
+                title="Locais do estoque"
+                onClick={() => setStockLocalsSideBar(true)}
+                />
         </div>
             <Head title="Inventário" />
             <div className="p-6  sm:px-6 lg:px-8 bg-white space-y-10 flex flex-wrap gap-6 h-screen w-[95vw]">
@@ -104,6 +117,7 @@ console.log(categories);
                         stocks={stocks} 
                         suppliers={suppliers} 
                         categories={categories} // Adiciona as categorias como props para o filtro
+                        stockLocals={stockLocals}
                     />
                 {/* Categorias Section */}
                 <div className="w-full md:w-[60%] bg-white shadow-lg rounded-lg p-6">
@@ -130,7 +144,7 @@ console.log(categories);
                 {/* Popup para nova compra */}
                 {isOrderPopupOpen && (
                 <PopUpComponent 
-                classPopup='w-[96vw] h-[94vh]'
+                classPopup='w-[96vw] h-[94vh] bg-white'
 
                 zindex="100"
                 id="new_order_popup" 
@@ -163,6 +177,16 @@ console.log(categories);
                         categories={categories}
                     />
              </Sidebar>
+             <Sidebar 
+                visible={stockLocalsSideBar}
+                position="bottom" 
+                className='pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-auto bg-white' 
+                onHide={() => setStockLocalsSideBar(false)}>
+                    <StockLocalsManager 
+                        stockLocals={stockLocals}
+                    />
+             </Sidebar>
+             
         </AuthenticatedLayout>
     );
 }
