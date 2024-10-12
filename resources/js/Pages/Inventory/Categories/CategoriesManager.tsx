@@ -219,6 +219,7 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                 parentCategoryId={selectedParentCategory.key}
                 setSaveAddCategory={setSaveAddCategory}
                 setIsEditing={setIsEditing}
+                setSelectedParentCategory={setSelectedParentCategory}
             />
         </div>
     );

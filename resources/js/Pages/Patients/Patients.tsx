@@ -267,6 +267,7 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
                         employees={employees}
                         auth={auth}
                         onClose={handleCloseAddConsultationPopup}
+                        Kelly eu te amo <3
                     />*/}
                    <AddConsultation
                         patient={selectedPatient}

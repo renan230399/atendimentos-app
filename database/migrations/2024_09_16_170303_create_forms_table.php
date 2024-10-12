@@ -14,7 +14,8 @@ class CreateFormsTable extends Migration
     {
         Schema::create('forms', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('company_id')->index();
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade'); // Chave estrangeira para produtos
+
             $table->integer('category')->nullable();
             $table->string('name'); // Nome do formulário
             $table->text('description')->nullable(); // Descrição do formulário
@@ -23,7 +24,6 @@ class CreateFormsTable extends Migration
             $table->boolean('is_wizard')->default(false); // Define se o formulário é um wizard
             $table->json('wizard_structure')->nullable(); 
             $table->timestamps(); // Colunas created_at e updated_at
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade'); // Deletes patient if the company is deleted
 
         });
     }

@@ -11,7 +11,7 @@ interface AddSubcategoryDialogProps {
     parentCategoryId: number | null; // Adiciona o ID da categoria pai para associar a nova subcategoria
     setSaveAddCategory: () => void;
     setIsEditing: () => void;
-
+    setSelectedParentCategory: ()=>void;
 }
 
 const AddSubcategoryDialog: React.FC<AddSubcategoryDialogProps> = ({
@@ -21,6 +21,8 @@ const AddSubcategoryDialog: React.FC<AddSubcategoryDialogProps> = ({
     parentCategoryId,
     setSaveAddCategory,
     setIsEditing,
+    setSelectedParentCategory
+
 }) => {
     // Utilizando useForm do Inertia para gerenciar o estado do formulário e envio de dados
     const { data, setData, post, processing, reset } = useForm({
@@ -47,7 +49,7 @@ const AddSubcategoryDialog: React.FC<AddSubcategoryDialogProps> = ({
                     onHide(); // Fecha o diálogo
                     setSaveAddCategory(true);
                     setIsEditing(false);
-
+                    setIsEditing(false);
                 }
             });
         }
