@@ -24,7 +24,6 @@ interface OrderItemsTableProps {
 const OrderItemsTable: React.FC<OrderItemsTableProps> = ({ items, products, handleRemoveItem, handleUpdateItem }) => {
     // Calcula o total do carrinho somando todos os itens
     const cartTotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-
     return (
         <div className="w-[90%] mx-auto shadow-xl h-auto overflow-y-auto resize-y border-b border-black">
             <h3 className="text-lg font-semibold">Itens do Pedido</h3>
@@ -71,7 +70,7 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({ items, products, hand
                                             </td>
                                             {/* Total calculado */}
                                             <td className="px-4 py-2 w-[20%] text-left">
-                                                R${((item.quantity * item.unit_price)/100).toFixed(2)}
+                                                R${((item.quantity * item.unit_price) / 100).toFixed(2)}
                                             </td>
                                             {/* Botão para remover o item */}
                                             <td className="px-4 py-2 w-[5%]">

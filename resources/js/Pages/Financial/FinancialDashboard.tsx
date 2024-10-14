@@ -6,6 +6,7 @@ import TransfersManager from '@/Pages/Financial/Partials/TransfersManager';
 import { useForm } from '@inertiajs/react'; // Correção na importação do Inertia.js
 import TransactionsManager from './Partials/TransactionsManager';
 import TransactionsAdd from './Partials/TransactionsAdd';
+import PaymentMethodsManager from '../Companies/PaymentMethod/PaymentMethodsManager';
 import { MdAddShoppingCart } from "react-icons/md";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { FaSitemap, FaExclamationTriangle } from "react-icons/fa";
@@ -28,7 +29,7 @@ interface FinancialDashboardProps {
   categories: Category[];
   transfers: Transfer[];
   paymentMethods:PaymentMethod[];
-  paymentMethodsFees:PaymentMethodFee[];
+  paymentMethodsFees:PaymentMethodsFee[];
 }
 
 interface Account {
@@ -42,7 +43,7 @@ interface PaymentMethod {
   name: string;
   type: string;
 }
-interface PaymentMethodFee {
+interface PaymentMethodsFee {
   id: number;
   payment_method_id: number;
   installments: number;
@@ -71,19 +72,14 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
   const memoizedAccounts = useMemo(() => accounts, [accounts]);
   const memoizedCategories = useMemo(() => categories, [categories]);
   const memoizedTransfers = useMemo(() => transfers, [transfers]);
-  const memoizedPaymentMethod = useMemo(() => paymentMethods, [paymentMethods]);
-  const memoizedPaymentMethodFees = useMemo(() => paymentMethodsFees, [paymentMethodsFees]);
+  const memoizedPaymentMethods = useMemo(() => paymentMethods, [paymentMethods]);
+  const memoizedPaymentMethodsFees = useMemo(() => paymentMethodsFees, [paymentMethodsFees]);
   // Estados para lidar com o popup
   const [popupParams, setPopupParams] = useState<{ clientX: number; clientY: number } | null>(null);
   const [isAddTransactionPopupOpen, setIsAddTransactionPopupOpen] = useState(false);
   const [isViewAccounts, setIsViewAccounts] = useState(false); // Estado para controlar a visualização de contas
-  
 
-  // Formulário do Inertia.js
-  const { data, setData, reset, post, processing, errors } = useForm({
-    category_id: categories.length > 0 ? categories[0].id : '',
-    account_id: accounts.length > 0 ? accounts[0].id : '',
-  });
+  
 
   // Função para alternar a exibição das contas
   const handleToggleViewAccounts = useCallback(() => {
@@ -133,8 +129,8 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
             accounts={memoizedAccounts} 
             categories={memoizedCategories} 
             auth={auth}
-            paymentMethods={memoizedPaymentMethod} 
-            paymentMethodsFees={memoizedPaymentMethodFees} 
+            paymentMethods={memoizedPaymentMethods} 
+            paymentMethodsFees={memoizedPaymentMethodsFees} 
             />
         </div>
 
@@ -161,12 +157,9 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
             
           >
             <TransactionsAdd
-              data={data}
-              setData={(field, value) => setData(field, value)}
+             
               accounts={memoizedAccounts}
               categories={memoizedCategories}
-              loading={processing}
-              errors={errors}
               logo={auth.user.company?.company_logo ? (auth.user.company.company_logo):('')}
 
             />
@@ -174,8 +167,15 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
         </Suspense>
       )}
               <Sidebar visible={isViewAccounts} position="left" className='pt-0 xl:w-[30vw] md:w-[45vw] sm:w-[75vw] overflow-auto bg-white' onHide={() => setIsViewAccounts(false)}>
-                <AccountsManager accounts={memoizedAccounts} company_logo={auth.user.company.company_logo}/>
+              <AccountsManager 
+                accounts={memoizedAccounts} 
+                company_logo={auth.user.company?.company_logo} 
+                paymentMethods={memoizedPaymentMethods} 
+                paymentMethodsFees={memoizedPaymentMethodsFees} 
+              />
+
               </Sidebar>
+
 
     </AuthenticatedLayout>
   );

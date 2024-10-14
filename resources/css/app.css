@@ -428,3 +428,7 @@ transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
     color: #000000 !important; /* Mantém a cor do texto preta */
 }
 
+.p-stepper-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }

@@ -1,11 +1,56 @@
-import { HiPencilAlt, HiEye } from 'react-icons/hi'; // Importando os ícones da biblioteca react-icons
+import React from 'react';
 import { MdPerson, MdPhone, MdCake } from 'react-icons/md';
-import { FcCellPhone, FcCalendar } from "react-icons/fc";
+import { FcCellPhone, FcCalendar } from 'react-icons/fc';
+import { formatDateAndAge } from '@/Components/Utils/dateUtils';
 
-const PatientListItem = ({ patient, handleOpenEditPopup, handleOpenViewPopup, formatDateAndAge }) => (
-    <div className="zoom md:w-[32%] w-[100%] m-auto z-10 rounded/2 p-2 border border-gray-300 flex flex-wrap gap-1 shadow-md bg-white my-3 rounded-xl"
-    onClick={handleOpenViewPopup}
->
+// Definindo a interface para os dados do paciente
+interface ContactDetail {
+    type: string;
+    value: string;
+    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
+}
+
+interface Contact {
+    name: string;
+    relation: string;
+    contacts: ContactDetail[]; // Aqui você deve ter a lista de contatos
+}
+
+interface Patient {
+    id: number;
+    company_id: number;
+    patient_name: string;
+    phone: string;
+    birth_date: string; // ou Date, se você estiver lidando com objetos Date
+    gender: string | null;
+    neighborhood: string;
+    street: string;
+    house_number: string;
+    address_complement: string;
+    city: string;
+    state: string;
+    cpf: string;
+    contacts: Contact[] | string; // Aqui você pode ajustar se sempre receberá um array ou uma string
+    complaints: string | null;
+    notes: string;
+    profile_picture: string | null;
+    status: boolean;
+    created_at: string; // ou Date
+    updated_at: string; // ou Date
+}
+
+// Definindo a interface para as props do componente
+interface PatientListItemProps {
+    patient: Patient;
+    openViewPatient: (e: React.MouseEvent<HTMLDivElement>, patient: Patient) => void;
+}
+
+const PatientListItem: React.FC<PatientListItemProps> = ({ patient, openViewPatient }) => (
+    <div 
+        className="zoom md:w-[32%] w-[100%] m-auto z-10 rounded/2 p-2 border border-gray-300 flex flex-wrap gap-1 shadow-md bg-white my-3 rounded-xl"
+        onClick={(e) => openViewPatient(e, patient)}  // Passando o paciente ao abrir o popup
+        key={patient.id}
+    >
         <div className="md:w-[30%] text-left my-auto">
             {patient.profile_picture ? (
                 <img
@@ -20,30 +65,20 @@ const PatientListItem = ({ patient, handleOpenEditPopup, handleOpenViewPopup, fo
             )}
         </div>
         <div className="md:w-[68%] m-auto">
-        <div className='space-y-1'>
-            <p className="text-xl font-semibold flex items-center gap-2">
-                <MdPerson size={30} className="text-gray-500" />
-                {patient.patient_name}
-            </p>
-            <p className="flex items-center gap-2">
-            <FcCellPhone className='my-auto' size={30} />
-            {patient.phone || 'Não cadastrado'}
-            </p>
-            <p className="flex items-center gap-2">
-                <FcCalendar className='my-auto' size={30} />
-                 {formatDateAndAge(patient.birth_date)}
-            </p>
-        </div>
-        <button
-            onClick={handleOpenViewPopup}
-            className="hidden m-auto flex items-center justify-center bg-blue-500 text-white px-4 py rounded hover:bg-blue-600 transition-colors duration-300"
-        >
-            <HiEye className="h-5 w-5 mr-2" /> {/* Ícone de visualização */}
-            Ver Informações
-        </button>
-        </div>
-        <div className="md:w-[100%] m-auto flex justify-center space-x-4 text-center items-center">
-
+            <div className='space-y-1'>
+                <p className="text-xl font-semibold flex items-center gap-2">
+                    <MdPerson size={30} className="text-gray-500" />
+                    {patient.patient_name}
+                </p>
+                <p className="flex items-center gap-2">
+                    <FcCellPhone className='my-auto' size={30} />
+                    {patient.phone || 'Não cadastrado'}
+                </p>
+                <p className="flex items-center gap-2">
+                    <FcCalendar className='my-auto' size={30} />
+                    {formatDateAndAge(patient.birth_date)}
+                </p>
+            </div>
         </div>
     </div>
 );

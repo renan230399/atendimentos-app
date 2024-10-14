@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { formatDateAndAge } from '@/Components/Utils/dateUtils';
 import { FaPhone, FaMapMarkerAlt, FaIdCard } from 'react-icons/fa';
 import { UserIcon, PhoneIcon, UserGroupIcon } from '@heroicons/react/24/outline';
@@ -6,18 +6,76 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import ConsultationsList from '@/Pages/Consultations/ConsultationsList';
 import FormResponseList from './FormResponseList';
 import { FaTransgender } from "react-icons/fa6";
-import PopupHeader from '@/Layouts/PopupHeader';
+import CreatePatient from './FormPatient/CreatePatient';
+import { Sidebar } from 'primereact/sidebar';
+import DynamicForm from '../Forms/DynamicForm';
 import InputLabel from '@/Components/InputLabel';
-const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPopup, handleOpenAddFormPopup, forms }) => {
+interface ContactDetail {
+    type: string;
+    value: string;
+    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
+}
+
+interface Contact {
+    name: string;
+    relation: string;
+    contacts: ContactDetail[]; // Aqui você deve ter a lista de contatos
+}
+
+interface Patient {
+    id: number;
+    company_id: number;
+    patient_name: string;
+    phone: string;
+    birth_date: string; // ou Date, se você estiver lidando com objetos Date
+    gender: string | null;
+    neighborhood: string;
+    street: string;
+    house_number: string;
+    address_complement: string;
+    city: string;
+    state: string;
+    cpf: string;
+    contacts: Contact[] | string; // Aqui você pode ajustar se sempre receberá um array ou uma string
+    complaints: string | null;
+    notes: string;
+    profile_picture: string | null;
+    status: boolean;
+    created_at: string; // ou Date
+    updated_at: string; // ou Date
+}
+interface Form {
+    id: number;
+    company_id: number;
+    category: number;
+    name: string;
+    description: string;
+    active: boolean;
+    icon: string;
+    is_wizard: boolean;
+    wizard_structure: null | any; // Você pode definir uma interface específica se souber o formato
+    created_at: string; // ou Date
+    updated_at: string; // ou Date
+}
+interface ViewPatientProps {
+    patient: Patient; // O paciente a ser visualizado
+    forms: Form[]; // Lista de formulários
+    handleClosePatientForm: (e: any) => void; // Adicione esta linha
+
+}
+const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePatientForm }) => {
     const [consultations, setConsultations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formResponses, setFormResponses] = useState([]); // Estado para respostas de formulários
     const [loadingFormResponses, setLoadingFormResponses] = useState(true);
+    const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+    const [isFormResponse, setIsFormResponse] = useState(false);
+    const [selectedForm, setSelectedForm] = useState<Form | null>(null);
 
+    
     // Função para buscar as consultas do paciente usando fetch
     useEffect(() => {
         if (!patient?.id) return; // Verifica se o ID do paciente está disponível antes de fazer a requisição
-
         const fetchConsultations = async () => {
             try {
                 const response = await fetch(`/patients/${patient.id}/consultations`);
@@ -48,7 +106,7 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                 setFormResponses(data);
                 setLoadingFormResponses(false);
             } catch (error) {
-                console.error('Erro ao buscar respostas de formulários:', error);
+                //console.error('Erro ao buscar respostas de formulários:', error);
                 setLoadingFormResponses(false);
             }
         };
@@ -59,40 +117,44 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
     if (!patient) {
         return <p>Paciente não encontrado</p>;
     }
+    const handleOpenAddFormPopup = useCallback((form: Form) => {
+        setSelectedForm(form);
+        setIsFormResponse(true);
+    }, []);
+    
+    const handleCloseAddFormPopup = useCallback(() => {
+        setSelectedForm(null);
+        setIsFormResponse(false);
+    }, []);
+    console.log(patient);
     return (
         <>
-        <PopupHeader 
-        icone='/images/icons/icone_ficha.png'
-        titulo='Ficha do paciente'
-        />
-            {/* Detalhes do Paciente */}
-            <div className="rounded-lg bg-white flex flex-wrap space-y-6 pb-10 pl-20">
 
-                <h2 className="w-full text-2xl font-bold text-gray-800 mb-4">Detalhes do Paciente</h2>
-
-                <div className="w-full md:w-1/4 flex justify-center md:justify-start">
-                    {patient.profile_picture ? (
-                        <img
-                            src={patient.profile_picture}
-                            alt={`Foto de ${patient.patient_name}`}
-                            className="w-40 h-40 md:w-48 md:h-48 rounded-full m-auto shadow-lg object-cover"
+        <div className={`absolute  p-2 top-0 left-0 rounded-b-lg shadow-xl flex flex-col w-[90%]`}>
+            {patient.profile_picture ? (
+                <div className="fixed mt-0 pt-0 top-2 left-2 shadow-xl rounded-full overflow-hidden text-left">
+                    <img 
+                        src={patient.profile_picture}
+                        alt={`Foto de ${patient.patient_name}`}
+                        className="w-36 h-36 md:w-36 md:h-36 rounded-full m-auto -lg object-cover"
                         />
-                    ) : (
-                        <div className="w-40 h-40 bg-gray-300 m-auto rounded-full flex items-center justify-center text-gray-600 shadow-lg">
-                            N/A
-                        </div>
-                    )}
+                     </div>
+                ) : (
+                <div className="w-36 h-36 fixed mt-0 pt-0 top-2 left-2 bg-gray-400 shadow-xl rounded-full overflow-hidden text-white text-left">
+                    N/A
                 </div>
+            )}
 
-                <div className="w-full md:w-3/4 text-left px-5 flex flex-wrap pb-10 border-b border-gray-400">
-                    <div className="w-[100%]">
-                        <p className="text-sm font-medium text-gray-500">Nome</p>
-                        <p className="text-3xl font-semibold text-gray-800">{patient.patient_name}</p>
-                    </div>
+            {/* Título */}
+            <p className="text-3xl font-semibold text-gray-600 pl-36 p-1">{patient.patient_name}</p>
 
+        </div>
+            {/* Detalhes do Paciente */}
+                <div className="w-full text-left ml-40 flex flex-wrap pb-10 border-b border-gray-400">
                     <div className="w-[30%]">
                         <p className="text-lg">{formatDateAndAge(patient.birth_date)}</p>
                     </div>
+                    
                     <div className="flex items-center space-x-2 w-[30%]">
                         <FaIdCard className="w-8 text-blue-500 h-auto" />
                         <p className="text-lg">
@@ -114,16 +176,16 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                         </p>
                     </div>
 
-                    <PrimaryButton onClick={handleOpenEditPopup} className="mt-4">
-                        Editar Paciente
-                    </PrimaryButton>
 
-                    <PrimaryButton onClick={handleOpenAddConsultationPopup} className="mt-4 ml-4 bg-green-500">
-                        Adicionar Consulta
-                    </PrimaryButton>
+            <PrimaryButton onClick={() => setIsEditPopupOpen(true)} className="mt-4">
+                Editar Paciente
+            </PrimaryButton>
+
+            <PrimaryButton className="mt-4 ml-4 bg-green-500">
+                Adicionar Consulta
+            </PrimaryButton>
 
                 </div>
-            </div>
 
   
 
@@ -182,47 +244,51 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                 </div>
                 
                 <div className="w-[100%] md:w-[78%] flex flex-wrap gap-1 border-b-2 p-5">
-                    <div className="w-[100%]">
-                        <p className="text-xl font-semibold mb-4"><strong>Contatos:</strong></p>
+    <div className="w-[100%]">
+        <p className="text-xl font-semibold mb-4"><strong>Contatos:</strong></p>
 
-                        {typeof patient.contacts === 'string' ? (
-                            (() => {
-                                try {
-                                    const contactsArray = JSON.parse(patient.contacts);
-                                    return (
-                                        Array.isArray(contactsArray) && contactsArray.length > 0 ? (
-                                            <div className="flex flex-wrap gap-4">
-                                                {contactsArray.map((contact, index) => (
-                                                    <div key={index} className="w-full md:w-[100%] py-3 bg-white flex shadow-md rounded-lg border border-gray-200">
-                                                        <div className="flex items-center  m-auto">
-                                                            <UserIcon className="h-5 w-5 text-blue-500 mr-2" />
-                                                            <p><strong>Nome:</strong> {contact.name}</p>
-                                                        </div>
-                                                        <div className="flex items-center m-auto">
-                                                            <UserGroupIcon className="h-5 w-5 text-green-500 mr-2" />
-                                                            <p><strong>Relação:</strong> {contact.relation}</p>
-                                                        </div>
-                                                        <div className="flex items-center m-auto">
-                                                            <PhoneIcon className="h-5 w-5 text-red-500 mr-2" />
-                                                            <p><strong>Telefone:</strong> {contact.phone}</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-gray-600">Não há contatos disponíveis.</p>
-                                        )
-                                    );
-                                } catch (error) {
-                                    console.error('Erro ao analisar JSON:', error);
-                                    return <p className="text-red-600">Erro ao carregar os contatos.</p>;
-                                }
-                            })()
-                        ) : (
-                            <p className="text-gray-600">Não há contatos disponíveis.</p>
-                        )}
+        {Array.isArray(patient.contacts) && patient.contacts.length > 0 ? (
+            <div className="flex flex-wrap gap-4">
+                {patient.contacts.map((contact, index) => (
+                    <div
+                        key={index}
+                        className="w-full md:w-[100%] py-3 bg-white flex shadow-md rounded-lg border border-gray-200"
+                    >
+                        <div className="flex items-center m-auto">
+                            <UserIcon className="h-5 w-5 text-blue-500 mr-2" />
+                            <p><strong>Nome:</strong> {contact.name}</p>
+                        </div>
+                        <div className="flex items-center m-auto">
+                            <UserGroupIcon className="h-5 w-5 text-green-500 mr-2" />
+                            <p><strong>Relação:</strong> {contact.relation}</p>
+                        </div>
+                        <div className="flex items-center m-auto flex-wrap ">
+                            {contact.contacts.map((detail, contactIndex) => (
+                                <div key={contactIndex} className="flex items-center m-auto w-full">
+                                    {detail.category === 'link' ? (
+                                        <a
+                                            href={detail.value}
+                                            className="text-blue-500 underline"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {detail.value}
+                                        </a>
+                                    ) : (
+                                        <p>{detail.value}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                ))}
+            </div>
+        ) : (
+            <p className="text-gray-600">Não há contatos disponíveis.</p>
+        )}
+    </div>
+</div>
+
             </div>
             {forms.length > 0 ? (
                 <div className="flex m-auto flex-wrap">
@@ -236,7 +302,7 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
                             <h2 className="font-semibold">{form.name}</h2>
                             <div className="flex space-x-4">
                                 <PrimaryButton 
-                                    onClick={(e) => handleOpenAddFormPopup(e, form)} // Passando o evento 'e' e o formulário
+                                    onClick={() => handleOpenAddFormPopup(form)} // Passando o evento 'e' e o formulário
                                     className="mt-4 ml-4 bg-green-500"
                                 >
                                     Preencher Formulário
@@ -256,6 +322,36 @@ const ViewPatient = ({ patient, handleOpenEditPopup, handleOpenAddConsultationPo
             
              {/* Exibição das respostas dos formulários */}
              <FormResponseList formResponses={formResponses} loadingFormResponses={loadingFormResponses} forms={forms}/>
+             <Sidebar
+                visible={isEditPopupOpen}
+                position="left"
+                className="pt-0 xl:w-[96vw] md:w-[96vw] w-[96vw] h-screen overflow-auto bg-white"
+                onHide={() => setIsEditPopupOpen(false)}
+            >
+                <CreatePatient
+                    patient={patient}
+                    handleClosePatientForm={() => setIsEditPopupOpen(false)} // Fecha apenas no modo de cadastro
+                    onSave={() => {
+                        // Não fecha o modal no modo de edição
+                    }}
+                />
+            </Sidebar>
+            <Sidebar
+                visible={isFormResponse}
+                position="left"
+                className="pt-0 xl:w-[96vw] md:w-[96vw] w-[96vw] h-screen overflow-auto bg-white"
+                onHide={handleCloseAddFormPopup}
+            >
+
+            {selectedForm && (
+
+                    <DynamicForm
+                        patient={patient}
+                        form={selectedForm}
+                        onClose={handleCloseAddFormPopup}
+                    />
+            )}
+            </Sidebar>
 
         </>
     );

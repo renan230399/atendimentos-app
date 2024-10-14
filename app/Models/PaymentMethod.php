@@ -19,6 +19,7 @@ class PaymentMethod extends Model
         'account_id',
         'name',
         'type',
+        'status',
     ];
 
     /**

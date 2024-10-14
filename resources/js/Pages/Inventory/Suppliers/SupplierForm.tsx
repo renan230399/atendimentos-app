@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AutoComplete } from "primereact/autocomplete";
-
 import { FaPlusCircle, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useForm } from '@inertiajs/react';
 import { Dropdown } from 'primereact/dropdown';
@@ -9,26 +8,58 @@ import TextArea from '@/Components/TextArea';
 import { FaTrashAlt } from 'react-icons/fa';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
-import ContactInput from './ContactInput'; // Importa o componente ContactInput
+import ContactInput from './ContactInput'; 
 import { MdContactPhone } from "react-icons/md";
+
+// Definindo a interface para o contato
+interface Contact {
+    type: string;
+    value: string;
+    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
+}
+
+// Definindo a interface para os dados do fornecedor
+interface SupplierData {
+    id?: number; // Propriedade id é opcional
+    name: string;
+    category: string;
+    contacts: Contact[];
+    address: string;
+    state: string;
+    notes: string;
+    status: boolean;
+}
+
+
+
+// Definindo a interface para as props do SupplierForm
+interface SupplierFormProps {
+    onClose: () => void;
+    setSaveSupplier: (value: boolean) => void;
+    initialData?: SupplierData | null; // Permitir null
+    categories: string[];
+}
+
+
 const siglasEstados = [
     'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 
     'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 
     'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'
 ];
+
 const statusOptions = [
     { value: true, label: 'Ativo', icon: <FaCheckCircle className='text-green-500'/> },
     { value: false, label: 'Inativo', icon: <FaExclamationTriangle className='text-red-500' /> },
 ];
 
-const statusOptionTemplate = (option) => (
+const statusOptionTemplate = (option: any) => (
     <div className="flex items-center">
         {option.icon}
         <span className="ml-2">{option.label}</span>
     </div>
 );
 
-const selectedStatusTemplate = (option) => {
+const selectedStatusTemplate = (option: any) => {
     if (option) {
         return (
             <div className="flex items-center">
@@ -40,28 +71,45 @@ const selectedStatusTemplate = (option) => {
     return <span>Selecione um status</span>;
 };
 
-const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => {
-    const { data, setData, post,put, processing, errors, reset } = useForm({
+const SupplierForm: React.FC<SupplierFormProps> = ({ onClose, setSaveSupplier, initialData, categories }) => {
+    const { data, setData, post, put, processing, errors, reset } = useForm<SupplierData>({
         name: '',
         category: '',
-        contacts: [{ type: 'Telefone Principal',  value: '',category: 'phone' }],
+        contacts: [{ type: 'Telefone Principal', value: '', category: 'phone' }],
         address: '',
         state: '',
         notes: '',
         status: true,
         ...initialData,
     });
-    const toast = useRef(null);
+    const toast = useRef<Toast | null>(null); // Definindo o tipo do toast como Toast ou null
     const buttonEl = useRef(null);
-
     const [visible, setVisible] = useState(false);
-    const [filterCategories, setFilterCategories] = useState([categories]);
+
     const accept = () => {
-        // Lógica para deletar o fornecedor
-        toast.current.show({ severity: 'info', summary: 'Fornecedor deletado', detail: 'O fornecedor foi excluído com sucesso.', life: 3000 });
+        if (toast.current) {
+            toast.current.show({
+                severity: 'info',
+                summary: 'Fornecedor deletado',
+                detail: 'O fornecedor foi excluído com sucesso.',
+                life: 3000
+            });
+        }
     };
+    
     const reject = () => {
-        toast.current.show({ severity: 'warn', summary: 'Ação Cancelada', detail: 'A exclusão foi cancelada.', life: 3000 });
+        if (toast.current) {
+            toast.current.show({
+                severity: 'warn',
+                summary: 'Ação Cancelada',
+                detail: 'A exclusão foi cancelada.',
+                life: 3000
+            });
+        }
+    };
+    const convertContactsToArray = (contacts: any): Contact[] => {
+        // Lógica para converter os contatos, se necessário
+        return Array.isArray(contacts) ? contacts : [];
     };
     
     useEffect(() => {
@@ -73,21 +121,33 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
         }
     }, [initialData]);
 
-    const handleContactChange = (index, field, value) => {
+    const handleContactChange = (index: number, field: keyof Contact, value: string) => {
         const updatedContacts = [...data.contacts];
-        updatedContacts[index][field] = value;
+    
+        // Verifique se o campo é 'category' e ajuste o tipo do valor
+        if (field === 'category') {
+            updatedContacts[index][field] = value as 'phone' | 'link' | 'string'; // Afirmar que o valor é um dos tipos esperados
+        } else {
+            updatedContacts[index][field] = value; // Para outros campos, o tipo é string
+        }
+    
         setData('contacts', updatedContacts);
     };
-
+    
+    
+    
+    
     const handleAddContact = () => {
         setData('contacts', [...data.contacts, { type: '', value: '', category: 'phone' }]);
     };
+    
 
-    const handleRemoveContact = (index) => {
+    const handleRemoveContact = (index: number) => {
         const updatedContacts = data.contacts.filter((_, i) => i !== index);
         setData('contacts', updatedContacts);
     };
-    const handleSubmit = (e) => {
+    
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
     
         // Remove contatos que tenham 'type' ou 'value' vazios
@@ -98,10 +158,13 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
         // Atualiza os dados a serem enviados com a lista de contatos filtrada
         const updatedData = {
             ...data,
-            contacts: filteredContacts,
+            contacts: filteredContacts.map(contact => ({
+                type: contact.type,
+                value: contact.value,
+                category: contact.category,
+            })),
         };
-    
-        //console.log(updatedData);
+        
     
         if (initialData && initialData.id) {
             // Modo de edição - use a rota para atualizar um fornecedor existente
@@ -112,10 +175,8 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
                     onClose();
                     setSaveSupplier(true);
                     console.log('data enviada', updatedData);
-
                 },
             });
-            
         } else {
             // Modo de cadastro - use a rota para criar um novo fornecedor
             post(route('suppliers.store'), {
@@ -128,6 +189,8 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
             });
         }
     };
+    
+    const [filterCategories, setFilterCategories] = useState<string[]>([]); // Define como string[] fora do AutoComplete
 
     return (
         <div className="p-4 h-[100%]">
@@ -158,16 +221,17 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
                     <AutoComplete 
                         className='bg-black border-3'
                         value={data.category || ''} 
-                        suggestions={filterCategories || []} // Verifica se as sugestões estão sendo passadas
+                        suggestions={filterCategories} // Já deve ser um array de strings
                         completeMethod={(e) => {
                             const filteredCategories = categories.filter((category) =>
                                 category.toLowerCase().includes(e.query.toLowerCase())
                             );
                             setFilterCategories(filteredCategories); // Atualiza as sugestões com base no filtro
                         }}
-                        onChange={(e) => setData('category', e.target.value)} 
+                        onChange={(e) => setData('category', e.value)} // Use e.value aqui
                         placeholder="Selecione ou digite uma categoria"
                     />
+
 
 
                 </div>
@@ -205,9 +269,10 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
                             key={index}
                             contact={contact}
                             index={index}
-                            onChange={handleContactChange}
+                            onChange={handleContactChange} // Certifique-se de que handleContactChange aceita o campo correto
                             onRemove={handleRemoveContact}
                         />
+
                     ))}
                 </div>
 
@@ -251,7 +316,6 @@ const SupplierForm = ({ onClose, setSaveSupplier, initialData, categories }) => 
                     <div className='my-auto'>
                         <Toast ref={toast} />
                         <ConfirmPopup 
-                            target={buttonEl.current} 
                             visible={visible} 
                             onHide={() => setVisible(false)} 
                             message="Tem certeza de que deseja deletar este fornecedor?" 

@@ -2,10 +2,30 @@ import React from 'react';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
-
+interface EnderecoSectionProps {
+    data: {
+        state: string;
+        city: string;
+        neighborhood: string;
+        street: string;
+        house_number: string;
+        address_complement?: string;
+        [key: string]: any; // Permite campos adicionais
+    };
+    setData: (field: string, value: any) => void;
+    errors: {
+        state?: string;
+        city?: string;
+        neighborhood?: string;
+        street?: string;
+        house_number?: string;
+        address_complement?: string;
+        [key: string]: any;
+    };
+}
 const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
-const EnderecoSection = ({ data, setData, errors }) => {
+const EnderecoSection: React.FC<EnderecoSectionProps> = ({ data, setData, errors }) => {
     return (
         <>
             {/* Imagem de Localização */}
@@ -21,7 +41,7 @@ const EnderecoSection = ({ data, setData, errors }) => {
                     <InputLabel htmlFor="state" value="Estado" />
                     <select
                         id="state"
-                        value={data.state}
+                        value={data.state || ""}
                         onChange={(e) => setData('state', e.target.value)}
                         className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -38,7 +58,7 @@ const EnderecoSection = ({ data, setData, errors }) => {
                     <InputLabel htmlFor="city" value="Cidade" />
                     <TextInput
                         id="city"
-                        value={data.city}
+                        value={data.city || ""}
                         placeholder="Digite a cidade"
                         className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         onChange={(e) => setData('city', e.target.value)}
@@ -51,7 +71,7 @@ const EnderecoSection = ({ data, setData, errors }) => {
                     <InputLabel htmlFor="neighborhood" value="Bairro" />
                     <TextInput
                         id="neighborhood"
-                        value={data.neighborhood}
+                        value={data.neighborhood || ""}
                         placeholder="Digite o bairro"
                         className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         onChange={(e) => setData('neighborhood', e.target.value)}
@@ -64,7 +84,7 @@ const EnderecoSection = ({ data, setData, errors }) => {
                     <InputLabel htmlFor="street" value="Rua" />
                     <TextInput
                         id="street"
-                        value={data.street}
+                        value={data.street || ""}
                         placeholder="Digite a rua"
                         className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         onChange={(e) => setData('street', e.target.value)}
@@ -77,7 +97,7 @@ const EnderecoSection = ({ data, setData, errors }) => {
                     <InputLabel htmlFor="house_number" value="Número" />
                     <TextInput
                         id="house_number"
-                        value={data.house_number}
+                        value={data.house_number || ""}
                         placeholder="Nº"
                         className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         onChange={(e) => setData('house_number', e.target.value)}
@@ -91,7 +111,7 @@ const EnderecoSection = ({ data, setData, errors }) => {
                     <InputLabel htmlFor="address_complement" value="Complemento" />
                     <TextInput
                         id="address_complement"
-                        value={data.address_complement}
+                        value={data.address_complement || ""}
                         placeholder="Digite um complemento (opcional)"
                         className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         onChange={(e) => setData('address_complement', e.target.value)}

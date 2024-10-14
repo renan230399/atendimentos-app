@@ -1,23 +1,33 @@
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useRef, TextareaHTMLAttributes } from 'react';
 
-export default forwardRef(function TextArea({ className = '', isFocused = false, rows = 3, ...props }, ref) {
-    const textareaRef = ref ? ref : useRef();
+interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+    className?: string;
+    isFocused?: boolean;
+    rows?: number;
+}
 
-    useEffect(() => {
-        if (isFocused) {
-            textareaRef.current.focus();
-        }
-    }, [isFocused]);
+const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
+    ({ className = '', isFocused = false, rows = 3, ...props }, ref) => {
+        const textareaRef = ref ? (ref as React.MutableRefObject<HTMLTextAreaElement>) : useRef<HTMLTextAreaElement>(null);
 
-    return (
-        <textarea
-            {...props}
-            rows={rows}
-            className={
-                'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ' +
-                className
+        useEffect(() => {
+            if (isFocused && textareaRef.current) {
+                textareaRef.current.focus();
             }
-            ref={textareaRef}
-        ></textarea>
-    );
-});
+        }, [isFocused]);
+
+        return (
+            <textarea
+                {...props}
+                rows={rows}
+                className={
+                    'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ' +
+                    className
+                }
+                ref={textareaRef}
+            ></textarea>
+        );
+    }
+);
+
+export default TextArea;

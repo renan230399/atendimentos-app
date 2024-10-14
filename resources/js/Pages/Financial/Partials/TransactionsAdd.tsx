@@ -4,11 +4,14 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TransactionForm from './TransactionForm';
 import TextInput from '@/Components/TextInput';
+import AccountSelector from './TransactionForm/Partials/AccountSelector';
 import { useForm } from '@inertiajs/react';
 import Dinero from 'dinero.js';
 import CategoryTreeBuilder from '@/Components/Utils/CategoryTreeBuilder';
 import { TreeSelect } from 'primereact/treeselect';
+import { useFetchTransactionsData } from '../hooks/useFetchTransactionsData'; // Importar o hook da pasta 'hooks'
 
+// Interfaces para tipagem dos dados
 interface Account {
   id: number;
   name: string;
@@ -22,26 +25,21 @@ interface Category {
 }
 
 interface TransactionsAddProps {
-  accounts: Account[];
-  categories: Category[];
-  loading: boolean;
-  errors: {
-    account_id?: string;
-    category_id?: string;
-    amount?: string;
-    transaction_date?: string;
-    status?: string;
-  };
+  accounts?: Account[]; // Adicionei o "?" para indicar que pode ser opcional
+  categories?: Category[]; // Adicionei o "?" para indicar que pode ser opcional
+  logo: string;
+  order:[];
 }
 
 const TransactionsAdd: React.FC<TransactionsAddProps> = ({
-  accounts,
-  categories,
-  loading,
-  errors,
+  accounts: accountsProp, // Renomeei para diferenciar do estado
+  categories: categoriesProp, // Renomeei para diferenciar do estado
   logo = '',
+  order='',
 }) => {
-  const { data, setData, post, reset } = useForm({
+  // Usando o hook para buscar os dados caso não sejam passados como props
+  const { accounts, categories, loading, error } = useFetchTransactionsData(accountsProp, categoriesProp);
+  const { data, setData, post, reset, errors, } = useForm({
     category_id: '',
     type: '',
     amount: 0,
@@ -54,52 +52,43 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
       },
     ],
   });
-  // Adicione este useEffect para rastrear mudanças no estado do data
-useEffect(() => {
-  console.log('Estado do data atualizado:', data);
-}, [data]);
+  useEffect(() => {
+    if(order){
+      setData('amount', order.total_amount);
+      console.log(order);
+    }
+  }, [order]);
 
-  
   // Novo estado para gerenciar o valor do select diretamente
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-
-
   const [transactions, setTransactions] = useState([{ transaction_date: '', status: false }]);
-  const [isFixedExpenses, setIsFixedExpenses] = useState(false);
-
   const formatPrice = (value: number) => {
     const price = Dinero({ amount: value || 0, currency: 'BRL' });
     return price.toFormat('$0,0.00'); // Formata em R$
   };
 
+  // Função para atualizar os campos gerais do formulário
+  const handleFormChange = (field: string, value: any) => {
+    const newValue = field === 'account_id' || field === 'category_id' ? parseInt(value, 10) : value;
+    setData(field, newValue);
 
-// Função para atualizar os campos gerais do formulário
-// Função para atualizar os campos gerais do formulário
-const handleFormChange = (field: string, value: any) => {
-  const newValue = field === 'account_id' || field === 'category_id' ? parseInt(value, 10) : value;
-  setData(field, newValue);
+    // Atualizar a lista de transações apenas se o campo 'transaction_date' for alterado
+    if (field === 'transaction_date' && newValue) {
+      const newTransactions = data.transactions.map((transaction, index) => {
+        const date = new Date(newValue);
+        date.setMonth(date.getMonth() + index); // Adiciona meses conforme o índice
+        return {
+          ...transaction,
+          transaction_date: date.toISOString().split('T')[0], // Formato 'YYYY-MM-DD'
+        };
+      });
 
-  // Atualizar a lista de transações apenas se o campo 'transaction_date' for alterado
-  if (field === 'transaction_date' && newValue) {
-    const newTransactions = data.transactions.map((transaction, index) => {
-      const date = new Date(newValue);
-      date.setMonth(date.getMonth() + index); // Adiciona meses conforme o índice
-      return {
-        ...transaction,
-        transaction_date: date.toISOString().split('T')[0], // Formato 'YYYY-MM-DD'
-      };
-    });
-
-    // Atualiza o estado de transações no formulário e o estado local
-    setData('transactions', newTransactions);
-    setSelectedDate(newValue); // Mova esta linha para fora do loop
-  }
-};
-
-
-
-
+      // Atualiza o estado de transações no formulário e o estado local
+      setData('transactions', newTransactions);
+      setSelectedDate(newValue); // Mova esta linha para fora do loop
+    }
+  };
 
   const handleMultipleTransactions = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.max(1, parseInt(e.target.value, 10));
@@ -134,7 +123,7 @@ const handleFormChange = (field: string, value: any) => {
   
 
   const handleAddTransaction = (e: React.FormEvent) => {
-
+    e.preventDefault();
     post(route('transactions.store'), {
       onSuccess: () => reset(),
       onError: (error) => console.log('Error editing', error),
@@ -147,29 +136,8 @@ const handleFormChange = (field: string, value: any) => {
     );
     setTransactions(updatedTransactions);
   };
-  const handleCategorySelectChange1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const categoryId = parseInt(e.target.value, 10);
-    setSelectedCategoryId(categoryId);
 
-    // Encontra a categoria selecionada com base no ID
-    const selectedCategory = categories.find((category) => category.id === categoryId);
-  
-    // Atualiza todos os campos relevantes de uma só vez
-    setData({
-      ...data, // Mantém o estado atual de data
-      category_id: categoryId,
-      type: selectedCategory ? selectedCategory.type : '', // Atualiza o campo 'type' se a categoria for encontrada
-    });
-  
-    // Verifica se é uma despesa fixa (categoria com ID igual a 4)
-    const isFixed = categoryId === 4;
-    setIsFixedExpenses(isFixed);
-    /*handleMultipleTransactions({
-      target: { value: '1' }
-    } as React.ChangeEvent<HTMLInputElement>);*/
-  };
   const groupedCategories = CategoryTreeBuilder({ categories });
- // Função para tratar a mudança de seleção no TreeSelect
 // Função para tratar a mudança de seleção no TreeSelect
 const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
 
@@ -178,6 +146,8 @@ const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
   setSelectedCategoryId(selectedCategoryId);
     // Encontra a categoria selecionada com base no ID
     const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
+    console.log(selectedCategoryId);
+
   // Atualiza o estado do formulário com a categoria selecionada
   setData({
     ...data, // Mantém o estado atual de data
@@ -210,24 +180,12 @@ const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
             <InputError message={errors.category_id} className="mt-2" />
           </div>
 
-          <div className='w-[45%] m-auto mb-3'>
-            <InputLabel htmlFor="account_id" value="Conta" />
-            <select
-              id="account_id"
-              required
-              value={data.account_id || ''}
-              onChange={(e) => handleFormChange('account_id', e.target.value)}
-              className="block w-full border-gray-300 rounded-md shadow-sm text-lg focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Selecione uma conta</option>
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
-            <InputError message={errors.account_id} className="mt-2" />
-          </div>
+            <AccountSelector
+              accounts={accounts}
+              value={data.account_id}
+              onChange={(value) => handleFormChange('account_id', value)}
+              error={errors.account_id}
+            />
           <div className=' m-auto'>
             <InputLabel htmlFor="amount" value="Valor (R$)" />
             <TextInput
@@ -253,10 +211,7 @@ const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
           />
           </div>
           <div className=' m-auto'>
-            
-            {isFixedExpenses && (
-              <>
-                <InputLabel htmlFor="months" value="Quantos meses?" />
+          <InputLabel htmlFor="months" value="Quantos meses?" />
                 <TextInput
                   id="months"
                   required
@@ -265,8 +220,7 @@ const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
                   onChange={handleMultipleTransactions}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
-              </>
-            )}
+  
            
             </div>
 
@@ -289,8 +243,8 @@ const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
         <div className="w-full flex flex-wrap">{renderTransactionForms()}</div>
       </div>
 
-      <PrimaryButton type="submit" className="mt-2" disabled={loading}>
-        {loading ? 'Salvando...' : 'Salvar'}
+      <PrimaryButton type="submit" className="mt-2" >
+        {'Salvar'}
       </PrimaryButton>
     </form>
   );

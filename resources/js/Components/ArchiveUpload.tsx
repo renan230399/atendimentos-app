@@ -1,7 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
-const ArchiveUpload = ({ id, onChange, accept = "image/*", className = "" }) => {
+type ArchiveUploadProps = {
+    id: string;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    accept?: string;
+    className?: string;
+};
+
+const ArchiveUpload: React.FC<ArchiveUploadProps> = ({ id, onChange, accept = "image/*", className = "" }) => {
     return (
         <input
             type="file"
@@ -15,13 +21,6 @@ const ArchiveUpload = ({ id, onChange, accept = "image/*", className = "" }) => 
             onChange={onChange} // Passa a função que será chamada ao alterar o arquivo
         />
     );
-};
-
-ArchiveUpload.propTypes = {
-    id: PropTypes.string.isRequired, // O ID do input é obrigatório
-    onChange: PropTypes.func.isRequired, // Função chamada quando o arquivo é alterado
-    accept: PropTypes.string, // Tipo de arquivo aceito
-    className: PropTypes.string, // Classe CSS adicional para estilização
 };
 
 export default ArchiveUpload;

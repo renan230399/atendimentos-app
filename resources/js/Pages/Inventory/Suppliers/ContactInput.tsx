@@ -3,7 +3,24 @@ import TextInput from '@/Components/TextInput';
 import { InputMask } from 'primereact/inputmask';
 import { FaTrashAlt } from 'react-icons/fa';
 
-const ContactInput = ({ contact, index, onChange, onRemove }) => {
+interface Contact {
+    type: string;
+    value: string; // Certifique-se de que o value é sempre uma string
+    category: 'phone' | 'link' | 'string'; // Definimos as opções para a categoria
+}
+interface Person {
+    name: string;
+    relation: string;
+    contacts: Contact[];
+}
+interface ContactInputProps {
+    contact: Contact;
+    index: number;
+    onChange: (index: number, field: keyof Contact, value: string) => void;
+    onRemove: (index: number) => void;
+}
+
+const ContactInput: React.FC<ContactInputProps> = ({ contact, index, onChange, onRemove }) => {
     const [mask, setMask] = useState('(99) 9999-9999?9'); // Máscara flexível para 8 ou 9 dígitos
 
     // Atualiza a máscara dinamicamente com base no comprimento do valor inserido
@@ -16,7 +33,6 @@ const ContactInput = ({ contact, index, onChange, onRemove }) => {
             setMask('(99) 9999-9999?9'); // Máscara flexível para números com 8 ou 9 dígitos
         }
     }, [contact.value]);
-    
 
     return (
         <div className="flex items-center gap-2 mb-2">
@@ -41,11 +57,12 @@ const ContactInput = ({ contact, index, onChange, onRemove }) => {
                 <InputMask
                     id={`contact-value-${index}`}
                     mask={mask}
-                    value={contact.value}
-                    onChange={(e) => onChange(index, 'value', e.target.value)}
+                    value={contact.value ?? ''}  // Garante que 'value' será sempre uma string
+                    onChange={(e) => onChange(index, 'value', e.target.value as string)} // Faz o cast explícito para string
                     placeholder="Número ou Detalhe"
                     className="w-1/2"
                 />
+
             ) : (
                 <TextInput
                     id={`contact-value-${index}`}

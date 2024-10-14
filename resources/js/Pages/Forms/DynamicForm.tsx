@@ -1,20 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FormEvent, FormState } from 'react';
 import { useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import FormField from '@/Pages/Forms/FormField';
+// Tipos para o formulário e campos
+interface FormFieldOption {
+    label: string;
+    value: string;
+}
 
-const DynamicForm = ({auth, form, patient }) => {
-    const { post, setData, data, errors, processing } = useForm({
+interface FormFieldData {
+    id: number;
+    form_id: number;
+    label: string;
+    type: string;
+    required: boolean;
+    options?: FormFieldOption[] | null;
+    class?: string;
+    order: number;
+    step: number;
+}
+
+// Define a estrutura do formulário
+interface Form {
+    id: number;
+    name: string;
+    description: string;
+    fields: FormFieldData[];
+}
+
+interface DynamicFormProps {
+    form: Form;
+    patient: { id: number | null; name: string };
+}
+
+
+const DynamicForm: React.FC<DynamicFormProps> = ({ form, patient }) => {
+    const { post, setData, data, errors, processing } = useForm<FormState>({
         patient_id: patient?.id || null,
         responses: {},
     });
-    
-    const [fields, setFields] = useState([]);
+
+    const [fields, setFields] = useState<FormFieldData[]>([]);
     const [currentStep, setCurrentStep] = useState(1);
 
-    const wizardSteps = form?.wizard_structure || [];
-    
+    // Inicializa wizardSteps a partir da estrutura do form
+    const wizardSteps = form?.wizard_structure || []; // Verifica se form existe e inicializa wizardSteps
+
     useEffect(() => {
         if (!form || !form.id) return;
 
@@ -26,36 +58,53 @@ const DynamicForm = ({auth, form, patient }) => {
                 const result = await response.json();
                 setFields(result.fields);
             } catch (error) {
-                console.error('Error fetching form fields:', error.message);
+                if (error instanceof Error) {
+                    console.error('Error fetching form fields:', error.message);
+                } else {
+                    console.error('Error fetching form fields:', error); 
+                }
             }
         };
 
         fetchFormFields();
     }, [form]);
 
-    const handleChange = (e, field) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, field: FormFieldData) => {
         if (!field || !field.id) return;
 
         let value;
+        const target = e.target;
+
         switch (field.type) {
             case 'multi_select':
-                value = Array.from(e.target.selectedOptions, option => option.value);
+                if (target instanceof HTMLSelectElement) {
+                    value = Array.from(target.selectedOptions, option => option.value);
+                }
                 break;
             case 'checkbox_group':
-                const newValue = e.target.value;
-                const currentValues = data.responses[field.id] || [];
-                value = e.target.checked
-                    ? [...currentValues, newValue]
-                    : currentValues.filter(value => value !== newValue);
+                const newValue = target.value;
+                const currentValues: string[] = Array.isArray(data.responses[field.id])
+                    ? (data.responses[field.id] as string[])
+                    : [];
+
+                if (target instanceof HTMLInputElement) {
+                    value = target.checked
+                        ? [...currentValues, newValue]
+                        : currentValues.filter(val => val !== newValue);
+                }
                 break;
             case 'checkbox':
-                value = e.target.checked;
+                if (target instanceof HTMLInputElement) {
+                    value = target.checked;
+                }
                 break;
             case 'file':
-                value = e.target.files[0];
+                if (target instanceof HTMLInputElement) {
+                    value = target.files ? target.files[0] : null;
+                }
                 break;
             default:
-                value = e.target.value;
+                value = (target as HTMLInputElement).value;
         }
 
         setData('responses', {
@@ -64,49 +113,33 @@ const DynamicForm = ({auth, form, patient }) => {
         });
     };
 
-    // Função para submeter o formulário
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        // Submete as respostas apenas na última etapa
-        post(route('form.responses.store', form.id), {
-            patient_id: data.patient_id,
+    
+        const payload: PostPayload = {
+            patient_id: data.patient_id ?? 0,
             responses: data.responses,
-        });
-
-    };
-
-    // Avança para a próxima etapa
-    const handleNextStep = () => {
-        if (currentStep < wizardSteps.length) {
-            setCurrentStep(currentStep + 1);
-        }
-    };
-
-    // Retorna para a etapa anterior
-    const handlePrevStep = () => {
-        if (currentStep > 1) {
-            setCurrentStep(currentStep - 1);
-        }
+            // Adicione quaisquer propriedades adicionais necessárias pela função post
+        };
+    
+        post(route('form.responses.store', form.id), payload);
     };
 
     return (
-        <div className="bg-white p-8 shadow rounded-lg relative pb-20">
-            {form &&  (
-                <>
-                    <div className="flex justify-between mb-6">
-                        <img
+        <>
+            <img
+                src={form.icon}
+                alt={`Ícone de ${form.name}`}
+                className="w-[50%] md:w-20 md:h-20 absolute top-0 left-[45%]"
+            />
+            {/*                        <img
                             src={auth.user.company.company_logo}
                             alt={`Ícone de ${form.name}`}
                             className="w-[50%] md:w-28 md:h-28"
-                        />
-                        <img
-                            src={form.icon}
-                            alt={`Ícone de ${form.name}`}
-                            className="w-[50%] md:w-20 md:h-20 absolute left-[45%]"
-                        />
-
-                    </div>
+                        />*/}
+        <div className="p-8 shadow rounded-lg relative pb-20">
+            {form &&  (
+                <>
                     
                     <h2 className="text-2xl font-bold text-center mb-4">{form.name}</h2>
                     <p className="text-gray-600 text-center mb-6">{form.description}</p>
@@ -131,25 +164,30 @@ const DynamicForm = ({auth, form, patient }) => {
                 </>
             )}
 
-            <div className="flex flex-wrap h-[90%] overflow-y-auto">
-                {fields.length > 0 ? (
-                    fields
-                        .filter((field) => field.step === currentStep - 1)
-                        .map((field, index) => (
-                            <FormField
-                                key={field.id ? `field-${field.id}` : `index-${index}`}
-                                field={field}
-                                data={data.responses}
-                                handleChange={handleChange}
-                                errors={errors}
-                            />
-                        ))
-                ) : (
-                    <p>Nenhum campo disponível para este formulário.</p>
-                )}
-            </div>
+<div className="flex flex-wrap h-[90%] overflow-y-auto space-y-3">
+            {fields.length > 0 ? (
+                fields
+                    .filter((field) => field.step === currentStep - 1)
+                    .sort((a, b) => a.order - b.order) // Ordenando corretamente
+                    .map((field, index) => (
+                        <FormField
+                            key={field.id ? `field-${field.id}` : `index-${index}`}
+                            field={field}
+                            data={data.responses}
+                            handleChange={handleChange} // Certifique-se de que isso está correto
+                            errors={errors}
+                        />
+                    ))
+            ) : (
+                <p>Nenhum campo disponível para este formulário.</p>
+            )}
+        </div>
 
-            <div className="flex justify-between items-center w-full bottom-0 left-0 px-6 py-4 bg-white shadow-lg z-50">
+
+
+
+        </div>
+        <div className="flex justify-between items-center w-full bottom-0 left-0 px-6 py-4 bg-white shadow-lg z-50">
                 {currentStep > 1 && (
                     <PrimaryButton
                         type="button"
@@ -169,14 +207,15 @@ const DynamicForm = ({auth, form, patient }) => {
                     <form onSubmit={handleSubmit} className="w-full" encType="multipart/form-data">
                         <PrimaryButton
                             type="submit"
-                            className="bg-green-600 left-0 w-full"
+                            className="bg-green-600 left-0"
                             disabled={processing}>
                             {processing ? 'Enviando...' : 'Enviar Respostas'}
                         </PrimaryButton>
                     </form>
                 )}
             </div>
-        </div>
+        </>
+
     );
 };
 

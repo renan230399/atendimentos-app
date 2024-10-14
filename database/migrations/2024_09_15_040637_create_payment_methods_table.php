@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('accounts')->onDelete('cascade'); // Chave estrangeira para empresa
             $table->string('name'); // Nome do método de pagamento (ex: Cartão de Crédito, Dinheiro, Transferência Bancária)
             $table->string('type'); // Tipo do método de pagamento (ex: Dinheiro, Cartão de Crédito, Cartão de Débito, Boleto)
+            $table->boolean('status')->default(1); // status da taxa do método de pagamento
 
             $table->timestamps();
         });

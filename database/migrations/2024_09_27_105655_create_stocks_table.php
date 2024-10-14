@@ -22,10 +22,15 @@ return new class extends Migration
 
             $table->decimal('quantity', 10, 3)->default(0)->comment('Quantidade disponível no estoque');
             $table->date('entry_date')->comment('Data de entrada no estoque');
+
             $table->date('expiration_date')->nullable()->comment('Data de validade (se aplicável)');
             $table->integer('cost_price')->nullable()->comment('Preço de custo do produto para controle interno');
-            $table->timestamps();
+            $table->boolean('conferece_status')->comment('Status para ser usado em conferencias e contagens');
+            $table->string('depreciation')->comment('Depreciação do estoque do produto');
+
             $table->boolean('status');
+
+            $table->timestamps();
 
 
         });

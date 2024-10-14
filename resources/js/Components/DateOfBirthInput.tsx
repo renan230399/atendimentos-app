@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 
-const DateOfBirthInput = ({ value, onChange, errors = {} }) => {
-    const [age, setAge] = useState(null);
+interface DateOfBirthInputProps {
+    value?: string;
+    onChange: (date: string) => void;
+    errors?: Record<string, string>;
+    id: string;
+}
 
-    // Função para calcular a idade com base na data de nascimento
-    const calculateAge = (dob) => {
+const DateOfBirthInput: React.FC<DateOfBirthInputProps> = ({ value = '', onChange, errors = {}, id }) => {
+    const [localValue, setLocalValue] = useState<string>('');
+    const [age, setAge] = useState<number | null>(null);
+
+    const calculateAge = (dob: string): number => {
         const birthDate = new Date(dob);
         const today = new Date();
         let calculatedAge = today.getFullYear() - birthDate.getFullYear();
         const monthDifference = today.getMonth() - birthDate.getMonth();
 
-        // Ajuste para o caso em que o mês atual é anterior ao mês de nascimento ou o dia atual é anterior ao dia de nascimento
         if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
             calculatedAge--;
         }
@@ -21,28 +26,47 @@ const DateOfBirthInput = ({ value, onChange, errors = {} }) => {
         return calculatedAge;
     };
 
-    // Efeito para recalcular a idade sempre que a data de nascimento mudar
+    const formatDate = (isoDate: string): string => {
+        if (!isoDate) return '';
+        const date = new Date(isoDate);
+        const year = date.getFullYear();
+        const month = `0${date.getMonth() + 1}`.slice(-2);
+        const day = `0${date.getDate()}`.slice(-2);
+        return `${year}-${month}-${day}`;
+    };
+
     useEffect(() => {
         if (value) {
-            const calculatedAge = calculateAge(value);
+            const formattedDate = formatDate(value);
+            setLocalValue(formattedDate);
+            const calculatedAge = calculateAge(formattedDate);
             setAge(calculatedAge);
         } else {
-            setAge(null); // Limpa a idade se não houver valor
+            setLocalValue('');
         }
     }, [value]);
-console.log(value);
+
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newDate = e.target.value;
+        setLocalValue(newDate);
+        onChange(newDate);
+        const calculatedAge = calculateAge(newDate);
+        setAge(calculatedAge);
+    };
+
     return (
         <div className="w-full">
-            <InputLabel htmlFor="data_nascimento" value="Data de Nascimento" />
-            <TextInput
-                id="data_nascimento"
+            <InputLabel htmlFor={id} value="Data de Nascimento" />
+            <input 
+                id={id}
                 type="date"
-                value={value}
+                value={localValue}
                 className="mt-1 block w-full"
-                onChange={(e) => onChange(e.target.value)}
+                onChange={handleDateChange}
                 required
             />
-            <InputError message={errors.data_nascimento || ''} className="mt-2" />
+
+            <InputError message={errors?.[id] || ''} className="mt-2" />
 
             {age !== null && (
                 <p className="mt-2 text-sm text-gray-600">

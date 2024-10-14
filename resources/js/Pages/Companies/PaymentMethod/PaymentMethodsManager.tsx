@@ -1,13 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { useForm } from '@inertiajs/react';
+import React, { useState } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import AddPaymentMethodForm from './Manager/AddPaymentMethodForm';
-import AddPaymentFeeForm from './Manager/AddPaymentFeeForm';
-import PaymentMethodControls from './Manager/PaymentMethodControls';
-import PaymentMethodPanel from './Manager/PaymentMethodPanel';
-import AddFeeControl from './Manager/AddFeeControl';
+import PaymentFeesTable from './Manager/PaymentFeesTable';
+import { PlusCircleIcon } from '@heroicons/react/24/solid';
 
 interface PaymentMethod {
     id: number;
@@ -23,101 +20,85 @@ interface PaymentMethodFee {
     fixed_fee: number;
     percentage_fee: number;
 }
-interface Account {
+
+interface SelectedAccount {
     id: number;
     name: string;
     type: string;
 }
+
 interface PaymentMethodsManagerProps {
     paymentMethods: PaymentMethod[];
     paymentMethodsFees: PaymentMethodFee[];
-    accounts:Account[];
+    selectedAccount: SelectedAccount;
 }
 
-const PaymentMethodsManager: React.FC<PaymentMethodsManagerProps> = ({ paymentMethods, paymentMethodsFees, accounts }) => {
-    const { data, setData, post, reset, errors } = useForm({
-        name: '',
-        type: '',
-        installments: 1,
-        fixed_fee: 0,
-        percentage_fee: 0,
-    });
-
-    const [isEditing, setIsEditing] = useState<Record<number, boolean>>({});
-    const [editedFees, setEditedFees] = useState<Record<number, { fixed_fee: number; percentage_fee: number }>>({});
+const PaymentMethodsManager: React.FC<PaymentMethodsManagerProps> = ({
+    paymentMethods,
+    paymentMethodsFees,
+    selectedAccount,
+}) => {
     const [isAddingPaymentMethod, setIsAddingPaymentMethod] = useState(false);
-    const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
-    const [isAddingFee, setIsAddingFee] = useState(false);
 
-    // Função para ativar/desativar o modo de edição para um método específico
-    const handleEditToggle = (methodId: number) => {
-        setIsEditing((prev) => ({
-            ...prev,
-            [methodId]: !prev[methodId],
-        }));
-
-        // Inicializa os valores de edição com os valores atuais se o modo de edição for ativado
-        if (!isEditing[methodId]) {
-            const currentFees = paymentMethodsFees
-                .filter((fee) => fee.payment_method_id === methodId)
-                .reduce((acc, fee) => {
-                    acc[fee.id] = { fixed_fee: fee.fixed_fee, percentage_fee: fee.percentage_fee };
-                    return acc;
-                }, {});
-            setEditedFees((prev) => ({ ...prev, ...currentFees }));
-        }
-    };
-
-    // Função para atualizar o valor de edição das taxas
-    const handleFeeChange = (feeId: number, field: string, value: any) => {
-        setEditedFees((prev) => ({
-            ...prev,
-            [feeId]: {
-                ...prev[feeId],
-                [field]: value,
-            },
-        }));
-    };
-
-    // Função para salvar as alterações
-    const handleSave = (methodId: number) => {
-        console.log('Salvando alterações para o método:', methodId, editedFees);
-        setIsEditing((prev) => ({ ...prev, [methodId]: false }));
-        // Aqui você pode implementar a lógica para salvar as edições no backend, utilizando uma chamada à API.
-    };
-
+    // Filtra os métodos de pagamento relacionados à conta selecionada
+    const filteredPaymentMethods = paymentMethods.filter(
+        (method) => method.account_id === selectedAccount.id
+    );
 
     return (
         <div className="bg-white shadow rounded-lg p-6">
-            <PaymentMethodControls
-                isAddingPaymentMethod={isAddingPaymentMethod}
-                onToggleAddMethod={() => setIsAddingPaymentMethod(!isAddingPaymentMethod)}
-            />
-            {isAddingPaymentMethod && <AddPaymentMethodForm onSuccess={() => setIsAddingPaymentMethod(false)} />}
+            <h1><strong>Nome da conta:</strong> {selectedAccount.name}</h1>
+            <PrimaryButton
+                type="button"
+                className="mt-2"
+                onClick={() => setIsAddingPaymentMethod(prevState => !prevState)}
+            >
+                {isAddingPaymentMethod ? (
+                    'Cancelar Adição de Método de Pagamento'
+                ) : (
+                    'Adicionar Método de Pagamento para essa conta'
+                )}
+            </PrimaryButton>
 
-            <AddFeeControl
-                isAddingFee={isAddingFee}
-                onToggleAddFee={() => setIsAddingFee(!isAddingFee)}
-                paymentMethodId={selectedMethodId}
-                onSuccess={() => setIsAddingFee(false)}
-            />
+            {isAddingPaymentMethod && <AddPaymentMethodForm account={selectedAccount.id} setIsAddingPaymentMethod={setIsAddingPaymentMethod} />}
 
-            <div className="card">
-                <Stepper style={{ flexBasis: '50rem' }} orientation="vertical">
-                    {paymentMethods.map((method) => (
-                        <StepperPanel key={method.id} header={`${method.name} - ${method.type}`} > 
-                            <PaymentMethodPanel
-                                method={method}
-                                fees={paymentMethodsFees.filter((fee) => fee.payment_method_id === method.id)}
-                                editedFees={editedFees}
-                                handleFeeChange={handleFeeChange}
-                                isEditing={isEditing[method.id]}
-                                onEditToggle={() => handleEditToggle(method.id)}
-                                onSave={() => handleSave(method.id)}
-                            />
-                        </StepperPanel>
-                    ))}
-                </Stepper>
+            {/* Card para Métodos de Pagamento */}
+            <div className="w-full max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+                <h2 className="text-2xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <span className="text-blue-500 mr-2">💳</span> Métodos de Pagamento
+                </h2>
+                <div className="flex flex-wrap justify-center">
+                    <div className="w-full">
+                        {filteredPaymentMethods.length === 0 ? (
+                            <p>Nenhum método de pagamento disponível para esta conta.</p>
+                        ) : (
+                            <Stepper 
+                                orientation="vertical"
+                            >
+                                {filteredPaymentMethods.map((method, index) => (
+                                    <StepperPanel 
+                                        key={`step-${index}`} 
+                                        header={`${method.name} - ${method.type}`} 
+                                    >
+                                        <div className="flex flex-col h-12rem">
+                                            <div className="">
+                                                {/* Exibe as taxas (parcelas) associadas a este método de pagamento */}
+                                                <div className=" shadow w-full relative">
+                                                    <PaymentFeesTable
+                                                        methodId={method.id}
+                                                        fees={paymentMethodsFees.filter(
+                                                            (fee) => fee.payment_method_id === method.id
+                                                        )}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </StepperPanel>
+                                ))}
+                            </Stepper>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

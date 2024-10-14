@@ -3,6 +3,8 @@ import { useForm } from '@inertiajs/react';
 import { TreeSelect } from 'primereact/treeselect';
 import MeasuringForm from './MeasuringForm';
 import PopupHeader from '@/Layouts/PopupHeader';
+import { Product, Supplier, ProductFormData } from '../../interfaces'; // Ajuste o caminho conforme necessário
+
 
 interface ProductFormProps {
     onHide: () => void;
@@ -10,18 +12,17 @@ interface ProductFormProps {
     initialData?: ProductFormData;
 }
 
-interface ProductFormData {
-    category_id: number | null;
-    name: string;
-    description: string;
-    measuring_unit: 'unidade' | 'peso' | 'volume' | null;
-    quantities_per_unit: number | null;
-    measuring_unit_of_unit: string | null;
-    status: boolean;
+
+
+interface CategoryNode {
+    key: number;
+    label: string;
+    children?: CategoryNode[];
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ onHide, categories, initialData }) => {
     const { data, setData, post, put, reset, processing, errors } = useForm<ProductFormData>({
+        id: null,
         category_id: null,
         name: '',
         description: '',
@@ -32,11 +33,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ onHide, categories, initialDa
         ...initialData, // Inicializa os campos com os valores de initialData, se fornecidos
     });
 
-    const [categoryNodes, setCategoryNodes] = useState([]);
+    const [categoryNodes, setCategoryNodes] = useState<CategoryNode[]>([]);
 
     // Converte a lista de categorias em uma estrutura hierárquica para o TreeSelect
     useEffect(() => {
-        const buildTree = (nodes, parentId = null) =>
+        const buildTree = (nodes: { id: number; name: string; parent_id: number | null }[], parentId: number | null): CategoryNode[] =>
             nodes
                 .filter(node => node.parent_id === parentId)
                 .map(node => ({
@@ -45,32 +46,35 @@ const ProductForm: React.FC<ProductFormProps> = ({ onHide, categories, initialDa
                     children: buildTree(nodes, node.id),
                 }));
 
-        setCategoryNodes(buildTree(categories));
+        setCategoryNodes(buildTree(categories, null));
     }, [categories]);
 
-    const handleInputChange = (field: keyof ProductFormData, value: any) => {
+    const handleInputChange = (field: keyof ProductFormData, value: any): void => {
         setData(field, value);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmitProduct = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         const routeName = initialData && initialData.id ? 'product.update' : 'product.store';
         const method = initialData && initialData.id ? put : post;
-
-        method(route(routeName, initialData ? initialData.id : undefined), {
-            data,
+    
+        // Somente passa o ID se ele existir e for um número válido
+        const routeParams = initialData && initialData.id ? initialData.id : undefined;
+    
+        method(route(routeName, routeParams), {
             onSuccess: () => {
-                console.log(data);
                 onHide();
+                reset();
             },
         });
     };
+    
 
     return (
         <>
-            <PopupHeader titulo={initialData ? 'Editar Produto' : 'Cadastrar Produto'} />
+            <PopupHeader title={initialData ? 'Editar Produto' : 'Cadastrar Produto'} />
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmitProduct} className="space-y-6">
                 <div className="flex flex-wrap gap-4">
                     {/* Campo de Nome do Produto */}
                     <div className="w-[65%] m-auto">
@@ -89,8 +93,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ onHide, categories, initialDa
                     <div className="w-[30%] m-auto">
                         <label className="block text-gray-700 font-medium">Categoria</label>
                         <TreeSelect
-                            value={data.category_id}
-                            onChange={(e) => handleInputChange('category_id', e.value)}
+                            value={data.category_id ? String(data.category_id) : null} // Converte o category_id para string
+                            onChange={(e) => handleInputChange('category_id', Number(e.value))} // Converte de volta para número ao alterar
                             options={categoryNodes}
                             className={`mt-1 w-full border border-gray-300 rounded-md shadow-sm ${errors.category_id ? 'border-red-500' : ''}`}
                             placeholder="Selecione uma categoria"
@@ -132,9 +136,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ onHide, categories, initialDa
                             Cancelar
                         </button>
                         <button
-                            type="submit"
+                            type="submit" // Corrigido para ser um botão de submissão de formulário
                             className="bg-blue-500 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-600 transition-all"
-                            disabled={processing}
                         >
                             {initialData ? 'Atualizar Produto' : 'Cadastrar Produto'}
                         </button>

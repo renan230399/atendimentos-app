@@ -31,6 +31,7 @@ class PaymentMethodSeeder extends Seeder
                 'account_id' => $accountId,
                 'name' => $method['name'],
                 'type' => $method['type'],
+                'status' => true,
             ]);
 
             // Adicionar taxas variáveis para Cartão de Crédito
@@ -57,6 +58,7 @@ class PaymentMethodSeeder extends Seeder
                         'installments' => $fee['installments'],
                         'fixed_fee' => $fee['fixed_fee'],
                         'percentage_fee' => $fee['percentage_fee'],
+                        'status' => true,
                     ]);
                 }
             } else {
@@ -66,6 +68,7 @@ class PaymentMethodSeeder extends Seeder
                     'installments' => 1, // Sempre uma parcela para Dinheiro e Transferência Bancária
                     'fixed_fee' => $method['fixed_fee'],
                     'percentage_fee' => $method['percentage_fee'],// Sem taxa para esses métodos
+                    'status' => true,
                 ]);
             }
         }

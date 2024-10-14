@@ -56,7 +56,6 @@ const CategoriesManager: React.FC<CategoriesManagerProps> = ({ categories }) => 
       {isAddingCategory && (
         <form onSubmit={handleAddCategory} className="mt-4">
           <TextInput
-            label="Nome da Categoria"
             id="name"
             name="name"
             value={data.name}

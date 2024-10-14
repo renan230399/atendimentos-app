@@ -2,7 +2,6 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeManager from './Employees/EmployeeManager';
-import PaymentMethodsManager from './PaymentMethod/PaymentMethodsManager';
 
 interface Employee {
     id: number;
@@ -54,21 +53,7 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ auth, employees, pa
                 <EmployeeManager employees={employees} />
             </div>
 
-            {/* Card para Métodos de Pagamento */}
-            <div className="w-full max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-                <h2 className="text-2xl font-semibold text-gray-700 mb-4 flex items-center">
-                    <span className="text-blue-500 mr-2">💳</span> Métodos de Pagamento
-                </h2>
-                <div className="flex flex-wrap justify-center">
-                    <div className="w-full">
-                        <PaymentMethodsManager
-                            paymentMethods={paymentMethods}
-                            paymentMethodsFees={paymentMethodsFees}
-                            accounts={accounts}
-                        />
-                    </div>
-                </div>
-            </div>
+
         </div>
 
         </AuthenticatedLayout>

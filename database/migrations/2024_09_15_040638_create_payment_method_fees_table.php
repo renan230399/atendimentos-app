@@ -17,6 +17,8 @@ return new class extends Migration
             $table->integer('installments'); // Número de parcelas
             $table->decimal('fixed_fee', 10, 2)->default(0); // Taxa fixa por transação
             $table->decimal('percentage_fee', 5, 2)->default(0); // Taxa percentual aplicada ao valor da transação
+            $table->boolean('status')->default(1); // status do método de pagamento
+
             $table->timestamps();
         
             // Chave estrangeira para o método de pagamento

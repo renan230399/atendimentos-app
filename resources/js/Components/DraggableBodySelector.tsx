@@ -1,80 +1,91 @@
 import React, { useState, useEffect } from 'react';
 
-const DraggableBodySelector = ({ imageSrc, label, onPositionChange, initialPosition, initialSize, id }) => {
-    const [circlePosition, setCirclePosition] = useState({ x: null, y: null });
+interface Position {
+    x: number | null;
+    y: number | null;
+}
+
+interface DraggableBodySelectorProps {
+    imageSrc: string;
+    label?: string;
+    onPositionChange?: (position: { x: number; y: number; size: number }) => void;
+    initialPosition?: { x: number; y: number };
+    initialSize?: number;
+    id: string;
+}
+
+const DraggableBodySelector: React.FC<DraggableBodySelectorProps> = ({ 
+    imageSrc, 
+    label, 
+    onPositionChange, 
+    initialPosition, 
+    initialSize = 5, 
+    id 
+}) => {
+    const [circlePosition, setCirclePosition] = useState<Position>({ x: null, y: null });
     const [isDragging, setIsDragging] = useState(false);
-    const [hoverPosition, setHoverPosition] = useState({ x: null, y: null }); // Para o círculo de pré-visualização
-    const [circleSize, setCircleSize] = useState(initialSize || 5); // Tamanho ajustável do círculo (em porcentagem)
+    const [hoverPosition, setHoverPosition] = useState<Position>({ x: null, y: null });
+    const [circleSize, setCircleSize] = useState<number>(initialSize);
     const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
 
-    // Captura a posição do clique e posiciona o círculo
-    const handleImageClick = (e) => {
-        const rect = e.target.getBoundingClientRect(); // Pega a dimensão da imagem
-        const x = e.clientX - rect.left; // Posição X relativa ao clique
-        const y = e.clientY - rect.top;  // Posição Y relativa ao clique
-
-        const relativeX = (x / rect.width) * 100; // Posição X relativa (%)
-        const relativeY = (y / rect.height) * 100; // Posição Y relativa (%)
-
-        setCirclePosition({ x: relativeX, y: relativeY }); // Armazena como porcentagem
-        if (onPositionChange) onPositionChange({ x: relativeX, y: relativeY, size: circleSize }); // Chama callback para armazenar a posição e o tamanho relativo
-    };
-
-    // Inicia o arraste
-    const handleMouseDown = () => setIsDragging(true);
-
-    // Finaliza o arraste
-    const handleMouseUp = () => setIsDragging(false);
- // Desativa a seleção de texto
- const disableTextSelection = () => {
-    document.body.classList.add('no-select');
-  };
-    // Move o círculo enquanto o mouse estiver pressionado
-    const handleMouseMove = (e) => {
-        disableTextSelection();
-        if (!isDragging) return;
-        const rect = e.target.getBoundingClientRect();
+    const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
+        const rect = (e.target as HTMLImageElement).getBoundingClientRect(); // Cast para HTMLImageElement
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+    
         const relativeX = (x / rect.width) * 100;
         const relativeY = (y / rect.height) * 100;
+    
+        setCirclePosition({ x: relativeX, y: relativeY });
+        if (onPositionChange) onPositionChange({ x: relativeX, y: relativeY, size: circleSize });
+    };
+    
+
+    const handleMouseDown = () => setIsDragging(true);
+    const handleMouseUp = () => setIsDragging(false);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!isDragging) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const relativeX = (x / rect.width) * 100;
+        const relativeY = (y / rect.height) * 100;
+
         setCirclePosition({ x: relativeX, y: relativeY });
         if (onPositionChange) onPositionChange({ x: relativeX, y: relativeY, size: circleSize });
     };
 
-    // Controla a posição do círculo de pré-visualização
-    const handleMouseOverImage = (e) => {
-        const rect = e.target.getBoundingClientRect();
+    const handleMouseOverImage = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
+        const rect = (e.target as HTMLImageElement).getBoundingClientRect(); // Cast para HTMLImageElement
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        setHoverPosition({ x: (x / rect.width) * 100, y: (y / rect.height) * 100 }); // Armazena como porcentagem
+    
+        setHoverPosition({ x: (x / rect.width) * 100, y: (y / rect.height) * 100 });
     };
+    
 
-    // Limpa a pré-visualização quando o mouse sai da imagem
     const handleMouseLeaveImage = () => {
         setHoverPosition({ x: null, y: null });
     };
 
-    // Calcula as dimensões da imagem quando carregada
-    const handleImageLoad = (e) => {
-        const { width, height } = e.target.getBoundingClientRect();
+    const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const { width, height } = e.currentTarget.getBoundingClientRect();
         setImageDimensions({ width, height });
 
-        // Se houver uma posição inicial e um tamanho inicial, ajusta-os para a imagem atual
         if (initialPosition && initialSize) {
             const absoluteX = (initialPosition.x / 100) * width;
             const absoluteY = (initialPosition.y / 100) * height;
             setCirclePosition({ x: absoluteX, y: absoluteY });
-            setCircleSize(initialSize); // Tamanho inicial já vem como porcentagem
+            setCircleSize(initialSize);
         }
     };
 
     return (
         <div>
-            {/* Label opcional para descrever o campo */}
             {label && <label className="block mb-2 text-gray-700">{label}</label>}
 
-            {/* Barra de controle para ajustar o tamanho do círculo */}
             <div className="mb-4">
                 <label className="block text-gray-700">Tamanho do círculo: {circleSize}%</label>
                 <input
@@ -89,53 +100,50 @@ const DraggableBodySelector = ({ imageSrc, label, onPositionChange, initialPosit
 
             <div
                 className="relative"
-                onMouseMove={handleMouseMove} // Verifica se o círculo está sendo arrastado
-                onMouseUp={handleMouseUp}     // Finaliza o arraste quando o mouse é solto
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
             >
-                {/* Imagem do corpo humano ou outra imagem passada por props */}
                 <img 
                     src={imageSrc} 
                     alt="Imagem do Corpo Humano"
                     className="w-full"
-                    onClick={handleImageClick} // Posiciona o círculo ao clicar
-                    onMouseMove={handleMouseOverImage} // Mostra o círculo de pré-visualização
-                    onMouseLeave={handleMouseLeaveImage} // Remove a pré-visualização quando o mouse sai
-                    onLoad={handleImageLoad} // Pega as dimensões da imagem
-                    style={{ maxWidth: '600px', cursor: 'pointer' }} // Tamanho ajustável
+                    onClick={handleImageClick}
+                    onMouseMove={handleMouseOverImage}
+                    onMouseLeave={handleMouseLeaveImage}
+                    onLoad={handleImageLoad}
+                    style={{ maxWidth: '600px', cursor: 'pointer' }}
                 />
 
-                {/* Círculo de pré-visualização (cinza) */}
-                {hoverPosition.x && hoverPosition.y && (
+                {hoverPosition.x !== null && hoverPosition.y !== null && (
                     <div
                         style={{
                             position: 'absolute',
-                            top: `${hoverPosition.y}%`,   // Usa porcentagem para manter a relação
-                            left: `${hoverPosition.x}%`,  // Usa porcentagem para manter a relação
-                            width: `${circleSize}%`,      // Tamanho proporcional em porcentagem da largura da imagem
+                            top: `${hoverPosition.y}%`,
+                            left: `${hoverPosition.x}%`,
+                            width: `${circleSize}%`,
                             height: `${circleSize}%`,
-                            backgroundColor: 'rgba(128, 128, 128, 0.5)', // Círculo cinza translúcido
+                            backgroundColor: 'rgba(128, 128, 128, 0.5)',
                             borderRadius: '50%',
                             pointerEvents: 'none',
-                            transform: 'translate(-50%, -50%)' // Centraliza o círculo
+                            transform: 'translate(-50%, -50%)'
                         }}
                     />
                 )}
 
-                {/* Círculo posicionado no clique (vermelho) */}
-                {circlePosition.x && circlePosition.y && (
+                {circlePosition.x !== null && circlePosition.y !== null && (
                     <div
                         style={{
                             position: 'absolute',
-                            top: `${circlePosition.y}%`,   // Usa porcentagem para manter a relação
-                            left: `${circlePosition.x}%`,  // Usa porcentagem para manter a relação
-                            width: `${circleSize}%`,       // Tamanho proporcional em porcentagem da largura da imagem
+                            top: `${circlePosition.y}%`,
+                            left: `${circlePosition.x}%`,
+                            width: `${circleSize}%`,
                             height: `${circleSize}%`,
-                            backgroundColor: 'rgba(255, 0, 0, 0.6)', // Círculo vermelho translúcido
+                            backgroundColor: 'rgba(255, 0, 0, 0.6)',
                             borderRadius: '50%',
                             cursor: 'move',
-                            transform: 'translate(-50%, -50%)' // Centraliza o círculo
+                            transform: 'translate(-50%, -50%)'
                         }}
-                        onMouseDown={handleMouseDown} // Inicia o arraste quando o usuário clica no círculo
+                        onMouseDown={handleMouseDown}
                     />
                 )}
             </div>

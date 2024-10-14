@@ -1,4 +1,5 @@
 import React from 'react';
+import { ProductFormData } from '../../interfaces'; // Ajuste o caminho conforme necessário
 
 interface MeasuringFormProps {
     formData: {
@@ -6,7 +7,7 @@ interface MeasuringFormProps {
         quantities_per_unit: number | null;
         measuring_unit_of_unit: string | null;
     };
-    setFormData: (field: string, value: any) => void;
+    setFormData: (field: keyof ProductFormData, value: any) => void; // Mudança aqui para keyof ProductFormData
 }
 
 const MeasuringForm: React.FC<MeasuringFormProps> = ({ formData, setFormData }) => {
@@ -27,7 +28,7 @@ const MeasuringForm: React.FC<MeasuringFormProps> = ({ formData, setFormData }) 
                 <label className="block text-gray-700 font-medium">Unidade de Medida</label>
                 <select
                     value={formData.measuring_unit || ''}
-                    onChange={(e) => setFormData('measuring_unit', e.target.value)}
+                    onChange={(e) => setFormData('measuring_unit', e.target.value as 'unidade' | 'peso' | 'volume' | null)}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                     required
                 >

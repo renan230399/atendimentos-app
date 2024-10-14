@@ -158,7 +158,7 @@ class TransactionController extends Controller
         }
     
         // Redirecionar com uma mensagem de sucesso
-        return redirect()->back()->with('success', 'Transações criadas e saldos atualizados!');
+        //return redirect()->back()->with('success', 'Transações criadas e saldos atualizados!');
     }
     
     

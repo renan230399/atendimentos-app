@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from 'primereact/sidebar';
-import NewSupplierForm from './SupplierForm';
+import SupplierForm from './SupplierForm';
 import { FaPlusCircle, FaEdit } from "react-icons/fa";
-import ContactsInput from '@/Components/ContactsInput';
-
+interface Contact {
+    type: string;
+    value: string;
+    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
+}
 interface Supplier {
+    id?: number; // Propriedade id é opcional
     name: string;
     category: string;
-    contacts: string;
+    contacts: Contact[];
     address: string;
     state: string;
     notes: string;
     status: boolean;
 }
+
 
 interface SuppliersManagerProps {
     suppliers: Supplier[];
@@ -58,35 +63,29 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
         setSelectedSupplier(null); // Limpa o supplier selecionado ao fechar o popup
     };
 
-    const handleSaveSupplier = (supplierData: any) => {
-        if (selectedSupplier) {
-            console.log('Fornecedor editado:', supplierData);
-            // Lógica para atualizar o fornecedor existente
-        } else {
-            console.log('Novo fornecedor salvo:', supplierData);
-            // Lógica para salvar o novo fornecedor
-        }
-        handleClosePopup();
-    };
-
     // Função para converter a string JSON de contatos em um array de objetos
-    const convertContactsToArray = (contacts: any) => {
+
+    const convertContactsToArray = (contacts: string | Contact[]): Contact[] => {
         try {
+            // Se já for um array, retorna diretamente
             if (Array.isArray(contacts)) {
                 return contacts;
             }
-
-            const parsedContacts = JSON.parse(contacts);
+    
+            // Tenta analisar a string JSON para um objeto
+            const parsedContacts: Record<string, { value: string; category: 'phone' | 'link' | 'string' }> = JSON.parse(contacts);
+    
+            // Se o resultado for um array, retorne-o
             return Array.isArray(parsedContacts)
                 ? parsedContacts
                 : Object.entries(parsedContacts).map(([key, value]) => ({
                     type: key,
                     value: value?.value ?? '',
-                    category: value?.category ?? '',
+                    category: value?.category ?? 'string', // Define um valor padrão se category estiver indefinido
                 }));
         } catch (error) {
             console.error('Erro ao converter contatos:', error);
-            return [{ type: 'Telefone Principal', value: '' }];
+            return [{ type: 'Telefone Principal', value: '', category: 'phone' }]; // Valor padrão em caso de erro
         }
     };
 
@@ -143,12 +142,14 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
             </div>
 
             <Sidebar visible={isPopupVisible} position="right" className='xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-hidden' onHide={handleClosePopup}>
-                <NewSupplierForm
+            {selectedSupplier && (
+                <SupplierForm
                     onClose={handleClosePopup}
                     setSaveSupplier={setSaveSupplier}
                     initialData={selectedSupplier}
                     categories={categories}
                 />
+            )}
             </Sidebar>
         </div>
     );

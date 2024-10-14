@@ -28,8 +28,27 @@ class PaymentMethodController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+       // Validação dos dados recebidos
+       $validatedData = $request->validate([
+        'account_id' => 'required|integer',
+        'name' => 'required|string',
+        'type' => 'required|string',
+    ]);
+
+    // Transação para garantir que ambas as operações (ordem e itens) sejam salvas corretamente
+        $companyId = auth()->user()->company_id;
+        // Criação do pedido (Order)
+        $order = PaymentMethod::create([
+            'company_id' => $companyId,
+            'account_id' => $validatedData['account_id'],
+            'name' => $validatedData['name'],
+            'type' => $validatedData['type'],
+  ]);
+
+
+    // Redirecionar com sucesso
+    //return redirect()->route('financial.dashboard')->with('success', 'Pedido criado com sucesso!');   
+ }
 
     /**
      * Display the specified resource.

@@ -15,7 +15,7 @@ class Patient extends Model
      *
      * @var string
      */
-    protected $table = 'patients';  // Adjusted the table name to 'patients'
+    protected $table = 'patients';  // Nome da tabela
 
     /**
      * The attributes that are mass assignable.
@@ -23,23 +23,23 @@ class Patient extends Model
      * @var array
      */
     protected $fillable = [
-        'company_id',    // Renamed to 'company_id'
-        'patient_name',  // Renamed to 'patient_name'
-        'phone',         // Renamed to 'phone'
-        'birth_date',    // Renamed to 'birth_date'
-        'gender',    // Renamed to 'birth_date'
-        'neighborhood',  // Renamed to 'neighborhood'
-        'street',        // Renamed to 'street'
-        'house_number',  // Renamed to 'house_number'
-        'address_complement',  // Renamed to 'address_complement'
-        'city',          // Renamed to 'city'
-        'state',         // Renamed to 'state'
-        'cpf',
-        'contacts',      // Renamed to 'contacts'
-        'complaints',    // Renamed to 'complaints'
-        'notes',         // Renamed to 'notes'
-        'profile_picture',  // Renamed to 'profile_picture'
-        'status',        // Status remains unchanged
+        'company_id',           // Referência para a empresa associada
+        'patient_name',         // Nome do paciente
+        'phone',                // Telefone
+        'birth_date',           // Data de nascimento
+        'gender',               // Gênero
+        'neighborhood',         // Bairro
+        'street',               // Rua
+        'house_number',         // Número da casa
+        'address_complement',   // Complemento do endereço
+        'city',                 // Cidade
+        'state',                // Estado
+        'cpf',                  // CPF
+        'contacts',             // Contatos em formato JSON
+        'complaints',           // Reclamações ou queixas (opcional)
+        'notes',                // Notas adicionais
+        'profile_picture',      // Caminho da foto de perfil
+        'status',               // Status ativo/inativo
     ];
 
     /**
@@ -48,10 +48,10 @@ class Patient extends Model
      * @var array
      */
     protected $casts = [
-        'contacts' => 'array',        // JSON to array for contacts
-        'complaints' => 'array',      // JSON to array for complaints
-        'birth_date' => 'date',       // Cast birth_date to a Carbon date object
-        'status' => 'boolean',        // Cast status to boolean
+        'contacts' => 'array',         // Converte contatos JSON para array
+        'complaints' => 'array',       // Converte reclamações JSON para array
+        'birth_date' => 'date',        // Converte data de nascimento para objeto Carbon
+        'status' => 'boolean',         // Converte status para booleano
     ];
 
     /**
@@ -61,7 +61,7 @@ class Patient extends Model
      */
     public function company()
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Company::class);  // Paciente pertence a uma empresa
     }
 
     /**
@@ -72,7 +72,7 @@ class Patient extends Model
      */
     public function consultations()
     {
-        return $this->hasMany(Consultation::class);
+        return $this->hasMany(Consultation::class);  // Um paciente pode ter várias consultas
     }
 
     /**
@@ -83,7 +83,7 @@ class Patient extends Model
      */
     public function formResponses()
     {
-        return $this->hasMany(FormResponse::class);
+        return $this->hasMany(FormResponse::class);  // Um paciente pode ter várias respostas de formulários
     }
 
     /**
@@ -93,7 +93,7 @@ class Patient extends Model
      */
     public function getProfilePictureUrlAttribute()
     {
-        return $this->profile_picture ? Storage::disk('s3')->url($this->profile_picture) : null;
+        return $this->profile_picture ? Storage::disk('s3')->url($this->profile_picture) : null;  // Retorna a URL completa da foto no S3
     }
 
     /**
@@ -103,6 +103,6 @@ class Patient extends Model
      */
     public function getAgeAttribute()
     {
-        return $this->birth_date ? $this->birth_date->age : null;
+        return $this->birth_date ? $this->birth_date->age : null;  // Calcula a idade do paciente com base na data de nascimento
     }
 }

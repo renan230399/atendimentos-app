@@ -19,6 +19,7 @@ class PaymentMethodFee extends Model
         'installments',
         'fixed_fee',
         'percentage_fee',
+        'status',
     ];
 
     /**

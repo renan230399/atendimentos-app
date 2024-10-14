@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name'); // Nome da categoria
             $table->enum('type', ['income', 'expense']); // Tipo da categoria
             $table->foreignId('parent_id')->nullable()->constrained('transaction_categories')->onDelete('cascade'); // Autorreferência para categoria pai
+
             $table->timestamps();
         });
         

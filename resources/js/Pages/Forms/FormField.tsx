@@ -1,7 +1,31 @@
 import InputError from '@/Components/InputError';
 import DraggableBodySelector from '@/Components/DraggableBodySelector'; // Importa o componente de seleção do corpo
 
-const FormField = ({ field, data = {}, handleChange = null, errors = {} }) => {
+// Definindo a interface para as opções de campo
+interface FieldOption {
+    label: string;
+    value: string;
+}
+
+// Definindo a interface para o campo
+interface FormFieldProps {
+    field: {
+        id: number; // Altere de string para number
+        label: string;
+        type: string;
+        class?: string;
+        required?: boolean;
+        options?: string[] | FieldOption[];
+        photo_select?: string;
+        order?: number;
+    };
+    data: { [key: string]: any }; // Tipo para os dados
+    handleChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, field: any) => void;
+    errors?: { [key: string]: string };
+}
+
+// Componente FormField
+const FormField: React.FC<FormFieldProps> = ({ field, data = {}, handleChange = null, errors = {} }) => {
     if (!field || !field.type || !field.label) return null;
 
     const fieldValue = data ? data[field.id] : ''; // Verifica se há dados
@@ -14,7 +38,7 @@ const FormField = ({ field, data = {}, handleChange = null, errors = {} }) => {
         case 'number':
         case 'date':
             return (
-                <div className={`${field.class}`}>
+                <div className={`${field.class} m-auto`}>
                     <label className="block text-gray-700">{field.label}</label>
                     <input
                         type={field.type}
@@ -31,7 +55,7 @@ const FormField = ({ field, data = {}, handleChange = null, errors = {} }) => {
             );
         case 'textarea':
             return (
-                <div className={`${field.class}`}>
+                <div className={`${field.class} m-auto`}>
                     <label className="block text-gray-700">{field.label}</label>
                     <textarea
                         id={field.id}
@@ -136,14 +160,18 @@ const FormField = ({ field, data = {}, handleChange = null, errors = {} }) => {
             );
         case 'file':
             return (
-                <div className={`${field.class}`}>
+                <div className={`${field.class} m-auto`}>
                     <label className="block text-gray-700">{field.label}</label>
                     <input
                         id={field.id}
                         type="file"
                         name={field.id}
                         onChange={hasHandleChange ? (e) => handleChange(e, field) : undefined}
-                        className="w-full border-gray-300 rounded-lg shadow-sm"
+                        className="block w-full text-sm text-slate-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:bg-violet-50 file:text-violet-700
+                            hover:file:bg-violet-100"
                         disabled={!hasHandleChange}
                     />
                     {errorMessage && <InputError message={errorMessage} />}

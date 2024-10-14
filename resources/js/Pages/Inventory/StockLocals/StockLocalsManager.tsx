@@ -6,88 +6,102 @@ import { InputText } from 'primereact/inputtext';
 import AddStockLocalDialog from './AddStockLocalDialog';
 import { useForm } from '@inertiajs/react';
 import TextArea from '@/Components/TextArea';
-interface StockLocal {
-    id: number;
-    company_id: number;
-    parent_id: number | null;
+import { stockLocals } from '../interfaces'; // Ajuste o caminho conforme necessário
+import { TreeNode } from 'primereact/treenode';
+import { stringify } from 'querystring';
+
+interface CustomTreeNode extends TreeNode {
+    description?: string; // Adicionando a propriedade description opcional
+}
+interface StockLocalsManagerProps {
+    stockLocals: stockLocals[];
+}
+interface ItemNode {
+    key: string; // Alterado para number
+    label: string;
+    value: string;
+    description?: string;
+    children: ItemNode[];
+    className?: string;
+    style?: React.CSSProperties;
+}
+interface EditedStockLocal {
     name: string;
     description: string;
 }
-
-interface StockLocalsManagerProps {
-    stockLocals: StockLocal[];
-}
-
 export default function StockLocalsManager({ stockLocals }: StockLocalsManagerProps) {
-    const [nodes, setNodes] = useState([]);
+    const [nodes, setNodes] = useState<ItemNode[]>([]); // Define que nodes é um array de ItemNode
     const [expandedKeys, setExpandedKeys] = useState({});
     const [isEditing, setIsEditing] = useState(false);
-    const [editedStockLocals, setEditedStockLocals] = useState({});
+    const [editedStockLocals, setEditedStockLocals] = useState<{ [key: number]: EditedStockLocal }>({});
     const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
     const [selectedParentLocal, setSelectedParentLocal] = useState<{ key: number | null; name: string }>({ key: null, name: '' });
     const [saveAddLocal, setSaveAddLocal] = useState(false);
     const [saveSuccessEditing, setSaveSuccessEditing] = useState(false);
-
+    interface ParentLocal {
+        key: string;
+        name: string;
+    }
     const { data, setData, put, processing } = useForm({
         editedStockLocals: {},
     });
-
     useEffect(() => {
-        const groupedStockLocals = buildStockLocalTree(stockLocals);
-        setNodes(groupedStockLocals);
+        const groupedStockLocals: ItemNode[] = buildStockLocalTree(stockLocals); // Tipagem explícita de groupedStockLocals
+        setNodes(groupedStockLocals); // Garante que nodes é do tipo ItemNode[]
     }, [stockLocals]);
 
-    const buildStockLocalTree = (stockLocals) => {
-        const localMap = {};
-    
-        const calculateDepth = (local, depth = 0) => {
+    const buildStockLocalTree = (stockLocals: stockLocals[]): ItemNode[] => {
+        const localMap: { [key: number]: ItemNode } = {};
+        
+        const calculateDepth = (local: stockLocals, depth: number = 0): number => {
             if (!local.parent_id) return depth;
             const parentLocal = stockLocals.find(loc => loc.id === local.parent_id);
             return parentLocal ? calculateDepth(parentLocal, depth + 1) : depth;
         };
-    
+        
         const sortedLocals = [...stockLocals].sort((a, b) => a.name.localeCompare(b.name));
-    
+        
         sortedLocals.forEach((local) => {
             const depth = calculateDepth(local);
             localMap[local.id] = {
-                key: local.id,
+                key: String(local.id),
                 label: local.name,
-                data: local.name,
+                value: String(local.id),
                 description: local.description, // Adicionando a descrição
                 children: [],
                 className: local.parent_id ? 'p-node-leaf' : 'p-node-parent',
                 style: { paddingLeft: `${depth * 15}px` },
             };
         });
-    
-        const tree = [];
+        
+        const tree: ItemNode[] = [];
         sortedLocals.forEach((local) => {
-            if (local.parent_id) {
-                localMap[local.parent_id]?.children.push(localMap[local.id]);
+            if (local.parent_id && localMap[local.parent_id]) {
+                localMap[local.parent_id].children.push(localMap[local.id]);
             } else {
                 tree.push(localMap[local.id]);
             }
         });
-    
+        
         return tree;
     };
+    
     
 
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
         if (!isEditing) {
-            const initialEditedLocals = stockLocals.reduce((acc, local) => {
+            const initialEditedLocals: { [key: number]: EditedStockLocal } = stockLocals.reduce((acc, local) => {
                 acc[local.id] = { name: local.name, description: local.description };
                 return acc;
-            }, {});
+            }, {} as { [key: number]: EditedStockLocal }); // Força o tipo do objeto
             setEditedStockLocals(initialEditedLocals);
         }
     };
     
-
-    const handleInputChange = (id, field, newValue) => {
-        const updatedLocals = {
+    
+    const handleInputChange = (id: number, field: keyof EditedStockLocal, newValue: string) => {
+        const updatedLocals: { [key: number]: EditedStockLocal } = {
             ...editedStockLocals,
             [id]: {
                 ...editedStockLocals[id],
@@ -97,6 +111,7 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
         setEditedStockLocals(updatedLocals);
         setData('editedStockLocals', updatedLocals);
     };
+    
     
 
     const handleSaveChanges = (e: React.FormEvent) => {
@@ -122,12 +137,14 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
         setExpandedKeys({});
     };
 
-    const openAddSubcategoryDialog = (parentLocal) => {
-        setSelectedParentLocal({ key: parentLocal.key, name: parentLocal.name });
+    const openAddSubcategoryDialog = (parentLocal: ParentLocal) => {
+        setSelectedParentLocal({ key: Number(parentLocal.key), name: parentLocal.name });
         setShowAddSubcategoryDialog(true);
     };
+    
+    
 
-    const expandNode = (node, _expandedKeys) => {
+    const expandNode = (node: ItemNode, _expandedKeys: { [key: string]: boolean }) => {
         if (node.children && node.children.length) {
             _expandedKeys[node.key] = true;
             for (let child of node.children) {
@@ -135,9 +152,10 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
             }
         }
     };
-    const handleNodeClick = (node) => {
+    
+    const handleNodeClick = (node: ItemNode) => {
         // Faz uma cópia do estado de expandedKeys
-        const newExpandedKeys = { ...expandedKeys };
+        const newExpandedKeys: { [key: string]: boolean } = { ...expandedKeys };
     
         // Verifica se o nó está expandido, se sim, recolhe, se não, expande
         if (newExpandedKeys[node.key]) {
@@ -149,6 +167,7 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
         // Atualiza o estado com os novos expandedKeys
         setExpandedKeys(newExpandedKeys);
     };
+    
     
     
     return (
@@ -197,41 +216,42 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
                 </div>
             </div>
             <Tree
-    value={nodes}
+    value={nodes as CustomTreeNode[]}
     expandedKeys={expandedKeys}
     onToggle={(e) => setExpandedKeys(e.value)}
     className="w-full bg-white p-4"
-    nodeTemplate={(node, options) => (
+    nodeTemplate={(node: CustomTreeNode, options) => (
         <div className={`flex gap-2 border-b pb-1 bg-gray-100 p-1 ${options.className}`}>
             <i className={`pi my-auto ${node.children && node.children.length > 0 ? 'pi-th-large text-blue-500' : 'pi-box text-green-500'} mr-2`}></i>
             {isEditing ? (
                 <>
-
                     <div className='flex flex-col space-y-2'>
-                    <InputText
-                        value={editedStockLocals[node.key]?.name || ''}
-                        onChange={(e) => handleInputChange(node.key, 'name', e.target.value)}
-                        placeholder="Nome do Local"
-                        className="p-inputtext-sm w-full py-0 m-0"
-                    />
-                    <TextArea
-                        value={editedStockLocals[node.key]?.description || ''}
-                        onChange={(e) => handleInputChange(node.key, 'description', e.target.value)}
-                        placeholder="Descrição do Local"
-                        className="p-inputtext-sm w-full py-0 m-0"
-                    />
+                        <InputText
+                            value={editedStockLocals[Number(node.key)]?.name || ''}
+                            onChange={(e) => handleInputChange(node.key as number, 'name', e.target.value)} // Garantir que o key seja tratado corretamente
+                            placeholder="Nome do Local"
+                            className="p-inputtext-sm w-full py-0 m-0"
+                        />
+                        <TextArea
+                            value={editedStockLocals[Number(node.key)]?.description || ''}
+                            onChange={(e) => handleInputChange(node.key as number, 'description', e.target.value)}
+                            placeholder="Descrição do Local"
+                            className="p-inputtext-sm w-full py-0 m-0"
+                        />
                     </div>
                     <Button
                         icon="pi pi-plus"
                         className="p-button-rounded p-button-text p-button-secondary"
-                        onClick={() => openAddSubcategoryDialog({ key: node.key, name: node.label })}
+                        onClick={() => openAddSubcategoryDialog({ key: node.key as string, name: node.label || 'Sem nome' })} // Fornecer um valor padrão
                         title="Adicionar Sublocal"
                     />
+
+
                 </>
             ) : (
                 <span
-                    title={node.description}
-                    onClick={() => handleNodeClick(node)}
+                    title={node.label}
+                    onClick={() => handleNodeClick(node as ItemNode)} // Cast para ItemNode
                     className="cursor-pointer m-auto"
                 >
                     {node.label}
@@ -241,6 +261,7 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
         </div>
     )}
 />
+
 
 
 

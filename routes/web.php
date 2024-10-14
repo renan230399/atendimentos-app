@@ -8,9 +8,10 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\CategoryProductController;
 use App\Http\Controllers\ProductController;
-
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\PaymentMethodFeeController;
 use App\Http\Controllers\StockLocalController;
-
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
@@ -18,10 +19,8 @@ use App\Http\Controllers\TransferController;
 use App\Http\Controllers\CashFlowController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\InventoryController;
-
 use App\Http\Controllers\ConsultationController; // Adicionado
 use App\Http\Controllers\FormResponseController; // Adicionando o controlador para respostas de formulário
-
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -57,6 +56,8 @@ Route::middleware('auth')->group(function () {
 
     // Rotas para pacientes (patients)
     Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
+    Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
+
     Route::get('/patients/for-consultation', [PatientController::class, 'getPatientsForAddConsultation'])->name('patients.consultation.add');
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
     
@@ -68,6 +69,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/categories', [CategoryProductController::class, 'update'])->name('categories.update');
 
 
+    Route::get('/orders-index', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+
+    Route::post('/financial-dashboard', [PaymentMethodController::class, 'store'])->name('payment_methods.store');
+    Route::post('/payment-method-fee', [PaymentMethodFeeController::class, 'store'])->name('payment_method_fees.store');
+    Route::put('/payment-method-fees/{methodId}', [PaymentMethodFeeController::class, 'update'])->name('payment_method_fees.update');
+
+    
+    
     Route::post('/products', [ProductController::class, 'store'])->name('product.store');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('product.update');
 

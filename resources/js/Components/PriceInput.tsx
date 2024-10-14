@@ -8,20 +8,28 @@ interface PriceInputProps {
     id: string;
     error?: string;
     required?: boolean;
+    readOnly?: boolean;
 }
-interface Account {
-    id: number;
-    name: string;
-  }
-const PriceInput: React.FC<PriceInputProps> = ({ value, onChange, label, id, error, required }) => {
+
+const PriceInput: React.FC<PriceInputProps> = ({ value, onChange, label='', id, error, required, readOnly=false }) => {
+    // Função para formatar o preço no padrão brasileiro
     const formatPrice = (value: string) => {
-        const price = Dinero({ amount: parseInt(value || '0'), currency: 'BRL' });
-        return price.toFormat('$0,0.00'); // Formata em R$
+        const amountInCents = parseInt(value || '0');
+        const price = Dinero({ amount: amountInCents, currency: 'BRL' });
+
+        // Formata para padrão brasileiro: separador de milhar é ponto (.) e decimal é vírgula (,)
+        return price.toFormat('$0,0.00')
+            .replace(/\./g, '#') // Temporariamente substitui pontos por um caractere temporário
+            .replace(/,/g, '.')  // Substitui vírgula por ponto (para milhar)
+            .replace(/#/g, ','); // Finalmente, substitui o caractere temporário por vírgula para os decimais
     };
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-        onChange(newValue); // Atualiza o valor no estado em centavos
+        // Remove qualquer caractere não numérico
+        const newValue = e.target.value.replace(/\D/g, '');
+
+        // Atualiza o valor em centavos
+        onChange(newValue);
     };
 
     return (
@@ -30,10 +38,11 @@ const PriceInput: React.FC<PriceInputProps> = ({ value, onChange, label, id, err
             <input
                 id={id}
                 type="text"
-                value={formatPrice(value)}
+                value={formatPrice(value)} // Formata o valor de entrada
                 onChange={handlePriceChange}
                 required={required}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                readOnly={readOnly}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 placeholder="R$ 0,00"
             />
             {error && <p className="mt-2 text-red-500">{error}</p>}

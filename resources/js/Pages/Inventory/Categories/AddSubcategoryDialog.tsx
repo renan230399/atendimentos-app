@@ -3,16 +3,22 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { useForm } from '@inertiajs/react';
+interface CategoryNode {
+    key: number; // ou string, dependendo do tipo de key que você está usando
+    label: string;
+    children?: CategoryNode[]; // Array de CategoryNode para representar as subcategorias
+}
 
 interface AddSubcategoryDialogProps {
     visible: boolean;
     onHide: () => void;
     parentCategoryName: string;
-    parentCategoryId: number | null; // Adiciona o ID da categoria pai para associar a nova subcategoria
-    setSaveAddCategory: () => void;
-    setIsEditing: () => void;
-    setSelectedParentCategory: ()=>void;
+    parentCategoryId: number | null;
+    setSaveAddCategory: (value: boolean) => void; // Altere para aceitar um booleano
+    setIsEditing: (value: boolean) => void; // Altere para aceitar um booleano
+    setSelectedParentCategory: (value: CategoryNode | null) => void; // Aceita CategoryNode ou null
 }
+
 
 const AddSubcategoryDialog: React.FC<AddSubcategoryDialogProps> = ({
     visible,
@@ -37,19 +43,17 @@ const AddSubcategoryDialog: React.FC<AddSubcategoryDialogProps> = ({
         }
     }, [parentCategoryId]);
 
-    const handleAddSubcategory = (e: React.FormEvent) => { // Adicione o tipo do evento aqui
+    const handleAddSubcategory = (e: React.FormEvent) => {
         e.preventDefault();
-        if (data.name.trim() !== '') {
-            console.log(data);
-            // Envia os dados do formulário para o backend usando o método post do Inertia
+        if (data.name.trim() !== '' && parentCategoryId !== null) { // Verificando se não é nulo
             post(route('categories.store'), {
                 data,
                 onSuccess: () => {
-                    reset(); // Reseta o campo de subcategoria usando a função reset do useForm
-                    onHide(); // Fecha o diálogo
+                    reset();
+                    onHide();
                     setSaveAddCategory(true);
                     setIsEditing(false);
-                    setIsEditing(false);
+                    setSelectedParentCategory(null); // Ou alguma lógica que você precise
                 }
             });
         }

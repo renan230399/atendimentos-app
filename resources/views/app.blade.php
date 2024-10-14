@@ -28,7 +28,6 @@
                         favicon.href = iconUrl;
                     }
                 }
-
                 // Lógica para definir o favicon com base no perfil do usuário
                 if (user) {
                     if (user.role === 'admin') {
@@ -36,7 +35,7 @@
                     } else if (user.role === 'guest') {
                         updateFavicon('{{ asset('favicons/keyar.ico') }}'); // Favicon para administrador
                     } else {
-                        updateFavicon('{{ asset('') }}'); // Favicon para administrador
+                        updateFavicon('{{ asset('favicons/keyar.ico') }}'); // Favicon para administrador
                     }
                 }
             });

@@ -1,50 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { TreeSelect } from 'primereact/treeselect';
+import { TreeSelect, TreeSelectChangeEvent, TreeSelectSelectionKeysType } from 'primereact/treeselect';
+import { Category } from '../interfaces'; // Ajuste o caminho conforme necessário
 
-const CategoryTreeSelect = ({ categories, filterCategory, setFilterCategory }) => {
-    // Estado para armazenar as categorias agrupadas
-    const [groupedCategories, setGroupedCategories] = useState([]);
+interface CategoryTreeSelectProps {
+    categories: Category[];
+    filterCategory: TreeSelectSelectionKeysType | null;
+    setFilterCategory: (value: TreeSelectSelectionKeysType | null) => void;
+}
+
+interface TreeNode {
+    key: string;
+    label: string;
+    value: string;
+    children: TreeNode[];
+}
+
+const CategoryTreeSelect: React.FC<CategoryTreeSelectProps> = ({ categories, filterCategory, setFilterCategory }) => {
+    const [groupedCategories, setGroupedCategories] = useState<TreeNode[]>([]);
 
     useEffect(() => {
-        // Agrupar as categorias assim que o componente carregar ou quando as categorias mudarem
         const grouped = buildCategoryTree(categories);
         setGroupedCategories(grouped);
     }, [categories]);
 
-    // Função para transformar as categorias em uma estrutura hierárquica
-    const buildCategoryTree = (categories) => {
-        const categoryMap = {};
+    const buildCategoryTree = (categories: Category[]): TreeNode[] => {
+        const categoryMap: Record<string, TreeNode> = {};
 
-        // Inicializa cada categoria no map
         categories.forEach((category) => {
-            categoryMap[category.id] = {
+            categoryMap[category.id.toString()] = {
                 label: category.name,
-                value: category.id,
-                key: category.id,
+                value: category.id.toString(),
+                key: category.id.toString(),
                 children: []
             };
         });
 
-        // Adiciona cada categoria como filho da categoria pai correspondente
-        const tree = [];
+        const tree: TreeNode[] = [];
         categories.forEach((category) => {
             if (category.parent_id) {
-                if (categoryMap[category.parent_id]) {
-                    categoryMap[category.parent_id].children.push(categoryMap[category.id]);
+                if (categoryMap[category.parent_id.toString()]) {
+                    categoryMap[category.parent_id.toString()].children.push(categoryMap[category.id.toString()]);
                 }
             } else {
-                tree.push(categoryMap[category.id]);
+                tree.push(categoryMap[category.id.toString()]);
             }
         });
 
         return tree;
     };
 
+    const handleChange = (e: TreeSelectChangeEvent) => {
+        const value = e.value as TreeSelectSelectionKeysType; // Garantimos que o valor seja do tipo correto
+        setFilterCategory(value || null);
+    };
+
     return (
         <TreeSelect
             value={filterCategory}
             options={groupedCategories}
-            onChange={(e) => setFilterCategory(e.value || null)} // Atualiza a categoria selecionada com segurança
+            onChange={handleChange}
             metaKeySelection={false}
             className="w-full md:w-20rem bg-white border border-gray-600"
             selectionMode="checkbox"

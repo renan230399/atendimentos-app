@@ -5,17 +5,32 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { FaPlusCircle, FaTimesCircle, FaUniversity, FaMoneyBillWave, FaChartLine } from 'react-icons/fa'; // Importando ícones do react-icons
 import Dinero from 'dinero.js'; // Importar Dinero.js corretamente
-
+import { Sidebar } from 'primereact/sidebar';
+import PaymentMethodsManager from '@/Pages/Companies/PaymentMethod/PaymentMethodsManager';
 interface Account {
   id: number;
   name: string;
   type: string; // Pode ser 'bank', 'cash', ou 'investment'
   balance: number; // Representa o valor em centavos
 }
-
+interface PaymentMethod {
+  id: number;
+  account_id: number;
+  name: string;
+  type: string;
+}
+interface PaymentMethodFee {
+  id: number;
+  payment_method_id: number;
+  installments: number;
+  fixed_fee: number;
+  percentage_fee: number;
+}
 interface AccountsManagerProps {
   accounts: Account[];
   company_logo:string;
+  paymentMethods:PaymentMethod[];
+  paymentMethodsFees:PaymentMethodFee[];
 }
 
 // Componente responsável por renderizar o ícone correto com base no tipo da conta
@@ -42,7 +57,7 @@ const AccountIcon: React.FC<{ type: string }> = ({ type }) => {
   return <IconComponent className={`h-6 w-6 ${Color}`} aria-hidden="true" />;
 };
 
-const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_logo }) => {
+const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_logo, paymentMethods, paymentMethodsFees }) => {
   const { data, setData, post, reset, errors } = useForm({
     name: '',
     type: 'bank',
@@ -50,7 +65,10 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_log
   });
 
   const [isAddingAccount, setIsAddingAccount] = useState(false);
+  const [isViewPayMethods, setIsViewPayMethods] = useState(false); // Estado para controlar a visualização de contas
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null); // Conta que está sendo editada
 
+  
   // Função para formatar os valores usando Dinero.js (de centavos para reais)
   const formatCurrency = (amount: number) => {
     // Garantir que o valor é um número inteiro válido
@@ -79,7 +97,10 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_log
       },
     });
   };
-
+  const hadlePaymentManager = (account?: Account) => {
+    setEditingAccount(account || null); // Se houver um produto, significa que estamos editando
+    setIsViewPayMethods(true); // Abre o formulário
+};
   return (
     <div className="bg-white  px-6 m-0 absolute text-center w-[93%] overflow-auto">
       <div className="flex flex-wrap gap-5">
@@ -97,6 +118,8 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_log
               <div className="text-gray-700 text-xl">
                 {(Number(account.balance) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </div>
+              
+              <button  onClick={() => hadlePaymentManager(account)} >Métodos de pagamento</button>
             </div>
           </div>
         ))}
@@ -166,7 +189,24 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_log
           </PrimaryButton>
         </form>
       )}
+              <Sidebar 
+                visible={isViewPayMethods} 
+                position="right" 
+                className='pt-0 xl:w-[65vw] md:w-[65vw] sm:w-[75vw] overflow-auto bg-white' 
+                onHide={() => setIsViewPayMethods(false)}>
+{/** 
+ * 
+ *  
+*/}
+           <PaymentMethodsManager
+                            paymentMethods={paymentMethods}
+                            paymentMethodsFees={paymentMethodsFees}
+                            accounts={accounts}
+                            selectedAccount={editingAccount}
+                        />          
+              </Sidebar>      
     </div>
+    
   );
 };
 

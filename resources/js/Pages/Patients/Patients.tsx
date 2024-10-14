@@ -2,200 +2,185 @@ import React, { useState, useCallback } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
+import { Dialog } from 'primereact/dialog';
 import TextInput from '@/Components/TextInput';
-import PopUpComponent from '@/Layouts/PopupComponent';
 import CreatePatient from './FormPatient/CreatePatient';
 import ViewPatient from './ViewPatient';
 import PatientListItem from '@/Pages/Patients/PatientListItem';
-import DynamicForm from '@/Pages/Forms/DynamicForm';
-import AddConsultation from '@/Pages/Consultations/AddConsultation';
-import PropTypes from 'prop-types';
-import { formatDateAndAge } from '@/Components/Utils/dateUtils';
 import ReactPaginate from 'react-paginate';
 import { FaUserPlus } from 'react-icons/fa';
-import { LiaBirthdayCakeSolid } from "react-icons/lia";
+import { LiaBirthdayCakeSolid } from 'react-icons/lia';
 import Birthdays from './Birthdays';
 import PopupHeader from '@/Layouts/PopupHeader';
 import { FloatLabel } from 'primereact/floatlabel';
 
-const Patients = ({ auth, patients = [], employees = [], forms = [], search }) => {
-    const { data, setData, get, post, put, errors } = useForm({
-        search: search || '',
-        patient_name: '',
-        phone: '',
-        birth_date: '',
-    });
+// Definindo as interfaces para as propriedades
+interface ContactDetail {
+    type: string;
+    value: string;
+    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
+}
 
-    // Estados para paginação
+interface Contact {
+    name: string;
+    relation: string;
+    contacts: ContactDetail[]; // Aqui você deve ter a lista de contatos
+}
+
+interface Patient {
+    id: number;
+    company_id: number;
+    patient_name: string;
+    phone: string;
+    birth_date: string; // ou Date, se você estiver lidando com objetos Date
+    gender: string | null;
+    neighborhood: string;
+    street: string;
+    house_number: string;
+    address_complement: string;
+    city: string;
+    state: string;
+    cpf: string;
+    contacts: Contact[] | string; // Aqui você pode ajustar se sempre receberá um array ou uma string
+    complaints: string | null;
+    notes: string;
+    profile_picture: string | null;
+    status: boolean;
+    created_at: string; // ou Date
+    updated_at: string; // ou Date
+}
+
+
+interface Employee {
+    id: number;
+    name: string;
+    [key: string]: any;
+}
+
+interface Form {
+    id: number;
+    company_id: number;
+    category: number;
+    name: string;
+    description: string;
+    active: boolean;
+    icon: string;
+    is_wizard: boolean;
+    wizard_structure: null | any; // Você pode definir uma interface específica se souber o formato
+    created_at: string; // ou Date
+    updated_at: string; // ou Date
+}
+
+interface PatientsProps {
+    auth: {
+        user: {
+            id:number;
+            name: string;
+            email: string;
+        };  
+    };
+    patients: Patient[];
+    employees: Employee[];
+    forms: Form[];
+    search?: string;
+}
+
+const Patients: React.FC<PatientsProps> = ({ auth, patients = [], employees = [], forms = [], search }) => {
+    const [filteredPatients, setFilteredPatients] = useState<Patient[]>(patients);
     const [currentPage, setCurrentPage] = useState(0);
     const patientsPerPage = 18;
     const offset = currentPage * patientsPerPage;
-    const currentPatients = patients.slice(offset, offset + patientsPerPage);
-    const pageCount = Math.ceil(patients.length / patientsPerPage);
+    const currentPatients = filteredPatients.slice(offset, offset + patientsPerPage);
+    const pageCount = Math.ceil(filteredPatients.length / patientsPerPage);
 
-    const handlePageClick = (data) => {
+    const { data, setData, get, errors } = useForm({
+        search: search || '',
+    });
+
+    const handlePageClick = (data: { selected: number }) => {
         setCurrentPage(data.selected);
+    };
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setData('search', e.target.value);
+        const filtered = patients.filter((patient) =>
+            patient.patient_name.toLowerCase().includes(e.target.value.toLowerCase())
+        );
+        setFilteredPatients(filtered);
+        setCurrentPage(0);
     };
 
     const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
-    const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
     const [isViewPopupOpen, setIsViewPopupOpen] = useState(false);
-    const [isAddConsultationPopupOpen, setIsAddConsultationPopupOpen] = useState(false);
-    const [isAddFormPopupOpen, setIsAddFormPopupOpen] = useState(false);
     const [isBirthdaysPopupOpen, setIsBirthdaysPopupOpen] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const [savePatient, setSavePatient] = useState(false);
 
-    
-    const [selectedPatient, setSelectedPatient] = useState(null);
-    const [selectedForm, setSelectedForm] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [popupParams, setPopupParams] = useState({});
-
-    const handleOpenPopup = useCallback((e, popupType, patient = null) => {
-        setPopupParams({
-            clientX: e.clientX,
-            clientY: e.clientY,
-            classPopup: 'h-[98vh] bg-white w-[96vw]',
-          });
-        if (popupType === 'create') {
-            setIsCreatePopupOpen(true);
-        }
-        if (popupType === 'edit') {
-            setSelectedPatient(patient);
-            setIsEditPopupOpen(true);
-        }
-        if (popupType === 'view') {
-            setSelectedPatient(patient);
-            setIsViewPopupOpen(true);
-        }
-    }, []);
-
-    const handleCloseCreatePopup = useCallback(() => {
-        setIsCreatePopupOpen(false);
-    }, []);
-
-    const handleCloseEditPopup = useCallback(() => {
-        setIsEditPopupOpen(false);
-    }, []);
-
-    const handleCloseViewPopup = useCallback(() => {
-        setIsViewPopupOpen(false);
-    }, []);
-
-    const handleOpenAddFormPopup = useCallback((e, form) => {
-        setSelectedForm(form);
-        setPopupParams({ clientX: e.clientX, clientY: e.clientY });
-        setIsAddFormPopupOpen(true);
-    }, []);
-
-    const handleOpenBirthdaysPopup = useCallback((e) => {
-        setPopupParams({ clientX: e.clientX, clientY: e.clientY });
-        setIsBirthdaysPopupOpen(true);
-    }, []);
-    const handleCloseBirthdaysPopup = useCallback(() => {
-        setIsBirthdaysPopupOpen(false);
-    }, []);
-
-    const handleOpenAddConsultationPopup = useCallback((e, patient) => {
+    const handleOpenPopup = useCallback((e: React.MouseEvent, patient: Patient | null = null) => {
         setSelectedPatient(patient);
-        setPopupParams({
-            clientX: e.clientX,
-            clientY: e.clientY,
-        });
-        setIsAddConsultationPopupOpen(true);
+        setIsViewPopupOpen(true);
     }, []);
 
-    const handleCloseAddConsultationPopup = useCallback(() => {
-        setIsAddConsultationPopupOpen(false);
-    }, []);
+    const handleClosePatientForm = () => {
+        setIsCreatePopupOpen(false);
+        setSelectedPatient(null);
+    };
+    console.log(forms);
 
-    const handleCloseAddFormPopup = useCallback(() => {
-        setIsAddFormPopupOpen(false);
-    }, []);
 
-    const handleSearchChange = useCallback((e) => {
-        setData('search', e.target.value);
-        handleSearchSubmit(e);
-    }, [setData]);
-
-    const handleSearchSubmit = useCallback((e) => {
-        e.preventDefault();
-        setLoading(true);
-        get(route('patients.index'), { replace: true, preserveState: true });
-        setLoading(false);
-    }, [get]);
-
-    const handleNewPatientSubmit = useCallback((e) => {
-        e.preventDefault();
-        setLoading(true);
-        post(route('patients.store'), {
-            onSuccess: () => {
-                setIsCreatePopupOpen(false);
-                setLoading(false);
-            },
-        });
-    }, [post]);
-
-    const handleEditPatientSubmit = useCallback((e) => {
-        e.preventDefault();
-        put(route('patients.update', selectedPatient.id), {
-            onSuccess: () => handleCloseEditPopup(),
-        });
-    }, [put, selectedPatient, handleCloseEditPopup]);
     return (
         <AuthenticatedLayout user={auth.user}>
             <Head title="Pacientes" />
- 
+
             <div className="flex flex-wrap bg-white">
 
-                <form onSubmit={handleSearchSubmit} className="w-4/5 pr-6 h-[10vh] overflow-hidden w-[80%] rounded-br-xl ">
+                {/* Barra de busca */}
+                <form className="w-4/5 pr-6 h-[10vh] overflow-hidden w-[80%] rounded-br-xl ">
                     <div className='md:w-[50%] w-[100%] pl-5 mt-6'>
-                    <FloatLabel>
-                        <TextInput
-                            id="search"
-                            value={data.search}
-                            className="mt-1 block w-full"
-                            placeholder=""
-                            onChange={handleSearchChange}
-                            autoComplete="off"
-                        />                
-                        <label htmlFor='username'>Digite o nome do paciente que você procura...</label>
-                    </FloatLabel>
+                        <div>renan</div>
+                        <FloatLabel>
+                            <TextInput
+                                id="search"
+                                value={data.search}
+                                className="mt-1 block w-full"
+                                placeholder=""
+                                onChange={handleSearchChange}
+                                autoComplete="off"
+                            />
+                            <label htmlFor='search'>Digite o nome do paciente que você procura...</label>
+                        </FloatLabel>
                         <InputError message={errors.search} className="mt-2" />
-    
                     </div>
                 </form>
-                <div className='fixed justify-items-end right-0 z-50'  >
-                    <div 
-                        className=' bg-blue-900 w-[4vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md'
+
+                {/* Botões de ações */}
+                <div className='fixed justify-items-end right-0 z-50'>
+                    <div
+                        className='bg-blue-900 w-[4vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md'
                         title='Cadastrar novo paciente'
-                        onClick={(e) => handleOpenPopup(e, 'create')}>
-                        <FaUserPlus  size={30} className='m-auto  text-white' />
+                        onClick={(e) => setIsCreatePopupOpen(true)}
+                    >
+                        <FaUserPlus size={30} className='m-auto text-white' />
                     </div>
-                    <div 
-                        className=' bg-pink-600 w-[4vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md'
-                        title='Cadastrar novo paciente'
-                        onClick={(e) => handleOpenBirthdaysPopup(e)}>
-                        <LiaBirthdayCakeSolid   size={30} className='m-auto text-white' />
+                    <div
+                        className='bg-pink-600 w-[4vw] cursor-pointer mt-6 p-2 shadow-xl rounded-l-md'
+                        title='Ver aniversariantes'
+                        onClick={(e) => setIsCreatePopupOpen(true)}
+                    >
+                        <LiaBirthdayCakeSolid size={30} className='m-auto text-white' />
                     </div>
                 </div>
- 
 
+                {/* Lista de pacientes e paginação */}
                 <div className='w-[94vw] h-[75vh] overflow-x-hidden overflow-y-auto'>
-                     {/* Renderizando pacientes da página atual */}
-                     <div className='flex flex-wrap'>
+                    <div className='flex flex-wrap'>
                         {currentPatients.map((patient) => (
                             <PatientListItem
                                 key={patient.id}
                                 patient={patient}
-                                handleOpenEditPopup={(e) => handleOpenPopup(e, 'edit', patient)}
-                                handleOpenViewPopup={(e) => handleOpenPopup(e, 'view', patient)}
-                                formatDateAndAge={formatDateAndAge}
+                                openViewPatient={handleOpenPopup} // Corrigido para passar o método de abertura de popup
                             />
                         ))}
-                     </div>
-
+                    </div>
 
                     {/* Componente de paginação */}
                     <div className="mt-6 flex justify-center">
@@ -213,118 +198,49 @@ const Patients = ({ auth, patients = [], employees = [], forms = [], search }) =
                         />
                     </div>
                 </div>
-               
             </div>
+            {/* Modal de criação de paciente */}
+            <Dialog
+                visible={isCreatePopupOpen}
+                onHide={handleClosePatientForm}
+                className="w-[96vw] h-[98vh] m-auto rounded-xl "
+            >
+                <CreatePatient 
+                    onSave={setSavePatient} 
+                    handleClosePatientForm={handleClosePatientForm}
+                />
+            </Dialog>
 
-            {/* Popups para criar, editar, visualizar e adicionar consulta */}
-            {isCreatePopupOpen && (
-                <PopUpComponent
-                    id="new_patient_popup"
-                    params={popupParams}
-                    onClose={handleCloseCreatePopup}
-                >
-                    <CreatePatient auth={auth} onSubmit={handleNewPatientSubmit} />
-                </PopUpComponent>
-            )}
+            {/* Popups de aniversariantes */}
+            <Dialog
+                visible={isBirthdaysPopupOpen}
+                onHide={() => setIsBirthdaysPopupOpen(false)}
+                className="w-[96vw] h-[98vh] m-auto rounded-xl "
+            >
+                <PopupHeader
+                    icon='/images/icons/birthdays_icon.png'
+                    title='Aniversariantes'
+                    bgColor='bg-pink-500 '
+                />
+                <Birthdays patients={filteredPatients} />
+            </Dialog>
 
-            {isEditPopupOpen && selectedPatient && (
-                <PopUpComponent
-                    id="edit_patient_popup"
-                    params={popupParams}
-                    onClose={handleCloseEditPopup}
-                >
-                    <CreatePatient auth={auth} patient={selectedPatient} onSubmit={handleEditPatientSubmit} />
-                </PopUpComponent>
-            )}
-
-            {isViewPopupOpen && selectedPatient && (
-                <PopUpComponent
-                    id="view_patient_popup"
-                    zindex="99"
-                    params={popupParams}
-                    classPopup='bg-white w-[95vw] h-[98vh]'
-                    onClose={handleCloseViewPopup}
-                >
+            {/* Modal de visualização de paciente */}
+            <Dialog
+                visible={isViewPopupOpen}
+                onHide={() => setIsViewPopupOpen(false)}
+                className="w-[96vw] h-[98vh] m-auto rounded-xl "
+            >
+                {selectedPatient && (
                     <ViewPatient
                         patient={selectedPatient}
-                        handleOpenEditPopup={(e) => handleOpenPopup(e, 'edit', selectedPatient)}
-                        handleOpenAddConsultationPopup={(e) => handleOpenAddConsultationPopup(e, selectedPatient)}
-                        handleOpenAddFormPopup={(e, form) => handleOpenAddFormPopup(e, form)}
+                        handleClosePatientForm={(e) => handleOpenPopup(e, selectedPatient)}
                         forms={forms}
                     />
-                </PopUpComponent>
-            )}
-
-            {isAddConsultationPopupOpen && selectedPatient && (
-                <PopUpComponent
-                    id="add_consultation_popup"
-                    zindex="100"
-                    params={popupParams}
-                    onClose={handleCloseAddConsultationPopup}
-                >
-                  {/*   <Dashboard
-                        patient={selectedPatient}
-                        employees={employees}
-                        auth={auth}
-                        onClose={handleCloseAddConsultationPopup}
-                        Kelly eu te amo <3
-                    />*/}
-                   <AddConsultation
-                        patient={selectedPatient}
-                        employees={employees}
-                        auth={auth}
-                        onClose={handleCloseAddConsultationPopup}
-                    />
-                </PopUpComponent>
-            )}
-
-            {isAddFormPopupOpen && selectedForm && (
-                <PopUpComponent
-                    id="add_form_popup"
-                    width="95vw"
-                    height="95vh"
-                    zindex="100"
-                    params={popupParams}
-                    onClose={handleCloseAddFormPopup}
-                >
-                    <DynamicForm
-                        patient={selectedPatient}
-                        form={selectedForm}
-                        auth={auth}
-                        onClose={handleCloseAddFormPopup}
-                    />
-                </PopUpComponent>
-            )}
-            {isBirthdaysPopupOpen && (
-                <PopUpComponent
-                    id="add_form_popup"
-                    width="95vw"
-                    height="95vh"
-                    zindex="100"
-                    params={popupParams}
-                    classPopup='bg-white w-[90vw] h-[90vh]'
-                    onClose={handleCloseBirthdaysPopup}
-                >
-
-                <PopupHeader 
-                    icone='/images/icons/birthdays_icon.png'
-                    titulo='Aniversariantes'
-                    bgColor='bg-pink-500 '
-                    />
-                <Birthdays patients={patients} />
-
-                </PopUpComponent>
-            )}
+                )}
+            </Dialog>
         </AuthenticatedLayout>
     );
-};
-
-Patients.propTypes = {
-    auth: PropTypes.object.isRequired,
-    patients: PropTypes.array.isRequired,
-    employees: PropTypes.array.isRequired,
-    forms: PropTypes.array.isRequired,
-    search: PropTypes.string,
 };
 
 export default Patients;

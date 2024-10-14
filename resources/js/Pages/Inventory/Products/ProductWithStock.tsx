@@ -3,47 +3,15 @@ import { FaPlus } from 'react-icons/fa';
 import ProductFilter from './ProductFilter';
 import { Sidebar } from 'primereact/sidebar';
 import ProductForm from './ProductForm/ProductForm';
-
-interface Stock {
-    id: number;
-    product_id: number;
-    quantity: number;
-    entry_date: string;
-    expiration_date?: string;
-    location: string;
-    cost_price?: number;
-}
-
-interface Product {
-    id: number;
-    company_id: number | null; // ID da empresa, pode ser nulo
-    category_id: number | null; // ID da categoria, pode ser nulo
-    name: string;
-    description: string;
-    measuring_unit: 'unidade' | 'peso' | 'volume' | null; // Campo enum para unidade de medida
-    quantities_per_unit: number | null; // Quantidade por unidade
-    measuring_unit_of_unit: string | null; // Unidade de medida da unidade
-    status: boolean; // Status do produto
-    photo: string[] | null; // Fotos do produto, armazenadas como array de strings
-}
-
-
-interface Supplier {
-    id: number;
-    name: string;
-}
-
-interface Category {
-    id: number;
-    name: string;
-}
+import { Product, Supplier, Category } from '../interfaces'; // Ajuste o caminho conforme necessário
+import ProductList from './ProductList';
+import { TreeSelectSelectionKeysType } from 'primereact/treeselect';
 
 interface ProductWithStockProps {
     products: Product[];
-    stocks: Stock[];
     suppliers: Supplier[];
     categories: Category[]; // Lista de categorias
-    onProductSelect: (productId: number, quantity: number) => void; // Função de adicionar produto
+    onProductSelect?: (productId: number, quantity: number) => void; // Função de adicionar produto
     stockLocals:{
         id: number;
         company_id: number;
@@ -53,11 +21,12 @@ interface ProductWithStockProps {
     }[];
 }
 
-const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, stocks, suppliers, categories, onProductSelect,stockLocals }) => {
+const ProductWithStock: React.FC<ProductWithStockProps> = ({ products, suppliers, categories, onProductSelect,stockLocals }) => {
     const [productNameFilter, setProductNameFilter] = useState('');
     const [minStockFilter, setMinStockFilter] = useState(0);
-    const [selectedCategory, setSelectedCategory] = useState([]); // Filtro de categoria
-    const [selectedStockLocal, setSelectedStockLocal] = useState([]); // Filtro de categoria
+    const [selectedCategory, setSelectedCategory] = useState<TreeSelectSelectionKeysType | TreeSelectSelectionKeysType[] | null>(null);
+    const [selectedStockLocal, setSelectedStockLocal] = useState<TreeSelectSelectionKeysType | TreeSelectSelectionKeysType[] | null>(null);
+
     const [formAddProduct, setFormAddProduct] = useState(false); // Form produto
     const [showModal, setShowModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Produto selecionado
@@ -72,14 +41,39 @@ const filteredProducts = products
 
         // Verifica se a categoria do produto está marcada no TreeSelect
         const matchesCategory =
-            selectedCategory && Object.keys(selectedCategory).length > 0
-                ? selectedCategory[product.category_id]?.checked
+            selectedCategory && selectedCategory !== null
+                ? Array.isArray(selectedCategory)
+                    ? selectedCategory.some(
+                        (category) => typeof category === 'string' && parseInt(category, 10) === product.category_id
+                      ) // Verifica se a categoria está incluída, convertendo para número
+                    : typeof selectedCategory === 'string' &&
+                      parseInt(selectedCategory, 10) === product.category_id // Se não for array, converte para número e compara
                 : true;
 
         return matchesName && matchesCategory;
     });
 
-    
+    // Lógica para lidar com o estoque dentro do próprio produto
+    const stockForProduct = (product: Product) => {
+        return product.stocks.filter((stock) => {
+            const matchesStockQuantity = stock.quantity >= minStockFilter;
+
+            // Verifica se o local de estoque do produto está marcado no TreeSelect
+            const matchesStockLocal =
+                selectedStockLocal !== null
+                    ? Array.isArray(selectedStockLocal)
+                        ? selectedStockLocal.some(
+                            (local) => typeof local === 'string' && parseInt(local, 10) === stock.id
+                        ) // Verifica se o local está incluído, convertendo para número
+                        : typeof selectedStockLocal === 'string' &&
+                        parseInt(selectedStockLocal, 10) === stock.id // Se não for array, converte para número e compara
+                    : true;
+
+            return matchesStockQuantity && matchesStockLocal;
+        });
+    };
+
+
     // Função para abrir o modal e definir o produto selecionado
     const handleAddProductClick = (product: Product) => {
         setSelectedProduct(product);
@@ -93,14 +87,18 @@ const filteredProducts = products
     // Função para confirmar a adição do produto
     const handleConfirmAddProduct = () => {
         if (selectedProduct) {
-            onProductSelect(selectedProduct.id, 1); // Exemplo: adicionando 1 item ao pedido
+            // Verifica se onProductSelect é definido antes de chamá-lo
+            if (onProductSelect) {
+                onProductSelect(selectedProduct.id, 1); // Exemplo: adicionando 1 item ao pedido
+            }
             setShowModal(false);
             setSuccessMessage(`Produto "${selectedProduct.name}" adicionado com sucesso!`);
-            
+    
             // Limpa a mensagem de sucesso após 3 segundos
             setTimeout(() => setSuccessMessage(''), 3000);
         }
     };
+    
     return (
         <div className="w-full h-full md:w-full flex flex-col">
             {/* Filtro de Produtos - Parte fixa */}
@@ -119,101 +117,25 @@ const filteredProducts = products
                 />
             </div>
             {onProductSelect && (
-                <div
-                onClick={() => setFormAddProduct(true)}
-                className="mt-4 text-sm cursor-pointer text-blue-500 flex items-center hover:underline"
-            >
-                <FaPlus className="mr-1" />
-                Cadastrar Novo produto 
-            </div>
-            )}
+    <div
+        onClick={() => setFormAddProduct(true)}
+        className="mt-4 text-sm cursor-pointer text-blue-500 flex items-center hover:underline"
+    >
+        <FaPlus className="mr-1" />
+        Cadastrar Novo produto 
+    </div>
+)}
+
             {/* Lista de Produtos - Parte rolável */}
-            <div className="mb-14 overflow-y-auto border border-gray-300 rounded-xl  flex-grow">
-                <ul className="h-auto shadow-lg px-6">
-                    {filteredProducts.map((product) => {
-                        const stockForProduct = stocks.filter(stock => {
-                            const matchesProduct = stock.product_id === product.id;
-                            const matchesStockQuantity = stock.quantity >= minStockFilter;
+            <ProductList
+                products={products}
+                filteredProducts={filteredProducts}
+                stockForProduct={stockForProduct}
+                handleAddProductClick={handleAddProductClick}
+                handleOpenForm={handleOpenForm}
+                onProductSelect={onProductSelect}
+            />
 
-                            // Verifica se o local de estoque do produto está marcado no TreeSelect
-                            const matchesStockLocal = selectedStockLocal && Object.keys(selectedStockLocal).length > 0
-                                ? selectedStockLocal[stock.local_id]?.checked
-                                : true;
-
-                            return matchesProduct && matchesStockQuantity && matchesStockLocal;
-                        });                        
-                        return (
-                            <li
-                                key={product.id}
-                                className="bg-white text-left px-6 border-b border-b-gray-200 justify-between ease-in-out my-1"
-                            >
-                                <div className="flex justify-between">
-                                    <h4 className="font-semibold text-2xl text-left text-gray-800">{product.name}</h4>
-                                    <div
-                                        onClick={() => handleOpenForm(product)} // Editar Produto
-                                        className="text-sm cursor-pointer text-blue-500 hover:underline"
-                                    >
-                                        Editar
-                                    </div>
-                                    {onProductSelect && (
-                                        <div
-                                        onClick={() => handleAddProductClick(product)}
-                                        className="mt-4 text-sm cursor-pointer text-blue-500 flex items-center hover:underline"
-                                    >
-                                        <FaPlus className="mr-1" />
-                                        Adicionar Produto ao pedido
-                                    </div>
-                                    )}
-    
-                                </div>
-                                <p className="text-gray-600 mb-2">{product.description}</p>
-    
-                                {/* Tabela para exibir os estoques disponíveis */}
-                                <div className="mt-4">
-                                    {stockForProduct.length > 0 ? (
-                                        <table className="w-full text-sm text-left text-gray-700">
-                                            <thead className="bg-blue-500 text-white ">
-                                                <tr>
-                                                    <th className="px-4 py-2">Local</th>
-                                                    <th className="px-4 py-2">Quantidade</th>
-                                                    <th className="px-4 py-2">Total</th>
-                                                    <th className="px-4 py-2">Entrada</th>
-                                                    <th className="px-4 py-2">Validade</th>
-                                                    <th className="px-4 py-2">Preço de Custo</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {stockForProduct.map((stock) => (
-                                                    <tr key={stock.id} className="border-t">
-                                                        <td className="px-4 py-2">{stock.location || 'Não especificado'}</td>
-                                                        <td className="px-4 py-2">
-                                                            {stock.quantity} unidades de {product.quantities_per_unit} {product.measuring_unit_of_unit}
-                                                        </td>
-                                                        <td className="px-4 py-2">
-                                                            {stock.quantity && product.quantities_per_unit
-                                                                ? stock.quantity * product.quantities_per_unit
-                                                                : 0}{' '}
-                                                            {product.measuring_unit_of_unit || ''}
-                                                        </td>
-
-                                                        <td className="px-4 py-2">{new Date(stock.entry_date).toLocaleDateString()}</td>
-                                                        <td className="px-4 py-2">{stock.expiration_date ? new Date(stock.expiration_date).toLocaleDateString() : 'Sem validade'}</td>
-                                                        <td className="px-4 py-2">{(Number(stock.cost_price) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                                                        
-
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    ) : (
-                                        <p className="text-gray-600">Sem estoque disponível com o filtro atual</p>
-                                    )}
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </div>
     
             {/* Modal de confirmação */}
             {showModal && selectedProduct && (
@@ -245,18 +167,19 @@ const filteredProducts = products
                     {successMessage}
                 </div>
             )}
-            <Sidebar 
-                visible={formAddProduct}
-                position="left" 
-                className='pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-auto bg-white' 
-                onHide={() => setFormAddProduct(false)}>
+<Sidebar 
+    visible={formAddProduct}
+    position="left" 
+    className='pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-auto bg-white'  
+    onHide={() => setFormAddProduct(false)}
+>
+    <ProductForm 
+        categories={categories} 
+        initialData={editingProduct || undefined} 
+        onHide={() => setFormAddProduct(false)} 
+    />
+</Sidebar>
 
-                <ProductForm 
-                    categories={categories} 
-                    initialData={editingProduct || undefined} 
-                    onHide={() => setFormAddProduct(false)} 
-                />
-             </Sidebar>
         </div>
     );
     

@@ -6,7 +6,9 @@ import UpdateCompany from './Partials/UpdateCompany'; // Importando o novo compo
 import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
 
-export default function Edit({ auth, mustVerifyEmail, status }: PageProps<{ mustVerifyEmail: boolean, status?: string }>) {
+interface EditProps extends PageProps<{ mustVerifyEmail: boolean; status?: string }> {}
+
+export default function Edit({ auth, mustVerifyEmail, status }: EditProps) {
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -24,15 +26,13 @@ export default function Edit({ auth, mustVerifyEmail, status }: PageProps<{ must
                 </div>
 
                 {/* Formulário de Atualização de Senha */}
-                <div className=" p-4 w-1/2 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+                <div className="p-4 w-1/2 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                     <UpdatePasswordForm className="max-w-xl" />
                 </div>
 
                 {/* Formulário de Atualização de Informações da Empresa */}
                 <div className="p-4 w-full sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                     <UpdateCompany
-                        mustVerifyEmail={mustVerifyEmail}
-                        status={status}
                         className=""
                     />
                 </div>

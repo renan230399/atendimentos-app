@@ -18,7 +18,7 @@ const formatPrice = (value) => {
 };
 
 const TransactionForm = ({ index, data, setData, accounts, errors, dateDefault }) => {
-  console.log('Data recebida pelo componente TransactionForm:', data);
+  //console.log('Data recebida pelo componente TransactionForm:', data);
 
   return (
     <div className="mt-4 flex flex-wrap gap-2 shadow-xl rounded-xl border w-[98%] m-auto">
