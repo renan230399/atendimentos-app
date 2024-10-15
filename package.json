@@ -43,6 +43,7 @@
         "react-paginate": "^8.2.0",
         "react-redux": "^9.1.2",
         "react-text-mask": "^5.5.0",
-        "react-transition-group": "^4.4.5"
+        "react-transition-group": "^4.4.5",
+        "ziggy-js": "^2.3.0"
     }
 }
