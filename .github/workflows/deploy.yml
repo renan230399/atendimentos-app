@@ -25,6 +25,8 @@ jobs:
             ssh -o StrictHostKeyChecking=no -i /home/ec2-user/chaves-teste.pem ec2-user@10.0.135.192 '
               cd /var/www/atendimentos-app &&
               git pull origin master &&
+              npm install && # Instalar dependências
+              npm run build && # Gerar o build do Vite
               docker-compose down &&
               docker-compose up -d --build
             '
