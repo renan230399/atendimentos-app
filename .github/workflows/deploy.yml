@@ -20,10 +20,9 @@ jobs:
           node-version: '18'  # Versão do Node.js que você deseja usar
 
       - name: Instalar dependências e Build
-          run: |
-            npm install
-            npm install ziggy-js
-            npm run build
+        run: |
+          npm install
+          npm run build  # Supondo que Ziggy já esteja listado nas dependências do package.json
 
       - name: Configurar SSH para EC2
         uses: webfactory/ssh-agent@v0.5.3
@@ -33,6 +32,10 @@ jobs:
       - name: Copiar Build para a instância pública
         run: |
           scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/public/build/
+
+      - name: Verificar se o build foi copiado
+        run: |
+          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 'ls /home/ec2-user/atendimentos-app/public/build/'
 
       - name: Reiniciar Docker no EC2
         run: |
