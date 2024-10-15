@@ -3,4 +3,10 @@ declare module 'dinero.js' {
       toFormat: (format: string) => string;
     };
   }
+
+  declare module 'react-datepicker/dist/portal' {
+    const Portal: any;
+    export default Portal;
+  }
+  
   

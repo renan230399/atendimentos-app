@@ -8,36 +8,59 @@ import { Button } from 'primereact/button';
 import { useForm } from '@inertiajs/react';
 import Dinero from 'dinero.js';
 import InputLabel from '@/Components/InputLabel';
+import { Patient } from './Patients/interfacesPatients';
 import { ProgressSpinner } from 'primereact/progressspinner';
+interface EventAddProps {
+    start: Date;
+    end: Date;
+    onClose: () => void;
+}
+interface FormData {
+    title: string;
+    description: string;
+    date: string;
+    start_time: string;
+    end_time: string;
+    price: string;
+    patient_id: number | null; // Garantir que patient_id é null quando não há paciente selecionado
+}
+interface StepperRefAttributes {
+    getElement: () => HTMLDivElement;  // Altere para garantir que retorne HTMLDivElement
+    getActiveStep: () => number;
+    setActiveStep: (step: number) => void;
+    nextCallback: () => void;
+    prevCallback: () => void;
+}
 
-const EventAdd = ({ start, end, onClose, onSave }) => {
-    const stepperRef = useRef(null);
-    const [patients, setPatients] = useState([]); // Estado para armazenar a lista de pacientes
-    const [filteredPatients, setFilteredPatients] = useState([]); // Estado para armazenar os pacientes filtrados
-    const [selectedPatient, setSelectedPatient] = useState(null); // Estado para armazenar o paciente selecionado
-    const [searchTerm, setSearchTerm] = useState(''); // Estado para a busca de pacientes
-    const [isLoading, setIsLoading] = useState(true); // Estado para indicar se os dados estão carregando
+const EventAdd: React.FC<EventAddProps> = ({ start, end, onClose }) => {
+    const stepperRef = useRef<StepperRefAttributes | null>(null);
+    const [patients, setPatients] = useState<Patient[]>([]); // Lista de pacientes
+    const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]); // Pacientes filtrados
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null); // Paciente selecionado
+    const [searchTerm, setSearchTerm] = useState<string>(''); // Termo de busca
+    const [isLoading, setIsLoading] = useState<boolean>(true); // Carregamento
+
 
   // Usando o hook useForm do Inertia para gerenciar o estado do formulário
-  const { data, setData,post, reset, errors } = useForm({
+  const { data, setData, post, reset, errors } = useForm<FormData>({
     title: '',
     description: '',
-    date:'',
+    date: '',
     start_time: '',
     end_time: '',
     price: '',
-    patient_id: null, // Adiciona o ID do paciente selecionado
+    patient_id: null, // ID do paciente selecionado
 });
 
-    const formatPrice = (value) => {
+    const formatPrice = (value:any) => {
         const price = Dinero({ amount: parseInt(value || 0), currency: 'BRL' });
         return price.toFormat('$0,0.00');
     };
-
-    const handlePriceChange = (e) => {
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
         setData('price', value); // Atualiza o valor no estado em centavos
     };
+    
     
     useEffect(() => {
         // Verifica se ambos os valores `start` e `end` estão disponíveis e só então atualiza os valores
@@ -77,7 +100,7 @@ const EventAdd = ({ start, end, onClose, onSave }) => {
             });
     }, []);
     // Filtra os pacientes conforme o usuário digita na barra de busca
-    const handleSearchChange = (e) => {
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchTerm(value);
         const filtered = patients.filter(patient =>
@@ -85,18 +108,31 @@ const EventAdd = ({ start, end, onClose, onSave }) => {
         );
         setFilteredPatients(filtered);
     };
+    
 
-    const handlePatientSelect = (patient) => {
-        setSelectedPatient(patient);
-        setData((prevData) => ({
-            ...prevData,
-            patient_id: patient.id,
-            title:`Atendimento de ${patient.patient_name}` ,
-        }));
+    const handlePatientSelect = (patient: Patient | null) => {
+        if (patient) {
+            setSelectedPatient(patient);
+            setData((prevData) => ({
+                ...prevData,
+                patient_id: patient.id ?? null, // Garante que patient_id é número ou null
+                title: `Atendimento de ${patient.patient_name}`,
+            }));
+        } else {
+            // Quando não há paciente selecionado, defina patient_id como null
+            setSelectedPatient(null);
+            setData((prevData) => ({
+                ...prevData,
+                patient_id: null, // Explicitamente null
+                title: '',
+            }));
+        }
     };
+    
+    
 // Função para lidar com a submissão do formulário
 // Função para lidar com a submissão do formulário
-const handleSubmit = (e) => {
+const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Formata a data no formato ISO 8601 (yyyy-MM-ddTHH:mm:ssZ)
@@ -125,13 +161,14 @@ const handleSubmit = (e) => {
 
 
 
+
     return (
         <div className="fixed inset-0 flex w-[100vw] items-center justify-center bg-gray-800 bg-opacity-50 z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-[96vw] h-[96vh] overflow-auto">
                 <h2 className="text-xl font-semibold mb-4">Adicionar Nova Consulta</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="card">
-                        <Stepper ref={stepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
+                        <Stepper ref={stepperRef} orientation="vertical">
                         <StepperPanel header="SELECIONAR PACIENTE">
                         {selectedPatient && (
                                     <div className="mb-4">
@@ -159,7 +196,7 @@ const handleSubmit = (e) => {
                      
                                             <div
                                                 className="cursor-pointer my-auto p-1 text-xl"
-                                                onClick={() => handlePatientSelect('')}
+                                                onClick={() => handlePatientSelect(null)}
                                             >
                                                     x
                                             </div>
@@ -222,7 +259,6 @@ const handleSubmit = (e) => {
                                         type="button" 
                                         label="Anterior" 
                                         className='opacity-25 bg-red-500 text-white p-1 rounded shadow'
-                                        severity="" 
                                         icon="pi pi-arrow-left" 
                                     />
                                     <Button 
@@ -231,8 +267,13 @@ const handleSubmit = (e) => {
                                         icon="pi pi-arrow-right" 
                                         className='bg-blue-500 text-white p-1 rounded shadow'
                                         iconPos="right" 
-                                        onClick={() => stepperRef.current.nextCallback()} 
+                                        onClick={() => {
+                                            if (stepperRef.current) {
+                                                stepperRef.current.nextCallback(); // Garante que stepperRef.current não é null
+                                            }
+                                        }} 
                                     />
+
                                 </div>
                             </StepperPanel>
                             <StepperPanel header="INFORMAÇÕES DA CONSULTA">
@@ -316,17 +357,25 @@ const handleSubmit = (e) => {
                                         className='bg-red-600 text-white p-1 rounded shadow'
 
                                         icon="pi pi-arrow-left" 
-                                        onClick={() => stepperRef.current.prevCallback()} 
+                                        onClick={() => {
+                                            if (stepperRef.current) {
+                                                stepperRef.current.prevCallback(); // Verifica se stepperRef.current não é null
+                                            }
+                                        }} 
                                     />
-                                    <Button 
-                                        type="button" 
-                                        label="Próximo" 
-                                        icon="pi pi-arrow-right" 
-                                        className='bg-blue-500 text-white p-1 rounded shadow'
+                                            <Button 
+                                                type="button" 
+                                                label="Próximo" 
+                                                icon="pi pi-arrow-right" 
+                                                className='bg-blue-500 text-white p-1 rounded shadow'
+                                                iconPos="right" 
+                                                onClick={() => {
+                                                    if (stepperRef.current) {
+                                                        stepperRef.current.nextCallback(); // Verifica se stepperRef.current não é null
+                                                    }
+                                                }} 
+                                            />
 
-                                        iconPos="right" 
-                                        onClick={() => stepperRef.current.nextCallback()} 
-                                    />
                                 </div>
                             </StepperPanel>
                             <StepperPanel header="FINANCEIRO">
@@ -350,8 +399,12 @@ const handleSubmit = (e) => {
                                         type="button" 
                                         label="Anterior" 
                                         severity="secondary" 
-                                        icon="pi pi-arrow-left" 
-                                        onClick={() => stepperRef.current.prevCallback()} 
+                                        icon="pi pi-arrow-left"
+                                        onClick={() => {
+                                            if (stepperRef.current) {
+                                                stepperRef.current.prevCallback(); // Verifica se stepperRef.current não é null
+                                            }
+                                        }} 
                                     />
                                 </div>
                             </StepperPanel>
@@ -379,11 +432,5 @@ const handleSubmit = (e) => {
     );
 };
 
-EventAdd.propTypes = {
-    start: PropTypes.instanceOf(Date).isRequired,
-    end: PropTypes.instanceOf(Date).isRequired,
-    onClose: PropTypes.func.isRequired,
-    onSave: PropTypes.func.isRequired,
-};
 
 export default EventAdd;

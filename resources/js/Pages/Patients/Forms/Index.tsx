@@ -6,14 +6,7 @@ import PopUpComponent from '@/Layouts/PopupComponent'; // Popup genérico
 import FormEdit from '@/Pages/Patients/Forms/FormEdit'; // Novo componente de visualização de formulário
 import { CiEdit } from "react-icons/ci";
 import { User } from '@/types';
-
-// Definição da interface para os formulários
-interface Form {
-    id: number;
-    name: string;
-    description?: string;
-    icon?: string;
-}
+import {FormField, Form} from '@/Pages/Patients/interfacesPatients'
 
 // Interface das props do componente
 interface IndexProps {

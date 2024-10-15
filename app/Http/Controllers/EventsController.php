@@ -64,7 +64,7 @@ class EventsController extends Controller
         $forms = Form::where('company_id', $companyId)->get(); // Busca os formulários da empresa do usuário
 
         // Retorna os dados para o Inertia com eventos e consultas, incluindo dados completos dos pacientes
-        return Inertia::render('Dashboard', [
+        return Inertia::render('Agenda/Dashboard', [
             'events' => $allEvents,
             'forms' => $forms, // Envia os formulários para o frontend
             'auth' => [

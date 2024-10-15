@@ -41,7 +41,10 @@ const FormField: React.FC<FormFieldProps> = ({ field, data = {}, handleChange = 
                     {errorMessage && <InputError message={errorMessage} />} {/* Renderiza erro apenas se presente */}
                 </div>
             );
-            // Trecho do componente onde textarea é utilizado
+
+            {/**
+                
+                            // Trecho do componente onde textarea é utilizado
             case 'textarea':
                 return (
                     <div className={`${field.class} m-auto`}>
@@ -59,7 +62,7 @@ const FormField: React.FC<FormFieldProps> = ({ field, data = {}, handleChange = 
                         {errorMessage && <InputError message={errorMessage} />}
                     </div>
                 );
-            
+                */}
             
             
             case 'select':

@@ -3,51 +3,35 @@ import InputLabel from '@/Components/InputLabel';
 import ReactPaginate from 'react-paginate';
 import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; // Importando a localidade PT-BR para garantir que o formato seja brasileiro
-import 'react-datepicker/dist/react-datepicker.css';
 import { FaCheckCircle, FaClock } from 'react-icons/fa';
 import { FaExclamationTriangle } from "react-icons/fa";
 import TransactionFilters from './TransactionForm/TransactionFilters';
 import TransactionItem from './TransactionForm/TrasactionItem'; 
 import Pagination from '@/Components/Pagination';
-import { BsFillQuestionSquareFill } from "react-icons/bs";
-
-import CategoriesManager from './CategoriesManager';
+import {Account, Transaction, Category} from '../FinancialInterfaces';
 const statusOptions = [
   { value: 'true', label: 'Realizada', icon: <FaCheckCircle className='text-green-500'/> },
   { value: 'false', label: 'Pendente', icon: <FaExclamationTriangle className='text-red-500' /> },
 ];
-
-// Função para converter categorias em uma estrutura de árvore para filtragem hierárquica
-const transformCategoriesToTree = (categories) => {
-  const categoryMap = new Map();
-
-  categories.forEach(category => {
-    categoryMap.set(category.id, {
-      key: category.id,
-      label: category.name,
-      children: [],
-      data: category
-    });
-  });
-
-  const treeNodes = [];
-  categories.forEach(category => {
-    if (category.parent_id === null) {
-      treeNodes.push(categoryMap.get(category.id));
-    } else {
-      const parentNode = categoryMap.get(category.parent_id);
-      if (parentNode) {
-        parentNode.children.push(categoryMap.get(category.id));
-      }
-    }
-  });
-
-  return treeNodes;
-};
-
+interface TreeNode {
+  key: number;
+  label: string;
+  children: TreeNode[];
+}
+interface SelectedCategory {
+  checked: boolean;
+}
+interface Option {
+  icon: React.ReactNode; // Se for um componente React
+  label: string;
+}
 // Função para verificar correspondência de categorias usando a estrutura de árvore
-const isCategoryMatch = (transactionCategoryId, selectedCategories, categoryTree) => {
-  const checkCategoryMatch = (categoryId, selectedCategories) => {
+const isCategoryMatch = (
+  transactionCategoryId: number, // Adicionando a tipagem para o ID da categoria da transação
+  selectedCategories: number[],  // O array de categorias selecionadas
+  categoryTree: TreeNode[]       // A árvore de categorias
+): boolean => {
+  const checkCategoryMatch = (categoryId: number, selectedCategories: number[]): boolean => {
     if (selectedCategories.includes(categoryId)) {
       return true; // Correspondência direta encontrada
     }
@@ -62,43 +46,17 @@ const isCategoryMatch = (transactionCategoryId, selectedCategories, categoryTree
 
   return checkCategoryMatch(transactionCategoryId, selectedCategories);
 };
-const getSelectedCategoryIds = (selectedCategories) => {
+const getSelectedCategoryIds = (selectedCategories: { [key: string]: SelectedCategory }): number[] => {
   return Object.entries(selectedCategories)
     .filter(([, value]) => value.checked)
     .map(([key]) => parseInt(key, 10)); // Converte as chaves para inteiros
 };
 
-interface Transaction {
-  id: number;
-  account_id: number;
-  category_id: number;
-  type: 'income' | 'expense' | 'transfer';
-  amount: number;
-  description: string;
-  transaction_date: string;
-  related?: {
-    name?: string;
-    description?: string;
-  };
-  status: boolean;
-  cash_flow?: {
-    balance_before: number;
-    balance_after: number;
-  };
-}
-interface Account {
-  id: number;
-  name: string;
-}
-interface Category {
-  id: number;
-  name: string;
-}
 interface TransactionsListProps {
   transactions: {
     data: Transaction[];
   };
-  handleOpenConfirmedTransactionPopup: (e: React.MouseEvent, transaction: Transaction) => void;
+  handleOpenConfirmedTransactionPopup: (transaction: Transaction) => void;
   filters: {
     start_date: Date;
     end_date: Date;
@@ -107,7 +65,8 @@ interface TransactionsListProps {
   categories:Category[];
 }
 // Função para renderizar as opções do Dropdown
-const statusOptionTemplate = (option) => {
+
+const statusOptionTemplate = (option: Option) => {
   return (
     <div className="flex items-center">
       {option.icon}
@@ -117,7 +76,7 @@ const statusOptionTemplate = (option) => {
 };
 
 // Função para renderizar o valor selecionado
-const selectedStatusTemplate = (option) => {
+const selectedStatusTemplate = (option: Option | null) => {
   if (option) {
     return (
       <div className="flex items-center">
@@ -206,7 +165,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
   });
 
   const filteredTransactions = useMemo(() => {  
-    const selectedCategoryIds = getSelectedCategoryIds(filterCategory); // Converte as categorias selecionadas para uma lista de IDs
+    //const selectedCategoryIds = getSelectedCategoryIds(filterCategory); // Converte as categorias selecionadas para uma lista de IDs
   
     return sortedTransactions
       .filter((transaction) => {  
@@ -223,16 +182,20 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
         }
   
         // Filtrar por status da transação
-        if (filterStatus !== null && filterStatus !== '' && String(transaction.status) !== filterStatus) {
+        // Filtrar por status da transação
+        if (filterStatus !== null && String(transaction.status) !== String(filterStatus)) {
           return false;
         }
+
   
         // Filtragem de categorias usando a lista de IDs selecionados
-        if (Array.isArray(selectedCategoryIds) && selectedCategoryIds.length > 0) {
-          if (!selectedCategoryIds.includes(0) && !isCategoryMatch(transaction.category_id, selectedCategoryIds, groupedCategories)) {
+        if (Array.isArray(groupedCategories)) {
+          // Certifique-se de que `groupedCategories` seja um array antes de passar para `isCategoryMatch`
+          /*if (!selectedCategoryIds.includes(0) && !isCategoryMatch(transaction.category_id, selectedCategoryIds, groupedCategories)) {
             return false;
-          }
+          }*/
         }
+        
   
         // Filtrar por IDs de contas, se houver contas selecionadas e "Todas as Contas" não estiver selecionada
         if (Array.isArray(filterAccountIds) && filterAccountIds.length > 0) {
@@ -246,6 +209,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
       .slice(offset, offset + transactionsPerPage) // Paginação
       .map((transaction) => {
         return (
+      <div>
+        {/*
           <TransactionItem
             key={transaction.id}
             transaction={transaction}
@@ -257,7 +222,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
             getTransactionBorderClass={getTransactionBorderClass}
             getStatusBorderClass={getStatusBorderClass}
           />
-        );
+       */ }
+      </div>
+    );
       });
   }, [sortedTransactions, filterDate, filterType, filterStatus, filterAccountIds, filterCategory, groupedCategories, offset, openTransactions]);
   
@@ -268,6 +235,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
 
   return (
     <>
+    {/*
+
       <TransactionFilters
         filterDate={filterDate}
         setFilterDate={setFilterDate}
@@ -318,7 +287,6 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
     </div>
       <div className="overflow-y-auto rounded h-[75%] w-full mb-4 border-gray-300 border-5 shadow-xl">
 
-        {/* Lista de transações filtradas */}
         {filteredTransactions?.length > 0 ? (
           filteredTransactions
         ) : (
@@ -326,11 +294,11 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
         )}
       </div>
 
-      {/* Paginação */}
       <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
-
+  */}
     </>
-  );
+
+ );
 };
 
 export default TransactionsList;

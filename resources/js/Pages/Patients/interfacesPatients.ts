@@ -45,6 +45,7 @@ export interface Form {
     wizard_structure: null | any; // Você pode definir uma interface específica se souber o formato
     created_at: string; // ou Date
     updated_at: string; // ou Date
+    fields:FormField[];
 }
 
 export interface Employee {
@@ -71,7 +72,7 @@ interface Option {
   export interface FormField {
     label: string;
     label_view?: string;
-    type: "number" | "text" | "textarea" | "select" | "select_with_optgroup" | "radio" | "checkbox" | "checkbox_group" | "date" | "multi_select" | "file";
+    type: "number" | "text" | "textarea" | "select" | "select_with_optgroup" | "radio" | "checkbox" | "checkbox_group" | "date" | "multi_select" | "file" | "email"| "body_selector";
     required?: boolean;
     default_value?: string;
     options?: string[] | (OptGroup & { options: Option[] })[]; // Aceita tanto arrays de strings quanto OptGroups

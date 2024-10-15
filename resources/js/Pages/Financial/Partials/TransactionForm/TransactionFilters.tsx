@@ -1,14 +1,12 @@
 import React from 'react';
 import { MultiSelect } from 'primereact/multiselect';
 import { Dropdown } from 'primereact/dropdown';
-import DatePicker from 'react-datepicker';
+//import DatePicker from 'react-datepicker';
 import InputLabel from '@/Components/InputLabel';
-import { TreeSelect } from 'primereact/treeselect';
 import CategoryTreeBuilder from '@/Components/Utils/CategoryTreeBuilder';
-// Função para transformar categorias em uma estrutura de árvore para o TreeSelect
+import { TreeSelect, TreeSelectSelectionKeysType } from 'primereact/treeselect';
+import { TreeNode } from 'primereact/treenode';
 
-
-// Definindo a interface para os props
 interface TransactionFiltersProps {
   filterDate: Date | null;
   setFilterDate: (date: Date | null) => void;
@@ -16,8 +14,8 @@ interface TransactionFiltersProps {
   setFilterType: (type: string | null) => void;
   filterStatus: string | null;
   setFilterStatus: (status: string | null) => void;
-  filterCategory: number[];
-  setFilterCategory: (categories: number[]) => void;
+  filterCategory: TreeSelectSelectionKeysType[];  // Ajuste aqui
+  setFilterCategory: (categories: TreeSelectSelectionKeysType[]) => void;  // Ajuste aqui
   filterAccountIds: number[];
   setFilterAccountIds: (accountIds: number[]) => void;
   statusOptions: { value: string; label: string }[];
@@ -44,14 +42,14 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
   selectedStatusTemplate,
   statusOptionTemplate,
 }) => {
-  const groupedCategories = CategoryTreeBuilder({ categories });
+  const groupedCategories: TreeNode[] = CategoryTreeBuilder({ categories });
 
   return (
     <div className="w-full flex flex-wrap">
       {/* Filtro por Data */}
       <div className='m-auto w-[12%]'>
         <InputLabel htmlFor="filter_date" className="w-full m-auto" value="Selecione um dia" />
-        <DatePicker
+        {/*<DatePicker
           id="filter_date"
           selected={filterDate}
           onChange={(date) => setFilterDate(date)}
@@ -60,7 +58,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           placeholderText="Selecione uma data"
           dateFormat="dd/MM/yyyy"
           className="w-full p-2 border rounded"
-        />
+        />*/}
       </div>
 
       {/* Filtro por Tipo de Transação */}
@@ -105,7 +103,6 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
             if (e.value.includes(0)) {
               setFilterAccountIds([0]);
             } else {
-
               setFilterAccountIds(e.value);
             }
           }}
@@ -113,7 +110,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           className="w-full md:w-20rem bg-white border border-gray-600"
           maxSelectedLabels={3}
           display="chip"
-showClear
+          showClear
         />
       </div>
 
@@ -121,17 +118,28 @@ showClear
       <div className='m-auto md:w-[30%]'>
         <InputLabel htmlFor="filter_category" value="Categorias" />
         <TreeSelect
-          value={filterCategory}
-          options={groupedCategories}
-          onChange={(e) => setFilterCategory(e.value || {})} // Garantindo que nunca seja undefined
-          metaKeySelection={false}
-          className="w-full md:w-20rem bg-white border border-gray-600"
-          selectionMode="checkbox"
-          display="chip"
-          placeholder="Selecione Categorias"
-          showClear
- 
-        />
+            value={filterCategory}
+            options={groupedCategories}
+            onChange={(e) => {
+              const selectedValue = e.value;
+              if (Array.isArray(selectedValue)) {
+                setFilterCategory(selectedValue);
+              } else if (typeof selectedValue === 'object' && selectedValue !== null) {
+                // Se for um único objeto de tipo TreeSelectSelectionKeysType
+                setFilterCategory([selectedValue]);
+              } else {
+                setFilterCategory([]); // Garante que seja um array vazio se o valor for inválido
+              }
+            }}
+            metaKeySelection={false}
+            className="w-full md:w-20rem bg-white border border-gray-600"
+            selectionMode="checkbox"
+            display="chip"
+            placeholder="Selecione Categorias"
+            showClear
+          />
+
+
       </div>
     </div>
   );

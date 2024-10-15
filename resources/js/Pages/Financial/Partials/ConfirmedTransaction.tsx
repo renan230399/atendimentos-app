@@ -40,7 +40,7 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
         transaction_date: transaction.transaction_date.split('T')[0], // Formato correto para o campo date
         expected_date: transaction.expected_date.split('T')[0], // Formato correto para o campo date
 
-        related_name: transaction.related?.name || '',
+        related_name: transaction.related?.patient?.patient_name || '',
         related_description: transaction.related?.description || '',
         status: transaction.status ? 'true' : 'false', // Armazena o status como '1' ou '0'
    

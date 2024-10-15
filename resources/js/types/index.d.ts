@@ -13,6 +13,7 @@ export interface Company {
     company_logo?: string;
     suppliers?: string; // ou o tipo que você espera aqui
 }
+
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
         user: User;

@@ -6,6 +6,7 @@ import PopUpComponent from '@/Layouts/PopupComponent';
 import { Inertia } from '@inertiajs/inertia';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import { MdBlock } from "react-icons/md";
+import { User } from '@/types';
 
 interface Employee {
     id: number;
@@ -16,10 +17,7 @@ interface Employee {
 
 interface EmployeesProps {
     auth: {
-        user: {
-            name: string;
-            email: string;
-        };
+        user: User
     };
     employees: Employee[];
 }
@@ -53,10 +51,11 @@ const Employees: React.FC<EmployeesProps> = ({ auth, employees }) => {
 
       
         // Função para abrir o modal de confirmação
-        const openDeleteModal = useCallback((employee) => {
-          setSelectedEmployee(employee);
-          setShowModal(true);
+        const openDeleteModal = useCallback((employee: Employee) => {
+            setSelectedEmployee(employee);
+            setShowModal(true);
         }, []);
+        
       
         // Função para fechar o modal de confirmação
         const closeDeleteModal = useCallback(() => {

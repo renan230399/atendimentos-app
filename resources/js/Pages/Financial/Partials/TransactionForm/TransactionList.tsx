@@ -1,6 +1,6 @@
 import React from 'react';
 import TransactionForm from '../TransactionForm';
-import { Account } from '../TransactionsAdd';
+import { Account } from '../../FinancialInterfaces';
 
 interface TransactionListProps {
   transactions: any[];

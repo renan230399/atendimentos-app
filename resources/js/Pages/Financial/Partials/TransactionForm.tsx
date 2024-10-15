@@ -76,23 +76,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         <InputError message={errors?.account_id} className="mt-2" />
       </div>
 
-      {/* Seção de Status */}
-      <div className="md:w-[30%] w-[80%] m-auto text-center">
-        <InputLabel htmlFor={`status-${index}`} value="Status" />
-        <CustomDropdown
-          id={`status-${index}`}
-          label="Status"
-          value={data.status}
-          onChange={(value) => {
-            const updatedTransactions = [...data.transactions];
-            updatedTransactions[index].status = value;
-            setData('transactions', updatedTransactions);
-          }}
-          options={statusOptions}
-          error={errors?.status}
-        />
-        <InputError message={errors?.status} className="mt-2" />
-      </div>
+
     </div>
   );
 };

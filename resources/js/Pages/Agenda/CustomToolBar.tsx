@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { BiSolidSkipNextCircle } from "react-icons/bi";
 import { IoPlaySkipBackCircleSharp } from "react-icons/io5";
-import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Calendar } from 'primereact/calendar';
-
-
-const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
+interface CustomToolbarProps {
+    label: string;
+    onNavigate: (newDate: Date) => void;
+    date: Date;
+    onView: (view: string) => void;
+    view: string;
+  }
+const CustomToolbar: React.FC<CustomToolbarProps> = ({ label, onNavigate, date, onView, view }) => {
     const currentYear = moment(date).year();
-    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
     const months = moment.months();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
@@ -20,9 +24,8 @@ const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
         agenda: 'Agenda',
     };
 
-    // Ajuste para manipular a navegação de maneira correta
-    const handleNavigate = (action) => {
-        let newDate;
+    const handleNavigate = (action: 'PREV' | 'NEXT') => {
+        let newDate: Date;
 
         switch (view) {
             case 'month':
@@ -44,20 +47,19 @@ const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
         onNavigate(newDate);
     };
 
-    const handleMonthChange = (selectedDate) => {
+    const handleMonthChange = (selectedDate: Date | undefined) => {
         if (selectedDate instanceof Date) {
             setCurrentMonth(selectedDate);
             onNavigate(selectedDate); // Navega para o mês selecionado
         }
     };
-    
 
-    const handleYearChange = (e) => {
-        const newYear = moment(date).year(e.target.value).toDate();
+    const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newYear = moment(date).year(parseInt(e.target.value)).toDate();
         onNavigate(newYear);
     };
 
-    const handleViewChange = (value) => {
+    const handleViewChange = (value: string) => {
         if (Object.keys(views).includes(value)) {
             onView(value);
         }
@@ -99,32 +101,9 @@ const CustomToolbar = ({ label, onNavigate, date, onView, view }) => {
                 ))}
             </div>
 
-            <div className="flex flex-wrap space-x-2 space-y-2">
-
-
-                <div className="card flex justify-content-center">
-                <Calendar 
-    value={currentMonth} 
-    onChange={(e) => handleMonthChange(e.value)} 
-    view="month" 
-    dateFormat="mm/yy" 
-    showButtonBar 
-/>
-
-
-                </div>
-
-            </div>
+            
         </div>
     );
-};
-
-CustomToolbar.propTypes = {
-    label: PropTypes.string.isRequired,
-    onNavigate: PropTypes.func.isRequired,
-    date: PropTypes.instanceOf(Date).isRequired,
-    onView: PropTypes.func.isRequired,
-    view: PropTypes.string.isRequired
 };
 
 export default CustomToolbar;

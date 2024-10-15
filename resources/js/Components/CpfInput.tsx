@@ -53,7 +53,7 @@ const CpfInput: React.FC<CpfInputProps> = ({ value, onChange, errors }) => {
     };
 
     return (
-        <div>
+            <div>
             <InputLabel htmlFor="cpf" value="CPF" />
             <MaskedInput
                 mask={cpfMask}
@@ -62,8 +62,9 @@ const CpfInput: React.FC<CpfInputProps> = ({ value, onChange, errors }) => {
                 className={`mt-1 block w-full border-gray-300 rounded-md ${cpfError || errors ? 'border-red-500' : ''}`}
                 placeholder="000.000.000-00"
             />
-            <InputError message={cpfError || errors} className="mt-2" />
-        </div>
+            <InputError message={cpfError || errors ? (cpfError || errors) as string : undefined} className="mt-2" />
+            </div>
+
     );
 };
 

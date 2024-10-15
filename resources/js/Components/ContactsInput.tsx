@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import PrimaryButton from '@/Components/PrimaryButton';
+import PrimaryButton from './PrimaryButton';
+interface Contact {
+  type: string;
+  value: string;
+}
+
+interface ContactsInputProps {
+  contacts: Contact[];
+  setContacts: React.Dispatch<React.SetStateAction<Contact[]>>;
+}
 
 // Tipos de contato permitidos
 const contactTypes = [
@@ -10,17 +19,15 @@ const contactTypes = [
   { label: 'Email', value: 'email' },
   { label: 'LinkedIn', value: 'linkedin' },
 ];
-
-const ContactsInput = ({ contacts, setContacts }) => {
-  // Estados para armazenar o tipo e o valor do contato atual
-  const [currentContactType, setCurrentContactType] = useState(contactTypes[0].value);
-  const [currentContactValue, setCurrentContactValue] = useState('');
+const ContactsInput: React.FC<ContactsInputProps> = ({ contacts, setContacts }) => {
+  const [currentContactType, setCurrentContactType] = useState<string>(contactTypes[0].value);
+  const [currentContactValue, setCurrentContactValue] = useState<string>('');
 
   // Função para adicionar um novo contato à lista
   const addContact = () => {
     if (!currentContactValue) return; // Não adiciona se o valor estiver vazio
 
-    const newContact = {
+    const newContact: Contact = {
       type: currentContactType,
       value: currentContactValue,
     };
@@ -30,7 +37,7 @@ const ContactsInput = ({ contacts, setContacts }) => {
   };
 
   // Função para remover um contato da lista
-  const removeContact = (index) => {
+  const removeContact = (index: number) => {
     const updatedContacts = contacts.filter((_, i) => i !== index);
     setContacts(updatedContacts);
   };
@@ -68,9 +75,9 @@ const ContactsInput = ({ contacts, setContacts }) => {
       </div>
 
       {/* Botão para adicionar contato */}
-      <div onClick={addContact} className="mb-4">
+      <PrimaryButton onClick={addContact} className="mb-4">
         Adicionar Contato
-      </div>
+      </PrimaryButton>
 
       {/* Lista de contatos adicionados */}
       <div className="mt-4">
@@ -97,16 +104,6 @@ const ContactsInput = ({ contacts, setContacts }) => {
       </div>
     </div>
   );
-};
-
-ContactsInput.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      type: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  setContacts: PropTypes.func.isRequired,
 };
 
 export default ContactsInput;

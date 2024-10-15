@@ -4,24 +4,18 @@ import CategoriesManager from '@/Pages/Financial/Partials/CategoriesManager';
 import AccountsManager from '@/Pages/Financial/Partials/AccountsManager';
 import TransfersManager from '@/Pages/Financial/Partials/TransfersManager';
 import TransactionsManager from './Partials/TransactionsManager';
-import TransactionsAdd from './Partials/TransactionsAdd';
+//import TransactionsAdd from './Partials/TransactionsAdd';
 import { MdAddShoppingCart } from "react-icons/md";
 import { FaSitemap, FaExclamationTriangle } from "react-icons/fa";
 import {Account, Category, Transfer, PaymentMethod, PaymentMethodsFee} from './FinancialInterfaces';
 import { Sidebar } from 'primereact/sidebar';
+import { User } from '@/types';
 // Lazy load do PopupComponent para carregar apenas quando necessário
 const PopUpComponent = lazy(() => import('@/Layouts/PopupComponent'));
 
 interface FinancialDashboardProps {
   auth: {
-    user: {
-      id:number;
-      name: string;
-      email: string;
-      company?: {
-        company_logo?: string;
-      };
-    };
+    user: User;
   };
   accounts: Account[];
   categories: Category[];
@@ -116,7 +110,7 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
       </div>
 
       {/* Lazy loading do popup */}
-      {isAddTransactionPopupOpen && (
+      {/*isAddTransactionPopupOpen && (
         <Suspense fallback={<div>Carregando popup...</div>}>
           <PopUpComponent
             id="add_form_popup"
@@ -134,7 +128,7 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
             />
           </PopUpComponent>
         </Suspense>
-      )}
+      )*/}
               <Sidebar visible={isViewAccounts} position="left" className='pt-0 xl:w-[30vw] md:w-[45vw] sm:w-[75vw] overflow-auto bg-white' onHide={() => setIsViewAccounts(false)}>
               <AccountsManager 
                 accounts={memoizedAccounts} 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+import { Account, Category } from '../FinancialInterfaces';
 export const useFetchTransactionsData = (accountsProp?: Account[], categoriesProp?: Category[]) => {
   const [accounts, setAccounts] = useState<Account[]>(accountsProp || []);
   const [categories, setCategories] = useState<Category[]>(categoriesProp || []);

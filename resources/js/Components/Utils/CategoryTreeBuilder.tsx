@@ -1,36 +1,39 @@
-import React, { useMemo } from 'react';
+import { TreeNode } from 'primereact/treenode';
+import { Category } from '@/Pages/Financial/FinancialInterfaces';
 
-// Componente CategoryTreeBuilder que transforma uma lista de categorias em uma estrutura de árvore
-const CategoryTreeBuilder = ({ categories }) => {
-  // UseMemo para memorizar a estrutura de árvore gerada e otimizar o desempenho
-  const treeNodes = useMemo(() => {
-    const categoryMap = new Map();
+// Interface para as props
+interface CategoryTreeBuilderProps {
+  categories: Category[];
+}
 
-    categories.forEach(category => {
-      categoryMap.set(category.id, {
-        key: category.id,
-        label: category.name,
-        children: [],
-        data: category
-      });
+// Função que transforma as categorias em uma árvore de nós (TreeNode[])
+const CategoryTreeBuilder = ({ categories }: CategoryTreeBuilderProps): TreeNode[] => {
+  const categoryMap = new Map<number, TreeNode>();
+
+  categories.forEach((category) => {
+    categoryMap.set(category.id, {
+      key: String(category.id), // Transformando a chave para string, conforme esperado pelo TreeSelect
+      label: category.name,
+      children: [],
+      data: category,
     });
+  });
 
-    const nodes = [];
-    categories.forEach(category => {
-      if (category.parent_id === null) {
-        nodes.push(categoryMap.get(category.id));
-      } else {
-        const parentNode = categoryMap.get(category.parent_id);
-        if (parentNode) {
-          parentNode.children.push(categoryMap.get(category.id));
-        }
+  const nodes: TreeNode[] = [];
+  categories.forEach((category) => {
+    if (category.parent_id === null) {
+      nodes.push(categoryMap.get(category.id)!);
+    } else {
+      const parentNode = categoryMap.get(category.parent_id);
+      if (parentNode) {
+        if (parentNode.children) {
+          parentNode.children.push(categoryMap.get(category.id)!);
       }
-    });
+     }
+    }
+  });
 
-    return nodes;
-  }, [categories]);
-
-  return treeNodes;
+  return nodes;
 };
 
 export default CategoryTreeBuilder;

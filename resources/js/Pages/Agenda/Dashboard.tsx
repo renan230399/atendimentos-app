@@ -9,17 +9,26 @@ import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CustomToolbar from '@/Pages/Agenda/CustomToolBar';
 import EventPopup from '@/Pages/Agenda/EventPopup';
-import EventAdd from './EventAdd'; // Importando o modal ConsultationAdd
+import EventAdd from '../EventAdd'; // Importando o modal ConsultationAdd
 import PropTypes from 'prop-types';
-import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
-import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
+import { Dialog } from 'primereact/dialog';
+
+import { User } from '@/types';
+import {EventPatient, EventDefault} from './AgendaInterfaces'
+interface DashboardProps {
+    auth:{
+        user:User
+    };
+    events: EventPatient[];
+    forms?: any[];  // Ajuste conforme a tipagem de "forms" se necessário
+  }
 
 moment.locale('pt-br');
 const localizer = momentLocalizer(moment);
-const DragAndDropCalendar = withDragAndDrop(Calendar); // Envolve o Calendar com suporte a Drag and Drop
 
-const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
-    const [events, setEvents] = useState(
+const Dashboard: React.FC<DashboardProps> = ({ auth, events: initialEvents, forms = [] }) => {
+    const [events, setEvents] = useState<EventPatient[]>(
         initialEvents.map(event => ({
             ...event,
             start: new Date(event.start),
@@ -27,97 +36,72 @@ const Dashboard = ({ auth, events: initialEvents, forms = [], }) => {
         }))
     );
 
-    const [currentView, setCurrentView] = useState(Views.MONTH);
+    const [currentView, setCurrentView] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedEvent, setSelectedEvent] = useState(null);
-    const [modalParams, setModalParams] = useState({});
-    const [newEventData, setNewEventData] = useState(null); // Estado para armazenar os dados do novo evento
+    const [selectedEvent, setSelectedEvent] = useState<EventPatient | null>(null);
+    const [newEventData, setNewEventData] = useState<{ start: Date; end: Date } | null>(null);
+    const [eventPopupView, setEventPopupView] = useState(false);
 
-    const handleEventClick = useCallback((event, e) => {
-        setModalParams({ clientX: e.clientX, clientY: e.clientY });
+    const handleEventClick = useCallback((event: EventPatient) => {
         setSelectedEvent(event);
+        setEventPopupView(true);
     }, []);
 
     const handleEventClose = useCallback(() => {
         setSelectedEvent(null);
         setNewEventData(null); // Fecha o modal de novo evento
+        setEventPopupView(false);
     }, []);
 
-    const handleEventDelete = useCallback((eventId) => {
-        setEvents((prevEvents) => prevEvents.filter(event => event.id !== eventId));
+    const handleEventDelete = useCallback((eventId: number) => {
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
         setSelectedEvent(null);
     }, []);
 
-    const handleViewChange = useCallback((view) => {
-        if (view) {
-            setCurrentView(view);
-        }
+    const handleViewChange = useCallback((view: any) => {
+        if (view) setCurrentView(view);
     }, []);
 
-    const handleNavigate = useCallback((newDate) => {
+    const handleNavigate = useCallback((newDate: Date) => {
         setCurrentDate(newDate);
     }, []);
 
-    const handleEventResize = useCallback(({ event, start, end }) => {
-        const nextEvents = events.map(existingEvent => {
-            return existingEvent.id === event.id
-                ? { ...existingEvent, start, end }
-                : existingEvent;
-        });
-        setEvents(nextEvents);
-    }, [events]);
-
-    const handleEventDrop = useCallback(({ event, start, end }) => {
-        const nextEvents = events.map(existingEvent => {
-            return existingEvent.id === event.id
-                ? { ...existingEvent, start, end }
-                : existingEvent;
-        });
+    const handleEventResize = useCallback(({ event, start, end }: { event: EventPatient; start: Date; end: Date }) => {
+        const nextEvents = events.map(existingEvent => 
+            existingEvent.id === event.id ? { ...existingEvent, start, end } : existingEvent
+        );
         setEvents(nextEvents);
     }, [events]);
 
     // Função para abrir o modal e criar um novo evento ao selecionar um slot
-    const handleSelectSlot = useCallback(({ start, end }) => {
+    const handleSelectSlot = useCallback(({ start, end }: { start: Date; end: Date }) => {
         if (currentView === Views.DAY) {
-            // Abre o modal com os dados de início e fim
             setNewEventData({ start, end });
         }
     }, [currentView]);
 
-    // Função para adicionar o novo evento ao calendário após o formulário ser submetido
-    const handleAddNewEvent = useCallback((eventDetails) => {
-        const newEvent = {
-            id: events.length + 1,  // Gera um ID simples para o evento
-            title: eventDetails.title,  // Título obtido do modal
-            start: eventDetails.start,
-            end: eventDetails.end,
-        };
-        setEvents([...events, newEvent]);  // Adiciona o novo evento à lista
-        setNewEventData(null);  // Fecha o modal após a criação do evento
-    }, [events]);
-
 // Função para calcular o horário mínimo e máximo apenas para a visualização de dias
 const { minTime, maxTime } = useMemo(() => {
-    // Só aplica a lógica quando a visualização atual for de dias
     if (currentView !== Views.DAY) {
-        return { minTime: new Date().setHours(0, 0, 0), maxTime: new Date().setHours(23, 59, 59) }; // Horários padrão para outras views
+        return {
+            minTime: new Date(new Date().setHours(0, 0, 0)),
+            maxTime: new Date(new Date().setHours(23, 59, 59)),
+        };
     }
 
     const todayEvents = events.filter(event => moment(event.start).isSame(currentDate, 'day'));
     if (todayEvents.length === 0) {
         return {
-            minTime: new Date().setHours(6, 0, 0), // Define 6 AM como horário padrão se não houver eventos no dia
-            maxTime: new Date().setHours(23, 59, 59),
+            minTime: new Date(new Date().setHours(6, 0, 0)),
+            maxTime: new Date(new Date().setHours(23, 59, 59)),
         };
     }
 
     const minEventTime = new Date(Math.min(...todayEvents.map(event => event.start.getTime())));
     const maxEventTime = new Date(Math.max(...todayEvents.map(event => event.end.getTime())));
 
-    // Calcula a diferença em horas entre os horários mínimo e máximo dos eventos
-    const eventDuration = (maxEventTime - minEventTime) / (1000 * 60 * 60); // Diferença em horas
+    const eventDuration = (maxEventTime.getTime() - minEventTime.getTime()) / (1000 * 60 * 60);
 
-    // Se a duração dos eventos for menor que 12 horas, ajusta os horários para mostrar um intervalo de pelo menos 12 horas
     if (eventDuration < 12) {
         const hoursToAdd = (12 - eventDuration) / 2;
         const adjustedMinTime = new Date(minEventTime);
@@ -129,7 +113,6 @@ const { minTime, maxTime } = useMemo(() => {
         return { minTime: adjustedMinTime, maxTime: adjustedMaxTime };
     }
 
-    // Se a duração dos eventos for maior ou igual a 12 horas, usa os horários dos eventos normalmente
     return { minTime: minEventTime, maxTime: maxEventTime };
 }, [events, currentDate, currentView]);
 
@@ -140,6 +123,8 @@ const { minTime, maxTime } = useMemo(() => {
         : currentView === Views.WEEK 
         ? `Semana de ${moment(currentDate).startOf('week').format('D [de] MMMM')} a ${moment(currentDate).endOf('week').format('D [de] MMMM')}` 
         : moment(currentDate).format('D [de] MMMM YYYY');
+        
+    const localizer = momentLocalizer(moment);
 
     return (
         <AuthenticatedLayout user={auth.user}>
@@ -163,16 +148,13 @@ const { minTime, maxTime } = useMemo(() => {
                         </div>
                         
                         <DndProvider backend={HTML5Backend}>
-                            <DragAndDropCalendar
+                            <Calendar
                                 className="w-[95%] m-auto shadow-lg"
                                 localizer={localizer}
                                 events={events}
                                 onSelectEvent={handleEventClick}
-                                onEventDrop={handleEventDrop} // Função para Drag and Drop
-                                onEventResize={handleEventResize} // Função para redimensionar eventos
                                 onSelectSlot={handleSelectSlot}  // Função para selecionar um intervalo e criar evento
                                 selectable={currentView === Views.DAY}  // Selecionável apenas na view "day"
-                                resizable
                                 startAccessor="start"
                                 endAccessor="end"
                                 view={currentView}
@@ -199,34 +181,38 @@ const { minTime, maxTime } = useMemo(() => {
                                 }}
                                 formats={{
                                     timeGutterFormat: 'HH:mm',
-                                    eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
+                                    eventTimeRangeFormat: ({ start, end }, culture) => 
                                         `${localizer.format(start, 'HH:mm', culture)} - ${localizer.format(end, 'HH:mm', culture)}`,
-                                    agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
+                                    agendaTimeRangeFormat: ({ start, end }, culture) =>
                                         `${localizer.format(start, 'HH:mm', culture)} - ${localizer.format(end, 'HH:mm', culture)}`,
                                 }}
+                                
+                                
+                                
                             />
                         </DndProvider>
                     </div>
-
+                    <Dialog  visible={eventPopupView}  className='w-[90vw] h-[90vh]' onHide={handleEventClose}>
                     {selectedEvent && (
-                        <EventPopup
+                      <EventPopup
                             auth={auth}
                             selectedEvent={selectedEvent}
-                            params={modalParams}
                             onClose={handleEventClose}
                             onDelete={handleEventDelete}
                             logo={auth.user.company.company_logo}
                             forms={forms}
-                        />
-                    )}
+                                />
+                        )}
+                    </Dialog>
 
-                    {/* Exibe o modal para adicionar um novo evento */}
+
+                    {/*
+                     Exibe o modal para adicionar um novo evento */}
                     {newEventData && (
                         <EventAdd
                             start={newEventData.start}
                             end={newEventData.end}
                             onClose={handleEventClose}
-                            onSave={handleAddNewEvent}  // Função para salvar o novo evento
                         />
                     )}
                 </div>
@@ -235,9 +221,5 @@ const { minTime, maxTime } = useMemo(() => {
     );
 };
 
-Dashboard.propTypes = {
-    auth: PropTypes.object.isRequired,
-    events: PropTypes.array.isRequired,
-};
 
 export default Dashboard;

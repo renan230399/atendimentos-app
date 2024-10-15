@@ -3,8 +3,8 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TransactionsList from './TransactionsList';
 import PopupComponent from '@/Layouts/PopupComponent';
 import ConfirmedTransaction from './ConfirmedTransaction';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+//import DatePicker from 'react-datepicker';
+//import 'react-datepicker/dist/react-datepicker.css';
 import InputLabel from '@/Components/InputLabel';
 import { format, setHours, setMinutes, setSeconds } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -12,7 +12,7 @@ import {Account, Transaction, Category, PaymentMethod, PaymentMethodsFee} from '
 import { Sidebar } from 'primereact/sidebar';
 
 // Registra o locale para o DatePicker
-registerLocale('pt-BR', ptBR);
+//registerLocale('pt-BR', ptBR);
 
 
 interface TransactionsManagerProps {
@@ -65,18 +65,11 @@ const TransactionsManager: React.FC<TransactionsManagerProps> = ({ accounts, cat
 
 
   {/* Lógica do popup */}
-  const handleOpenConfirmedTransactionPopup = useCallback((e: React.MouseEvent, transaction: Transaction) => {
-    setPopupParams({
-      clientX: e.clientX,
-      clientY: e.clientY,
-      classPopup: 'h-auto bg-white w-[80vw]',
-    });
+  const handleOpenConfirmedTransactionPopup = useCallback((transaction: Transaction) => {
     setIsConfirmedTransactionPopupOpen(true);
     setSelectedTransaction(transaction);
   }, []);
-  const handleCloseConfirmedTransactionPopup = useCallback(() => {
-    setIsConfirmedTransactionPopupOpen(false);
-  }, []);
+
 
   // Função para buscar todas as transações
   const fetchTransactions = useCallback(async () => {
@@ -87,6 +80,9 @@ const TransactionsManager: React.FC<TransactionsManagerProps> = ({ accounts, cat
 // Ajuste as datas antes de formatar
 const startDateFormatted = filters.start_date ? format(filters.start_date, 'yyyy-MM-dd') : '';
 const endDateFormatted = filters.end_date ? format(filters.end_date, 'yyyy-MM-dd') : '';
+
+const startDate = filters.start_date || new Date(); // Define uma data padrão caso seja null
+const endDate = filters.end_date || new Date(); // Define uma data padrão caso seja null
 
 console.log(filters.start_date, '-' ,startDateFormatted );
 // Criação da URL de busca usando as datas ajustadas
@@ -145,7 +141,7 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
         <div className="w-[34%] flex flex-wrap">
           <div className="w-full pb-4">
           <InputLabel value='Intervalo de datas'/>
-          <DatePicker
+          {/*<DatePicker
               selected={filters.start_date}
               onChange={(dates) => {
                 const [start, end] = dates as [Date | null, Date | null]; // Garantimos que dates pode ser Date ou null
@@ -165,7 +161,7 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
               dateFormat="dd/MM/yyyy"
               withPortal
               className="w-full h-12 py-2 text-md border rounded-lg"
-            />
+            />*/}
             <PrimaryButton onClick={handleFilterTransactions} className="hidden h-10 bg-green-500 hover:bg-green-700 focus:bg-green-500">
               {loading ? 'Carregando...' : 'Filtrar'}
             </PrimaryButton>
@@ -217,10 +213,17 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
         <TransactionsList 
           transactions={{ data: transactions }} 
           handleOpenConfirmedTransactionPopup={handleOpenConfirmedTransactionPopup} 
-          filters={filters} 
+          filters={{
+            start_date: filters.start_date || new Date(), // Valor padrão se for null
+            end_date: filters.end_date || new Date(),     // Valor padrão se for null
+            // Outros filtros
+          }}          
           accounts={accounts} 
-          categories={categories}/>
+          categories={categories}
+        />
       </div>
+
+
 
 
  

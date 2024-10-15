@@ -11,7 +11,7 @@ import CategoryTreeBuilder from '@/Components/Utils/CategoryTreeBuilder';
 import { TreeSelect } from 'primereact/treeselect';
 import { useFetchTransactionsData } from '../hooks/useFetchTransactionsData'; // Importar o hook da pasta 'hooks'
 import {Account, Category} from '../FinancialInterfaces';
-
+import { TreeSelectChangeEvent } from 'primereact/treeselect';
 interface TransactionsAddProps {
   accounts?: Account[]; // Adicionei o "?" para indicar que pode ser opcional
   categories?: Category[]; // Adicionei o "?" para indicar que pode ser opcional
@@ -34,6 +34,7 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
     transactions: [
       {
         transaction_date: '',
+        expected_date: '',
         status: false,
       },
     ],
@@ -54,7 +55,7 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
     const newValue = field === 'account_id' || field === 'category_id' ? parseInt(value, 10) : value;
 
     // Atualiza o valor do campo usando setData
-    setData(field, newValue);
+    //setData(field, newValue);
 
     // Atualizar a lista de transações se o campo 'transaction_date' for alterado
     if (field === 'transaction_date' && newValue) {
@@ -87,23 +88,31 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
     setTransactions(newTransactions);
   
     // Atualiza o estado do useForm com as novas transações
-    setData('transactions', newTransactions);
+    //setData('transactions', newTransactions);
   };
   
-
+/*
   const renderTransactionForms = () => {
     return data.transactions.map((transaction, index) => (
       <TransactionForm
         key={index}
         index={index}
-        data={data}
-        setData={(index, field, value) => updateTransaction(index, field, value)}
+        data={{
+          ...transaction,  // Certifique-se de que 'transaction' contém todas as propriedades necessárias
+          id: transaction.id || '', // Propriedade id obrigatória
+          transaction_date: transaction.transaction_date || '', // Propriedade transaction_date obrigatória
+          expected_date: transaction.expected_date || '', // Propriedade expected_date obrigatória
+          status: transaction.status || false, // Propriedade status obrigatória
+        }}
+        setData={(field, value) => updateTransaction(index, field, value)}
         accounts={accounts}
         errors={errors}
         dateDefault={selectedDate}
       />
     ));
   };
+  */
+
   
 
   const handleAddTransaction = (e: React.FormEvent) => {
@@ -123,20 +132,29 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
 
   const groupedCategories = CategoryTreeBuilder({ categories });
 // Função para tratar a mudança de seleção no TreeSelect
-const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
-  const selectedCategoryId = event.value;
-  setSelectedCategoryId(selectedCategoryId);
-    // Encontra a categoria selecionada com base no ID
-    const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
-    console.log(selectedCategoryId);
+const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {/*
+  // Verifique se o valor é uma string ou um TreeSelectSelectionKeysType e faça a conversão
+  const selectedCategoryId = typeof event.value === 'string'
+    ? event.value
+    : String(event.value); // Converta para string se necessário
 
-  // Atualiza o estado do formulário com a categoria selecionada
+  setSelectedCategoryId(selectedCategoryId);
+
+  // Verifica se as categorias estão definidas e encontra a categoria correspondente
+  const selectedCategory = categories?.find((category) => category.id === selectedCategoryId);
+
+  console.log("Categoria selecionada:", selectedCategoryId);
+
+  // Atualiza o estado do formulário com a categoria e tipo
   setData({
-    ...data, // Mantém o estado atual de data
+    ...data,
     category_id: selectedCategoryId,
-    type: selectedCategory ? selectedCategory.type : '', // Atualiza o campo 'type' se a categoria for encontrada
-  });
+    type: selectedCategory?.type || '', // Atualiza o campo 'type' se a categoria for encontrada
+  });*/
 };
+
+
+
   return (
     <form onSubmit={handleAddTransaction} className="mt-4 space-y-4">
       <div className="flex flex-wrap gap-3 w-full">
@@ -218,7 +236,7 @@ const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
 
         </div>
 
-        <div className="w-full flex flex-wrap">{renderTransactionForms()}</div>
+        <div className="w-full flex flex-wrap">{/*renderTransactionForms()*/}</div>
       </div>
 
       <PrimaryButton type="submit" className="mt-2" >

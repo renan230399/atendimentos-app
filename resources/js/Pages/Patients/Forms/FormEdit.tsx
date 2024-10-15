@@ -7,16 +7,8 @@ import FieldEditor from './FieldEditor'; // Para editar os campos do formulário
 import { Dialog } from 'primereact/dialog';
 import { CiEdit } from 'react-icons/ci';
 import { Sidebar } from 'primereact/sidebar';
-import {FormField} from '@/Pages/Patients/interfacesPatients'
+import {FormField, Form} from '@/Pages/Patients/interfacesPatients'
 
-// Interface para o formulário recebido como prop
-interface Form {
-  id: number;
-  name: string;
-  description?: string;
-  icon?: string;
-  fields: FormField[];
-}
 
 interface FormEditProps {
   form: Form;

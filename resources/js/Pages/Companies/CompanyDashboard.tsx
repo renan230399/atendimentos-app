@@ -2,6 +2,7 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeManager from './Employees/EmployeeManager';
+import { User } from '@/types';
 
 interface Employee {
     id: number;
@@ -29,11 +30,7 @@ interface Account {
 }
 interface CompanyDashboardProps {
     auth: {
-        user: {
-            id:number;
-            name: string;
-            email: string;
-        };  
+        user: User;  
     };
     employees: Employee[];
     accounts: Account[];

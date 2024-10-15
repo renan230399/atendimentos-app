@@ -1,4 +1,13 @@
-const FormResponseField = ({ field, response }) => {
+import React from 'react';
+import {FormResponse, FormField, FormResponseDetail, Form} from './interfacesPatients'
+
+// Tipando as props do componente
+interface FormResponseFieldProps {
+    field: FormField;
+    response: string | boolean | string[] | null | undefined;
+}
+
+const FormResponseField: React.FC<FormResponseFieldProps> = ({ field, response }) => {
     if (!field || !field.type || !field.label) return null;
 
     switch (field.type) {
@@ -6,26 +15,7 @@ const FormResponseField = ({ field, response }) => {
         case 'email':
         case 'number':
         case 'textarea':
-            return (
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-semibold">{field.label}:</label>
-                    <p>{response || 'N/A'}</p>
-                </div>
-            );
         case 'select':
-            return (
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-semibold">{field.label}:</label>
-                    <p>{response || 'N/A'}</p>
-                </div>
-            );
-        case 'date':
-            return (
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-semibold">{field.label}:</label>
-                    {new Date(response).toLocaleDateString('pt-BR')}
-                </div>
-            );
         case 'radio':
             return (
                 <div className="mb-4">
@@ -33,7 +23,20 @@ const FormResponseField = ({ field, response }) => {
                     <p>{response || 'N/A'}</p>
                 </div>
             );
+            case 'date':
+                return (
+                    <div className="mb-4">
+                        <label className="block text-gray-700 font-semibold">{field.label}:</label>
+                        <p>
+                            {typeof response === 'string' || typeof response === 'number' 
+                                ? new Date(response).toLocaleDateString('pt-BR') 
+                                : 'N/A'}
+                        </p>
+                    </div>
+                );
+            
         case 'checkbox_group':
+        case 'multi_select':
             return (
                 <div className="mb-4">
                     <label className="block text-gray-700 font-semibold">{field.label}:</label>
@@ -53,41 +56,25 @@ const FormResponseField = ({ field, response }) => {
                     <p>{response ? 'Sim' : 'Não'}</p>
                 </div>
             );
-        case 'file':
-            return (
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-semibold">{field.label}:</label>
-                    {response ? (
-                        <a href={response} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                            Ver arquivo
-                        </a>
-                    ) : (
-                        <p>Nenhum arquivo enviado</p>
-                    )}
-                </div>
-            );
-        case 'multi_select':
-            return (
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-semibold">{field.label}:</label>
-                    <ul className="list-disc pl-5">
-                        {Array.isArray(response) && response.length > 0 ? (
-                            response.map((item, index) => <li key={index}>{item}</li>)
+            case 'file':
+                return (
+                    <div className="mb-4">
+                        <label className="block text-gray-700 font-semibold">{field.label}:</label>
+                        {typeof response === 'string' ? (
+                            <a href={response} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                                Ver arquivo
+                            </a>
                         ) : (
-                            <p>N/A</p>
+                            <p>Nenhum arquivo enviado</p>
                         )}
-                    </ul>
-                </div>
-            );
-        case 'body_selector': // Caso para o seletor de corpo humano
+                    </div>
+                );
+            
+        case 'body_selector':
             return (
                 <div className="mb-4">
                     <label className="block text-gray-700 font-semibold">{field.label}:</label>
-                    {response ? (
-                        <p>Área selecionada: {response}</p>
-                    ) : (
-                        <p>Nenhuma área selecionada</p>
-                    )}
+                    {response ? <p>Área selecionada: {response}</p> : <p>Nenhuma área selecionada</p>}
                 </div>
             );
         default:

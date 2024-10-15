@@ -1,20 +1,39 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import PopUpComponent from '@/Layouts/PopupComponent';
 import moment from 'moment';
-import PropTypes from 'prop-types';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import TextArea from '@/Components/TextArea';
-import ViewPatient from '@/Pages/Patients/ViewPatient'; // Importando o componente de visualização do paciente
-import PrimaryButton from '@/Components/PrimaryButton';
+import { Dialog } from 'primereact/dialog';
+import { User } from '@/types';
+import { Event } from 'react-big-calendar';
 import DynamicForm from '../Patients/Forms/DynamicForm';
-import PatientDetails from './PatientDeatils';
-const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms = [] }) => {
+import PatientDetails from './PatientDetails';
+import { Form, Patient } from '../Patients/interfacesPatients';
+import { EventPatient } from './AgendaInterfaces'
+interface EventPopupProps {
+    auth: {
+        user:User;
+    }
+    selectedEvent: EventPatient;
+
+    onClose: () => void;
+    onDelete: (id: number) => void;
+    logo?: string;
+    forms?: Form[];
+  }
+const EventPopup: React.FC<EventPopupProps> = ({
+    auth,
+    selectedEvent,
+    onClose,
+    onDelete,
+    logo,
+    forms = []
+  }) => {
     // Estado para controlar a exibição do popup de visualização do paciente
     const [isViewPatientPopupOpen, setIsViewPatientPopupOpen] = useState(false);
-    const [popupParams, setPopupParams] = useState(params);
     const [isAddFormPopupOpen, setIsAddFormPopupOpen] = useState(false);
-    const [selectedForm, setSelectedForm] = useState(null);
+    const [selectedForm, setSelectedForm] = useState<Form | null>(null);
     const [consultations, setConsultations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formResponses, setFormResponses] = useState([]); // Estado para respostas de formulários
@@ -25,7 +44,7 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
 
         const fetchConsultations = async () => {
             try {
-                const response = await fetch(`/patients/${selectedEvent.patient.id}/consultations`);
+                const response = await fetch(`/patients/${selectedEvent.patient?.id}/consultations`);
                 const data = await response.json();
                 setConsultations(data);
                 setLoading(false);
@@ -46,7 +65,7 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
     
             const fetchFormResponses = async () => {
                 try {
-                    const response = await fetch(`/patients/${selectedEvent.patient.id}/form-responses`);
+                    const response = await fetch(`/patients/${selectedEvent.patient?.id}/form-responses`);
                     const data = await response.json();
                     setFormResponses(data);
                     setLoadingFormResponses(false);
@@ -60,35 +79,29 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
         }, [selectedEvent.patient?.id]);
     // Função para abrir o popup de visualização do paciente
     const handleOpenConsultationPopup = useCallback(() => {
-        setPopupParams(params);
         setIsViewPatientPopupOpen(true);
-    }, [params]);
+    }, []);
 
     // Função para fechar o popup de visualização do paciente
     const handleCloseViewPatientPopup = useCallback(() => {
         setIsViewPatientPopupOpen(false);
     }, []);
-    const handleOpenAddFormPopup = useCallback((e, form) => {
+    const handleOpenAddFormPopup = useCallback((form: Form) => {
         setSelectedForm(form);
-        setPopupParams({ clientX: e.clientX, clientY: e.clientY });
         setIsAddFormPopupOpen(true);
-    }, []);
+      }, []);
     const handleCloseAddFormPopup = useCallback(() => {
         setIsAddFormPopupOpen(false);
     }, []);
 
     return (
         <>
-            <PopUpComponent id="EventDetails" params={params} onClose={onClose} 
-            
-            width="80vw"
-            height="80vh"
-            zindex="100">
+
                 <div className='flex flex-wrap px-10 py-5'>
                     {/* Título do evento/consulta */}
                     <div className='text-center flex w-[64%]'>
                         <div className="">
-                            {selectedEvent.patient.profile_picture ? (
+                            {selectedEvent.patient?.profile_picture ? (
                                 <img
                                     src={selectedEvent.patient.profile_picture}
                                     alt={`Foto de ${selectedEvent.patient.patient_name}`}
@@ -121,16 +134,6 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
 
 
                     <div className='w-full md:w-1/2 px-4'>
-                        <InputLabel htmlFor='profissional' value='Profissional:' />
-                        <TextInput
-                            id="profissional"
-                            value={selectedEvent.professional}
-                            readOnly
-                            className="mt-1 block w-full bg-gray-100"
-                        />
-
-                    </div>
-                    <div className='w-full md:w-1/2 px-4'>
                         <InputLabel htmlFor='profissional' value='Preço:' />
                         <p>
                             {(Number(selectedEvent.price) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -160,7 +163,7 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
                         <InputLabel htmlFor='observacoes' value='Observações:' />
                         <TextArea
                             id="observacoes"
-                            value={selectedEvent.observacoes || 'Nenhuma observação'}
+                            value={selectedEvent.notes || 'Nenhuma observação'}
                             readOnly
                             className="mt-1 block w-full bg-gray-100"
                         />
@@ -186,55 +189,33 @@ const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms
                     </div>
 
                 </div>
-            </PopUpComponent>
+ 
 
-            {/* Popup para visualização do paciente */}
-            {isViewPatientPopupOpen && (
-                <PopUpComponent
-                    id="view_patient_popup"
-                    zindex="102"
-                    paddingBottom='0px'
-                    params={popupParams}
-                    onClose={handleCloseViewPatientPopup}
-                >
-     
-                <PatientDetails
-                        selectedEvent={selectedEvent}
-                        forms={forms}
-                        logo={logo}
-                        handleOpenAddFormPopup={handleOpenAddFormPopup}
-                        formResponses={formResponses}
-                        loadingFormResponses={loadingFormResponses}
-                    />
+<Dialog  visible={isViewPatientPopupOpen} style={{ width: '50vw' }} onHide={handleCloseViewPatientPopup}>
+                {isViewPatientPopupOpen && (
+                    <PatientDetails
+                            selectedEvent={selectedEvent}
+                            forms={forms}
+                            logo={logo}
+                            handleOpenAddFormPopup={handleOpenAddFormPopup}
+                            formResponses={formResponses}
+                            loadingFormResponses={loadingFormResponses}
+                        />
+                )}
+      </Dialog>
 
-                    </PopUpComponent>
-            )}
-            {isAddFormPopupOpen && selectedForm && (
-                <PopUpComponent
-                    id="add_form_popup"
-                    width="95vw"
-                    height="95vh"
-                    zindex="120"
-                    params={popupParams}
-                    onClose={handleCloseAddFormPopup}
-                >
+        <Dialog visible={isAddFormPopupOpen} style={{ width: '50vw' }} onHide={handleCloseAddFormPopup}>
+            {isAddFormPopupOpen && selectedForm && selectedEvent.patient &&(
                     <DynamicForm
                         patient={selectedEvent.patient}
                         form={selectedForm}
-                        auth={auth}
                         onClose={handleCloseAddFormPopup}
                     />
-                </PopUpComponent>
-            )}
+                )}
+      </Dialog>
+
         </>
     );
-};
-
-EventPopup.propTypes = {
-    selectedEvent: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    onClose: PropTypes.func.isRequired,
-    onDelete: PropTypes.func.isRequired
 };
 
 export default EventPopup;

@@ -20,10 +20,12 @@ export interface PaymentMethodsFee {
     status:boolean;
 }
 export interface Category {
-    id: number;
-    name: string;
-    type: string | null;
+  id: number;
+  name: string;
+  parent_id: number | null;
+  type?: string; // Tornar a propriedade opcional
 }
+
   
 export interface Transfer {
     id: number;
@@ -38,9 +40,13 @@ export interface Transfer {
   transfer_date: string;
   description: string;
 }
+interface Related {
+    patient?: { patient_name: string };
 
+    description?: string;
+  }
   
-export  interface Transaction {
+export interface Transaction {
     id: number;
     account_id: number;
     category_id: number;
@@ -49,9 +55,29 @@ export  interface Transaction {
     description: string;
     transaction_date: string;
     expected_date:string;
-    related?: {
-      name?: string;
-      description?: string;
-    };
+    related?: Related;
     status: boolean;
+    cash_flow?: {
+      balance_before: number;
+      balance_after: number;
+      created_at:string;
+    };
+  }
+
+
+export interface TransactionForm {
+    id: number;
+    account_id: number;
+    category_id: number;
+    type: 'income' | 'expense' | 'transfer';
+    amount: number;
+    description: string;
+    transaction_date: string;
+    related?: Related;
+    status: boolean;
+    cash_flow?: {
+      balance_before: number;
+      balance_after: number;
+      created_at:string;
+    };
   }
