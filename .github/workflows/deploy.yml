@@ -3,7 +3,7 @@ name: Deploy para EC2
 on:
   push:
     branches:
-      - main  # Você pode alterar para a branch que deseja monitorar
+      - master  # Você pode alterar para a branch que deseja monitorar
 
 jobs:
   deploy:
