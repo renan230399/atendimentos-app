@@ -22,7 +22,6 @@ jobs:
       - name: Instalar dependências e Build
         run: |
           npm install
-          npm install ziggy-js
           npm run build
 
       - name: Configurar SSH para EC2
@@ -30,7 +29,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}
 
-      # Esta etapa garante que o código do repositório seja atualizado no servidor
       - name: Atualizar código na EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 '
@@ -38,9 +36,22 @@ jobs:
             git pull origin master
           '
 
+      - name: Criar diretório de build no servidor, se não existir
+        run: |
+          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 '
+            mkdir -p /var/www/html/public/build
+          '
+
       - name: Copiar Build para a instância pública
         run: |
-          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build ec2-user@3.95.59.48:/var/www/html/public/build/
+          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build/* ec2-user@3.95.59.48:/var/www/html/public/build/
+
+      - name: Ajustar permissões no diretório de build
+        run: |
+          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 '
+            sudo chown -R www-data:www-data /var/www/html/public/build &&
+            sudo chmod -R 755 /var/www/html/public/build
+          '
 
       - name: Reiniciar Docker no EC2
         run: |
