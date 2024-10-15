@@ -1,4 +1,4 @@
-name: Deploy para EC2 Privada via Jumpbox
+name: Deploy para EC2 Pública
 
 on:
   push:
@@ -14,21 +14,19 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      - name: Configurar SSH para Jumpbox
+      - name: Configurar SSH para EC2
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}  # Nome do segredo criado para a chave da instância pública (jumpbox)
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}  # Nome do segredo criado para a chave da instância pública
 
-      - name: Deploy para instância privada via Jumpbox
+      - name: Deploy para a instância pública
         run: |
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 ec2-user@44.211.251.239 "
-            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -i /home/ec2-user/chaves-teste.pem ec2-user@10.0.135.192 '
-              cd /var/www/atendimentos-app &&
-              git pull origin master &&
-              docker-compose exec laravel.test npm install &&  # Executar npm dentro do container
-              docker-compose exec laravel.test npm run build &&  # Gerar o build do Vite
-              docker-compose down &&
-              docker-compose up -d --build &&
-              docker-compose logs --tail=50  # Exibir os últimos 50 logs após o deploy
-            '
-          "
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 ec2-user@3.95.59.48 '  # IP da sua instância EC2 pública
+            cd /var/www/atendimentos-app &&
+            git pull origin master &&
+            docker-compose exec laravel.test npm install &&  # Executar npm dentro do container
+            docker-compose exec laravel.test npm run build &&  # Gerar o build do Vite
+            docker-compose down &&
+            docker-compose up -d --build &&
+            docker-compose logs --tail=50  # Exibir os últimos 50 logs após o deploy
+          '
