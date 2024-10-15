@@ -30,6 +30,7 @@ interface Account {
 interface CompanyDashboardProps {
     auth: {
         user: {
+            id:number;
             name: string;
             email: string;
         };  
@@ -39,20 +40,19 @@ interface CompanyDashboardProps {
     paymentMethods: PaymentMethod[];
     paymentMethodsFees: PaymentMethodFee[];
 }
+const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ auth, employees }) => {
 
-const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ auth, employees, paymentMethods, paymentMethodsFees, accounts }) => {
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title={auth.user.company.company_name} />
+            {/*<Head title={auth.user.company.company_name} />*/}
             <div className="mx-auto p-6 overflow-y-auto h-[100%] pb-36 bg-gray-100">
             {/* Card para Gerenciamento de Funcionários */}
             <div className="w-full max-w-4xl mx-auto mb-8 p-6 bg-white shadow-lg rounded-lg">
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4 flex items-center">
                     <span className="text-green-500 mr-2">👥</span> Gerenciamento de Funcionários
                 </h2>
-                <EmployeeManager employees={employees} />
+                 <EmployeeManager employees={employees} />
             </div>
-
 
         </div>
 

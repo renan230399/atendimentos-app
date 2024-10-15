@@ -6,31 +6,14 @@ import InputError from '@/Components/InputError';
 import { FaPlusCircle, FaTimesCircle, FaUniversity, FaMoneyBillWave, FaChartLine } from 'react-icons/fa'; // Importando ícones do react-icons
 import Dinero from 'dinero.js'; // Importar Dinero.js corretamente
 import { Sidebar } from 'primereact/sidebar';
-import PaymentMethodsManager from '@/Pages/Companies/PaymentMethod/PaymentMethodsManager';
-interface Account {
-  id: number;
-  name: string;
-  type: string; // Pode ser 'bank', 'cash', ou 'investment'
-  balance: number; // Representa o valor em centavos
-}
-interface PaymentMethod {
-  id: number;
-  account_id: number;
-  name: string;
-  type: string;
-}
-interface PaymentMethodFee {
-  id: number;
-  payment_method_id: number;
-  installments: number;
-  fixed_fee: number;
-  percentage_fee: number;
-}
+import PaymentMethodsManager from '@/Pages/Financial/PaymentMethod/PaymentMethodsManager';
+import {Account, PaymentMethod, PaymentMethodsFee} from '../FinancialInterfaces';
+
 interface AccountsManagerProps {
   accounts: Account[];
-  company_logo:string;
+  company_logo:string | '' | undefined;
   paymentMethods:PaymentMethod[];
-  paymentMethodsFees:PaymentMethodFee[];
+  paymentMethodsFees:PaymentMethodsFee[];
 }
 
 // Componente responsável por renderizar o ícone correto com base no tipo da conta
@@ -80,9 +63,10 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_log
   // Função para converter valor inserido para centavos
   const handleBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-    const amountInCents = parseInt(value || '0'); // Converte para centavos
-    setData('balance', amountInCents);
-  };
+    const amountInCents = parseInt(value || '0', 10); // Converte para centavos
+    setData('balance', amountInCents.toString()); // Converte para string
+};
+
 
   const handleAddAccount = (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,10 +178,6 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_log
                 position="right" 
                 className='pt-0 xl:w-[65vw] md:w-[65vw] sm:w-[75vw] overflow-auto bg-white' 
                 onHide={() => setIsViewPayMethods(false)}>
-{/** 
- * 
- *  
-*/}
            <PaymentMethodsManager
                             paymentMethods={paymentMethods}
                             paymentMethodsFees={paymentMethodsFees}

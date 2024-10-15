@@ -1,32 +1,54 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { IoIosClose } from 'react-icons/io';
 import ModalBackground from '@/Components/ModalBackground';
 
-const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', params = {}, classPopup = 'bg-white w-[90vw] h-auto resize max-h-[90vh] max-w-[98vw]', children, onClose }) => {
+interface PopupComponentProps {
+    id: string;
+    width?: string;
+    height?: string;
+    zindex?: string | number;
+    params?: {
+        clientX?: number;
+        clientY?: number;
+        overflow?: string;
+        borderRadius?: string;
+        boxShadow?: string;
+    };
+    classPopup?: string;
+    children: ReactNode;
+    onClose: (id: string) => void;
+}
+
+const PopupComponent: React.FC<PopupComponentProps> = ({
+    id,
+    width = '98vw',
+    height = '98vh',
+    zindex = '100',
+    params = {},
+    classPopup = 'bg-white w-[90vw] h-auto resize max-h-[90vh] max-w-[98vw]',
+    children,
+    onClose,
+}) => {
     const [visible, setVisible] = useState(false);
-    const contentRef = useRef(null);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Adiciona a classe 'modal-open' para travar o scroll
         document.body.classList.add('modal-open');
-        document.body.style.overflow = 'hidden'; // Travar o scroll
+        document.body.style.overflow = 'hidden';
 
         const popupContent = contentRef.current;
 
         if (popupContent && typeof params.clientX === 'number' && typeof params.clientY === 'number') {
-            const popupWidth = popupContent.offsetWidth;
-            const popupHeight = popupContent.offsetHeight;
+            const transformOriginX = `${(params.clientX / window.innerWidth) * 100}%`;
+            const transformOriginY = `${(params.clientY / window.innerHeight) * 100}%`;
 
-            const transformOriginX = ((params.clientX - window.innerWidth / 2) / popupWidth + 0.5) * 100;
-            const transformOriginY = ((params.clientY - window.innerHeight / 2) / popupHeight + 0.5) * 100;
-
-            popupContent.style.transformOrigin = `${transformOriginX}% ${transformOriginY}%`;
+            popupContent.style.transformOrigin = `${transformOriginX} ${transformOriginY}`;
         }
 
         setTimeout(() => setVisible(true), 10);
 
-        const handleKeyDown = (e) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 handleClose();
             }
@@ -35,9 +57,8 @@ const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', p
         window.addEventListener('keydown', handleKeyDown);
 
         return () => {
-            // Remove a classe e o overflow quando o popup é fechado
             document.body.classList.remove('modal-open');
-            document.body.style.overflow = ''; // Restaurar o comportamento padrão do scroll
+            document.body.style.overflow = '';
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [params]);
@@ -54,7 +75,7 @@ const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', p
             <ModalBackground
                 id_fundo_modal={`modal_background_${id}`}
                 visible={true}
-                sobreposicao={zindex - 1} // Certifique-se de que o z-index seja menor que o popup
+                sobreposicao={+zindex - 1}
                 onClick={handleClose}
             />
 
@@ -64,7 +85,7 @@ const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', p
                 role="dialog"
                 aria-labelledby={`popup_${id}_label`}
                 aria-modal="true"
-                className={`${visible ? 'open' : ''} ${classPopup} `}
+                className={`${visible ? 'open' : ''} ${classPopup}`}
                 style={{
                     backgroundColor: '',
                     overflow: params.overflow || 'auto',
@@ -77,13 +98,13 @@ const PopupComponent = ({ id, width = '98vw', height = '98vh', zindex = '100', p
                     transform: `translate(-50%, -50%) scale(${visible ? 1 : 0.5})`,
                     opacity: visible ? 1 : 0,
                     transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
-                    zIndex: zindex, // Z-index maior que o fundo
+                    zIndex: +zindex,
                 }}
             >
                 <button
                     onClick={handleClose}
                     aria-label="Fechar popup"
-                    className={`fixed z-[1001] top-2 right-2 cursor-pointer bg-transparent border-none`}
+                    className="fixed z-[1001] top-2 right-2 cursor-pointer bg-transparent border-none"
                 >
                     <IoIosClose size={24} />
                 </button>

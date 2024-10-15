@@ -4,20 +4,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { PlusCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import {Account, Transfer} from '../FinancialInterfaces';
 
-interface Account {
-  id: number;
-  name: string;
-}
 
-interface Transfer {
-  id: number;
-  from_account_id: number;
-  to_account_id: number;
-  amount: number;
-  transfer_date: string;
-  description: string;
-}
 
 interface TransfersManagerProps {
   accounts: Account[];
@@ -98,7 +87,6 @@ const TransfersManager: React.FC<TransfersManagerProps> = ({ accounts, transfers
           </select>
 
           <TextInput
-            label="Valor da Transferência"
             id="amount"
             name="amount"
             type="number"
@@ -108,7 +96,6 @@ const TransfersManager: React.FC<TransfersManagerProps> = ({ accounts, transfers
           />
 
           <TextInput
-            label="Data da Transferência"
             id="transfer_date"
             name="transfer_date"
             type="date"
@@ -118,7 +105,6 @@ const TransfersManager: React.FC<TransfersManagerProps> = ({ accounts, transfers
           />
 
           <TextInput
-            label="Descrição"
             id="description"
             name="description"
             value={data.description}

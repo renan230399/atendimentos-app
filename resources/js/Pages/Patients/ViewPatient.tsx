@@ -8,55 +8,9 @@ import FormResponseList from './FormResponseList';
 import { FaTransgender } from "react-icons/fa6";
 import CreatePatient from './FormPatient/CreatePatient';
 import { Sidebar } from 'primereact/sidebar';
-import DynamicForm from '../Forms/DynamicForm';
+import DynamicForm from './Forms/DynamicForm';
 import InputLabel from '@/Components/InputLabel';
-interface ContactDetail {
-    type: string;
-    value: string;
-    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
-}
-
-interface Contact {
-    name: string;
-    relation: string;
-    contacts: ContactDetail[]; // Aqui você deve ter a lista de contatos
-}
-
-interface Patient {
-    id: number;
-    company_id: number;
-    patient_name: string;
-    phone: string;
-    birth_date: string; // ou Date, se você estiver lidando com objetos Date
-    gender: string | null;
-    neighborhood: string;
-    street: string;
-    house_number: string;
-    address_complement: string;
-    city: string;
-    state: string;
-    cpf: string;
-    contacts: Contact[] | string; // Aqui você pode ajustar se sempre receberá um array ou uma string
-    complaints: string | null;
-    notes: string;
-    profile_picture: string | null;
-    status: boolean;
-    created_at: string; // ou Date
-    updated_at: string; // ou Date
-}
-interface Form {
-    id: number;
-    company_id: number;
-    category: number;
-    name: string;
-    description: string;
-    active: boolean;
-    icon: string;
-    is_wizard: boolean;
-    wizard_structure: null | any; // Você pode definir uma interface específica se souber o formato
-    created_at: string; // ou Date
-    updated_at: string; // ou Date
-}
+import {Patient, Form} from './interfacesPatients'
 interface ViewPatientProps {
     patient: Patient; // O paciente a ser visualizado
     forms: Form[]; // Lista de formulários
@@ -321,7 +275,10 @@ const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePa
             <ConsultationsList consultations={consultations} loading={loading} />
             
              {/* Exibição das respostas dos formulários */}
-             <FormResponseList formResponses={formResponses} loadingFormResponses={loadingFormResponses} forms={forms}/>
+             <FormResponseList 
+                formResponses={formResponses} 
+                loadingFormResponses={loadingFormResponses} 
+            />
              <Sidebar
                 visible={isEditPopupOpen}
                 position="left"

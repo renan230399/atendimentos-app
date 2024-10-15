@@ -5,7 +5,7 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 import UpdateCompany from './Partials/UpdateCompany'; // Importando o novo componente
 import { Head } from '@inertiajs/react';
 import { PageProps } from '@/types';
-
+import {User} from '@/Pages/ProfileInterfaces'
 interface EditProps extends PageProps<{ mustVerifyEmail: boolean; status?: string }> {}
 
 export default function Edit({ auth, mustVerifyEmail, status }: EditProps) {

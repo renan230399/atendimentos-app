@@ -5,50 +5,55 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import InputFile from '@/Components/InputFile';
 
-const FormBuilder = ({ form = null }) => {
+interface Form {
+  id?: number;
+  name?: string;
+  description?: string;
+  icon?: string;
+  fields?: any[];
+}
+
+interface FormBuilderProps {
+  form?: Form | null;
+  onSave: (formData: FormData) => void;
+  processing: boolean;
+}
+
+const FormBuilder: React.FC<FormBuilderProps> = ({ form = null, onSave, processing }) => {
   // Usando o useForm para gerenciar o estado do formulário, com dados pré-carregados, se existir
-  const { data, setData, post, put, processing, errors } = useForm({
+  const { data, setData, errors } = useForm({
     name: form?.name || '',
     description: form?.description || '',
-    icon: null, // Icon será preenchido por upload ou pelo dado atual
+    icon: undefined as File | string | undefined, // Ícone será preenchido por upload ou pelo dado atual
     fields: form?.fields || []
   });
-
+  
   // Carrega o ícone existente ao editar
   useEffect(() => {
     if (form?.icon) {
-      setData('icon', form.icon); // Preenche o ícone existente, se houver
+      setData('icon', form.icon); // Preenche o ícone existente (como string/URL), se houver
     }
   }, [form]);
 
   // Função para manipular o envio do formulário
-  const handleSubmit = (e) => {
-    e.preventDefault();
+// Função para manipular o envio do formulário
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // Cria uma instância de FormData para enviar arquivos e outros dados
-    const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('description', data.description);
+  // Cria uma instância de FormData para enviar arquivos e outros dados
+  const formData = new FormData();
+  formData.append('name', data.name);
+  formData.append('description', data.description);
 
-    if (data.icon instanceof File) {
-      formData.append('icon', data.icon); // Envia o arquivo somente se for um novo upload
-    }
+  // Verifica se o ícone é um arquivo ou uma string (URL existente)
+  if (data.icon && typeof data.icon !== 'string') {
+    formData.append('icon', data.icon); // Envia o arquivo somente se for um novo upload
+  }
 
-    // Verifica se está criando ou editando um formulário existente
-    if (form) {
-      // Editando um formulário existente
-      put(route('forms.update', form.id), {
-        data: formData,
-        forceFormData: true, // Garante que o Inertia.js use FormData
-      });
-    } else {
-      // Criando um novo formulário
-      post(route('forms.store'), {
-        data: formData,
-        forceFormData: true,
-      });
-    }
-  };
+  // Passa os dados de FormData para o callback onSave
+  onSave(formData);
+};
+
 
   return (
     <form onSubmit={handleSubmit} className="p-5">
@@ -83,10 +88,10 @@ const FormBuilder = ({ form = null }) => {
 
       {/* Upload do Ícone */}
       <div className="w-[100%] mb-4">
-        <InputFile
+      <InputFile
           label="Ícone do Formulário"
-          file={data.icon}
-          setFile={(file) => setData('icon', file)}
+          file={data.icon} // Agora será string | File | undefined
+          setFile={(file) => setData('icon', file || undefined)} // Use undefined se não houver arquivo
           errors={errors.icon}
         />
       </div>

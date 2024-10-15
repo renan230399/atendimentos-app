@@ -2,12 +2,13 @@
 import React from 'react';
 
 interface DeleteConfirmationModalProps {
-    isOpen: boolean;
-    employeeName: string | null;
-    loading: boolean;
-    onClose: () => void;
-    onConfirm: () => void;
+    isOpen: boolean;          // Se o modal está aberto ou não
+    employeeName: string | null;  // Nome do funcionário ou null se não houver um selecionado
+    loading: boolean;         // Indica se a ação de exclusão está em progresso
+    onClose: () => void;      // Função chamada ao fechar o modal
+    onConfirm: () => void;    // Função chamada ao confirmar a exclusão
 }
+
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpen, employeeName, loading, onClose, onConfirm }) => {
     if (!isOpen) return null;

@@ -23,7 +23,7 @@ console.log(account);
             preserveScroll: true,
             onSuccess: () => {
                 reset();
-                setIsAddingPaymentMethod(false);
+                setIsAddingPaymentMethod();
             },
             onError: (err) => {
                 console.error('Erro ao cadastrar método de pagamento:', err);
@@ -36,7 +36,6 @@ console.log(account);
             <div className='w-[35%] m-auto'>
                 <InputLabel value='Nome do método de pagamento'/>
                 <TextInput
-                    label="Nome do Método de Pagamento"
                     id="name"
                     name="name"
                     value={data.name}

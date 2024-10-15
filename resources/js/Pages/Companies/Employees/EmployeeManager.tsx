@@ -4,7 +4,7 @@ import { useForm } from '@inertiajs/react';
 import NewEmployeeForm from '@/Pages/Companies/Employees/EmployeesManager/NewEmployeeForm';
 import PopUpComponent from '@/Layouts/PopupComponent';
 import EmployeeTable from './EmployeesManager/EmployeeTable';
-import DeleteConfirmationModal from './EmployeesManager/EmployeeTable';
+import DeleteConfirmationModal from './EmployeesManager/DeleteConfirmationModal';
 
 interface Employee {
     id: number;
@@ -21,7 +21,7 @@ const EmployeeManager: React.FC<EmployeeManagerProps> = ({ employees }) => {
     const { delete: destroy } = useForm();
     const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
-    const [popupParams, setPopupParams] = useState({});
+    const [popupParams, setPopupParams] = useState<{ [key: string]: any }>({});
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -100,13 +100,14 @@ const EmployeeManager: React.FC<EmployeeManagerProps> = ({ employees }) => {
                 </PopUpComponent>
             )}
 
-            <DeleteConfirmationModal
-                isOpen={showModal}
-                employeeName={selectedEmployee?.name || null}
-                loading={loading}
-                onClose={closeDeleteModal}
-                onConfirm={handleDelete}
-            />
+                <DeleteConfirmationModal
+                    isOpen={showModal} // Deve estar correto
+                    employeeName={selectedEmployee?.name || null} // Deve estar correto
+                    loading={loading} // Deve estar correto
+                    onClose={closeDeleteModal} // Deve estar correto
+                    onConfirm={handleDelete} // Deve estar correto
+                />
+
         </div>
     );
 };

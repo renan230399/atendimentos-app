@@ -3,14 +3,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CategoriesManager from '@/Pages/Financial/Partials/CategoriesManager';
 import AccountsManager from '@/Pages/Financial/Partials/AccountsManager';
 import TransfersManager from '@/Pages/Financial/Partials/TransfersManager';
-import { useForm } from '@inertiajs/react'; // Correção na importação do Inertia.js
 import TransactionsManager from './Partials/TransactionsManager';
 import TransactionsAdd from './Partials/TransactionsAdd';
-import PaymentMethodsManager from '../Companies/PaymentMethod/PaymentMethodsManager';
 import { MdAddShoppingCart } from "react-icons/md";
-import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { FaSitemap, FaExclamationTriangle } from "react-icons/fa";
-import PictureInPictureComponent from '@/Layouts/PictureInPictureComponent';
+import {Account, Category, Transfer, PaymentMethod, PaymentMethodsFee} from './FinancialInterfaces';
 import { Sidebar } from 'primereact/sidebar';
 // Lazy load do PopupComponent para carregar apenas quando necessário
 const PopUpComponent = lazy(() => import('@/Layouts/PopupComponent'));
@@ -18,6 +15,7 @@ const PopUpComponent = lazy(() => import('@/Layouts/PopupComponent'));
 interface FinancialDashboardProps {
   auth: {
     user: {
+      id:number;
       name: string;
       email: string;
       company?: {
@@ -31,35 +29,6 @@ interface FinancialDashboardProps {
   paymentMethods:PaymentMethod[];
   paymentMethodsFees:PaymentMethodsFee[];
 }
-
-interface Account {
-  id: number;
-  name: string;
-  balance: number;
-}
-interface PaymentMethod {
-  id: number;
-  account_id: number;
-  name: string;
-  type: string;
-}
-interface PaymentMethodsFee {
-  id: number;
-  payment_method_id: number;
-  installments: number;
-  fixed_fee: number;
-  percentage_fee: number;
-}
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Transfer {
-  id: number;
-  name: string;
-}
-
 const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
   auth,
   accounts,
@@ -136,8 +105,13 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
 
         {/* Gerenciador de Categorias e Transferências */}
         <div className="hidden w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CategoriesManager categories={memoizedCategories} />
-          <TransfersManager accounts={memoizedAccounts} transfers={memoizedTransfers} />
+          <CategoriesManager 
+            categories={memoizedCategories} 
+          />
+          <TransfersManager 
+            accounts={memoizedAccounts} 
+            transfers={memoizedTransfers} 
+          />
         </div>
       </div>
 
@@ -146,12 +120,7 @@ const FinancialDashboard: React.FC<FinancialDashboardProps> = ({
         <Suspense fallback={<div>Carregando popup...</div>}>
           <PopUpComponent
             id="add_form_popup"
-            width="80vw"
-            height="90vh"
             zindex="120"
-            paddingTop="100px"
-            paddingLeft="100px"
-            params={popupParams}
             classPopup='bg-white w-[80vw] h-[90vh]'
             onClose={handleCloseAddTransactionPopup}
             

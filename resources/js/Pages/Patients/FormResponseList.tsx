@@ -1,7 +1,14 @@
 import React from 'react';
 import FormResponseField from './FormResponseField';
+import {FormResponse, FormField, FormResponseDetail, Form} from './interfacesPatients'
 
-const FormResponseList = ({ formResponses, loadingFormResponses }) => {
+
+interface FormResponseListProps {
+    formResponses: FormResponse[];
+    loadingFormResponses: boolean;
+}
+
+const FormResponseList: React.FC<FormResponseListProps> = ({ formResponses, loadingFormResponses }) => {
     // Verificar se está carregando as respostas
     if (loadingFormResponses) {
         return <p>Carregando respostas...</p>;
@@ -13,7 +20,7 @@ const FormResponseList = ({ formResponses, loadingFormResponses }) => {
     }
 
     // Agrupar respostas pelo form.id
-    const groupedResponses = formResponses.reduce((groups, response) => {
+    const groupedResponses = formResponses.reduce<{ [key: number]: FormResponse[] }>((groups, response) => {
         const formId = response.form.id;
         if (!groups[formId]) {
             groups[formId] = [];
@@ -27,7 +34,7 @@ const FormResponseList = ({ formResponses, loadingFormResponses }) => {
             <h3 className="text-2xl font-bold mb-4">Respostas de Formulários</h3>
             <div className="space-y-4">
                 {Object.keys(groupedResponses).map((formId) => {
-                    const responses = groupedResponses[formId];
+                    const responses = groupedResponses[Number(formId)];
                     const form = responses[0].form; // Como todos têm o mesmo form.id, podemos usar o primeiro
 
                     return (

@@ -10,32 +10,18 @@ import Dinero from 'dinero.js';
 import CategoryTreeBuilder from '@/Components/Utils/CategoryTreeBuilder';
 import { TreeSelect } from 'primereact/treeselect';
 import { useFetchTransactionsData } from '../hooks/useFetchTransactionsData'; // Importar o hook da pasta 'hooks'
-
-// Interfaces para tipagem dos dados
-interface Account {
-  id: number;
-  name: string;
-  type: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
-  type: string; // Tipo de transação: 'income' ou 'expense'
-}
+import {Account, Category} from '../FinancialInterfaces';
 
 interface TransactionsAddProps {
   accounts?: Account[]; // Adicionei o "?" para indicar que pode ser opcional
   categories?: Category[]; // Adicionei o "?" para indicar que pode ser opcional
   logo: string;
-  order:[];
 }
 
 const TransactionsAdd: React.FC<TransactionsAddProps> = ({
   accounts: accountsProp, // Renomeei para diferenciar do estado
   categories: categoriesProp, // Renomeei para diferenciar do estado
   logo = '',
-  order='',
 }) => {
   // Usando o hook para buscar os dados caso não sejam passados como props
   const { accounts, categories, loading, error } = useFetchTransactionsData(accountsProp, categoriesProp);
@@ -52,12 +38,7 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
       },
     ],
   });
-  useEffect(() => {
-    if(order){
-      setData('amount', order.total_amount);
-      console.log(order);
-    }
-  }, [order]);
+ 
 
   // Novo estado para gerenciar o valor do select diretamente
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
@@ -71,24 +52,27 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
   // Função para atualizar os campos gerais do formulário
   const handleFormChange = (field: string, value: any) => {
     const newValue = field === 'account_id' || field === 'category_id' ? parseInt(value, 10) : value;
+
+    // Atualiza o valor do campo usando setData
     setData(field, newValue);
 
-    // Atualizar a lista de transações apenas se o campo 'transaction_date' for alterado
+    // Atualizar a lista de transações se o campo 'transaction_date' for alterado
     if (field === 'transaction_date' && newValue) {
-      const newTransactions = data.transactions.map((transaction, index) => {
-        const date = new Date(newValue);
-        date.setMonth(date.getMonth() + index); // Adiciona meses conforme o índice
-        return {
-          ...transaction,
-          transaction_date: date.toISOString().split('T')[0], // Formato 'YYYY-MM-DD'
-        };
-      });
+        const newTransactions = data.transactions.map((transaction, index) => {
+            const date = new Date(newValue);
+            date.setMonth(date.getMonth() + index); // Adiciona meses conforme o índice
+            return {
+                ...transaction,
+                transaction_date: date.toISOString().split('T')[0], // Formato 'YYYY-MM-DD'
+            };
+        });
 
-      // Atualiza o estado de transações no formulário e o estado local
-      setData('transactions', newTransactions);
-      setSelectedDate(newValue); // Mova esta linha para fora do loop
+        // Atualiza o estado de transações no formulário e o estado local
+        setData('transactions', newTransactions);
+        setSelectedDate(newValue); // Isso está correto aqui
     }
-  };
+};
+
 
   const handleMultipleTransactions = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Math.max(1, parseInt(e.target.value, 10));
@@ -140,8 +124,6 @@ const TransactionsAdd: React.FC<TransactionsAddProps> = ({
   const groupedCategories = CategoryTreeBuilder({ categories });
 // Função para tratar a mudança de seleção no TreeSelect
 const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
-
-
   const selectedCategoryId = event.value;
   setSelectedCategoryId(selectedCategoryId);
     // Encontra a categoria selecionada com base no ID
@@ -220,11 +202,7 @@ const handleCategorySelectChange = (event: TreeSelectChangeEvent) => {
                   onChange={handleMultipleTransactions}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
-  
-           
             </div>
-
-
 
           <div className='w-full' >
           <InputLabel htmlFor="description" value="Descrição" />

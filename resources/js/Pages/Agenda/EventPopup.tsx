@@ -7,7 +7,7 @@ import TextInput from '@/Components/TextInput';
 import TextArea from '@/Components/TextArea';
 import ViewPatient from '@/Pages/Patients/ViewPatient'; // Importando o componente de visualização do paciente
 import PrimaryButton from '@/Components/PrimaryButton';
-import DynamicForm from '../Forms/DynamicForm';
+import DynamicForm from '../Patients/Forms/DynamicForm';
 import PatientDetails from './PatientDeatils';
 const EventPopup = ({auth, selectedEvent, params, onClose, onDelete, logo, forms = [] }) => {
     // Estado para controlar a exibição do popup de visualização do paciente

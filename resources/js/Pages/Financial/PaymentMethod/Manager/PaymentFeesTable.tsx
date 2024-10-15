@@ -5,6 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import PriceInput from '@/Components/PriceInput';
 import AddPaymentFeeForm from './AddPaymentFeeForm';
 import { PlusCircleIcon } from '@heroicons/react/24/solid';
+import { PaymentMethod, PaymentMethodsFee, Account } from '../../FinancialInterfaces';
 
 interface PaymentMethodFee {
     id: number;

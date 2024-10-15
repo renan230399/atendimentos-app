@@ -1,43 +1,10 @@
 import React from 'react';
-import { MdPerson, MdPhone, MdCake } from 'react-icons/md';
+import { MdPerson } from 'react-icons/md';
 import { FcCellPhone, FcCalendar } from 'react-icons/fc';
 import { formatDateAndAge } from '@/Components/Utils/dateUtils';
-
+import {Patient} from './interfacesPatients'
 // Definindo a interface para os dados do paciente
-interface ContactDetail {
-    type: string;
-    value: string;
-    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
-}
 
-interface Contact {
-    name: string;
-    relation: string;
-    contacts: ContactDetail[]; // Aqui você deve ter a lista de contatos
-}
-
-interface Patient {
-    id: number;
-    company_id: number;
-    patient_name: string;
-    phone: string;
-    birth_date: string; // ou Date, se você estiver lidando com objetos Date
-    gender: string | null;
-    neighborhood: string;
-    street: string;
-    house_number: string;
-    address_complement: string;
-    city: string;
-    state: string;
-    cpf: string;
-    contacts: Contact[] | string; // Aqui você pode ajustar se sempre receberá um array ou uma string
-    complaints: string | null;
-    notes: string;
-    profile_picture: string | null;
-    status: boolean;
-    created_at: string; // ou Date
-    updated_at: string; // ou Date
-}
 
 // Definindo a interface para as props do componente
 interface PatientListItemProps {

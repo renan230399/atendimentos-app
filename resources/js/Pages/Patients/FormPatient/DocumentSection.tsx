@@ -18,7 +18,7 @@ interface DocumentSectionProps {
         patient_name: string;
         birth_date: string;
         cpf: string;
-        gender: string;
+        gender: string | null; // Permitir que seja string ou null
         status: boolean;
         [key: string]: any; // Para permitir campos adicionais
     };
@@ -28,11 +28,12 @@ interface DocumentSectionProps {
         patient_name?: string;
         birth_date?: string;
         cpf?: string;
-        gender?: string;
+        gender?: string; // Pode ser string, já que o erro seria uma mensagem
         status?: string;
-        [key: string]: any;
+        [key: string]: any; // Para permitir erros adicionais
     };
 }
+
 
 const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors }) => {
     return (

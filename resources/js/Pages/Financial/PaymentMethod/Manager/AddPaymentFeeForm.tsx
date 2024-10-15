@@ -43,16 +43,13 @@ const AddPaymentFeeForm: React.FC<AddPaymentFeeFormProps> = ({ paymentMethodId, 
         });
     };
 
-    const handleFixedFeeChange = (value: string) => {
-        setData('fixed_fee', value); // Armazena o valor em centavos como string
-    };
+  
 
     return (
         <form onSubmit={handleAddFee} className="flex flex-wrap">
             <div className='m-auto'>
                 <InputLabel value='Número de parcelas' />
                 <TextInput
-                    label="Número de Parcelas"
                     id="installments"
                     name="installments"
                     type="number"
@@ -64,17 +61,24 @@ const AddPaymentFeeForm: React.FC<AddPaymentFeeFormProps> = ({ paymentMethodId, 
                 <InputLabel value='Taxa Fixa (R$)' />
                 <PriceInput
                     id="fixed_fee"
-                    value={data.fixed_fee} // Passa o valor em centavos
-                    onChange={handleFixedFeeChange} // Lida com a mudança do valor em centavos
+                    label="Valor da parcela (R$)"
+                    value={data.fixed_fee.toString()} // Converte o número para string
+                    onChange={(newValue) => {
+                        const parsedValue = parseInt(newValue, 10); // Converte o valor para número
+                        if (!isNaN(parsedValue)) {
+                            setData('fixed_fee', parsedValue.toString()); // Converte o valor para string ao passar para setData
+                        } else {
+                            setData('fixed_fee', '0'); // Define um valor padrão como string
+                        }
+                    }}
                     required={true}
-                    error={errors.fixed_fee}
                 />
+
             </div>
 
             <div className='m-auto'>
                 <InputLabel value='Taxa Porc (%)' />
                 <TextInput
-                    label="Taxa Percentual (%)"
                     id="percentage_fee"
                     name="percentage_fee"
                     type="number"

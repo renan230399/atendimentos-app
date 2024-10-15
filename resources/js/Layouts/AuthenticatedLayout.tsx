@@ -1,4 +1,4 @@
-import { useState, PropsWithChildren, ReactNode,useEffect } from 'react';
+import { useState, PropsWithChildren, ReactNode } from 'react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
@@ -7,10 +7,7 @@ import { Link } from '@inertiajs/react';
 import { User } from '@/types';
 import moment from 'moment';
 import 'moment/locale/pt-br';
-
 import { Avatar } from 'primereact/avatar';
-import { AvatarGroup } from 'primereact/avatargroup';   //Optional for grouping
-import { Badge } from 'primereact/badge';
 
 moment.updateLocale('pt-br', {
     weekdays: ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'],
@@ -20,9 +17,14 @@ moment.updateLocale('pt-br', {
 });
 moment.locale('pt-br');
 
-export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
+interface AuthenticatedProps {
+    user: User; // tipagem correta do usuário
+    header?: ReactNode; // o header é opcional
+}
+
+export default function Authenticated({ user, header, children }: PropsWithChildren<AuthenticatedProps>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-  
+
     return (
         <div className="h-screen bg-gray-100 dark:bg-gray-900 z-1 overflow-hidden">
             <nav className="w-full bg-white  dark:bg-gray-800 shadow-lg border-b border-gray-300 dark:border-gray-700 z-50">
@@ -55,34 +57,27 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                         <NavLink className='hidden' href={route('forms.index')} active={route().current('forms.index')}>
                                             Fichas
                                         </NavLink>
-
                                         <NavLink href={route('inventory.dashboard')} active={route().current('inventory.dashboard')}>
                                             Inventário
                                         </NavLink>
-
                                         <NavLink href={route('financial.dashboard')} active={route().current('financial.dashboard')}>
                                             Financeiro
                                         </NavLink>
                                         <NavLink href={route('company')} active={route().current('company')}>
                                             Empresa
                                         </NavLink>
-          
                                     </>
                                 )}
                             </div>
                         </div>
-     
+
                         <div className="hidden sm:flex right-0 sm:items-center sm:w-auto sm:ml-6">
-                            
                             <div className="ml-3 w-full relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        
-
                                         <span className="inline-flex rounded-md w-full zoom">
-                                            <Avatar image="https://keyar-atendimentos.s3.amazonaws.com/patient_photos/mlAbH5Wsog0z8wsSDOTUHmU9sdM0RDJbty28kxkj.png" 
+                                            <Avatar image={user.avatarUrl || "https://keyar-atendimentos.s3.amazonaws.com/patient_photos/mlAbH5Wsog0z8wsSDOTUHmU9sdM0RDJbty28kxkj.png"} 
                                             shape="circle" size='large' className="my-auto p-0  p-overlay-badge" />
-
                                             <h1 className='my-auto text-gray-600 w-auto whitespace-nowrap'> {user.name}</h1>
                                             <button
                                                 type="button"
@@ -145,7 +140,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                     <div className="pt-0 pb-3 space-y-1">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Agenda 
-                       </ResponsiveNavLink>
+                        </ResponsiveNavLink>
                         <ResponsiveNavLink href={route('patients.index')} active={route().current('patients.index')}>
                             Pacientes
                         </ResponsiveNavLink>
@@ -188,14 +183,12 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                 </div>
             </nav>
 
-            {/* Adjust padding to avoid content being behind the fixed header */}
             {header && (
                 <header className="bg-white dark:bg-gray-800 shadow mt-16">
                     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{header}</div>
                 </header>
             )}
 
-            {/* Add padding to main content to avoid overlap with fixed header */}
             <main className="h-[100%]">{children}</main>
         </div>
     );

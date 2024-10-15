@@ -5,32 +5,20 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import { FaCheckCircle, FaExclamationTriangle, FaExclamationCircle } from 'react-icons/fa';
 import { Dropdown } from 'primereact/dropdown';
+import {Account, Transaction, Category, PaymentMethod, PaymentMethodsFee} from '../FinancialInterfaces';
+// Definindo a interface para as opções de status
+interface StatusOption {
+    value: boolean;
+    icon: JSX.Element; // Assumindo que você está usando elementos JSX para os ícones
+    label: string;
+  }
 const statusOptions = [
-    { value: 'true', label: 'Realizada', icon: <FaCheckCircle className='text-green-500'/> },
-    { value: 'false', label: 'Pendente', icon: <FaExclamationTriangle className='text-red-500' /> },
+    { value: true, label: 'Realizada', icon: <FaCheckCircle className='text-green-500'/> },
+    { value: false, label: 'Pendente', icon: <FaExclamationTriangle className='text-red-500' /> },
   ];
-interface Account {
-    id: number;
-    name: string;
-    balance: number;
-}
 
 interface ConfirmedTransactionProps {
-    transaction: {
-        id: number;
-        account_id: number;
-        category_id: number;
-        type: 'income' | 'expense' | 'transfer';
-        amount: number;
-        description: string;
-        transaction_date: string;
-        expected_date: string;
-        related?: {
-            name?: string;
-            description?: string;
-        };
-        status: boolean;
-    };
+    transaction: Transaction | null; // Permitir null
     accounts: Account[];
     logo: string;
 }
@@ -40,6 +28,9 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
     accounts,
     logo = '',
 }) => {
+    if (!transaction) {
+        return <div>No transaction data available.</div>; // Retorna uma mensagem ou um fallback
+    }
     const { data, setData, put, errors, processing, reset } = useForm({
         account_id: transaction.account_id,
         category_id: transaction.category_id,
@@ -69,7 +60,7 @@ const ConfirmedTransaction: React.FC<ConfirmedTransactionProps> = ({
         });
     };
 // Função para renderizar as opções do Dropdown
-const statusOptionTemplate = (option) => {
+const statusOptionTemplate = (option: StatusOption) => {
     return (
       <div className="flex items-center">
         {option.icon}
@@ -79,7 +70,7 @@ const statusOptionTemplate = (option) => {
   };
   
   // Função para renderizar o valor selecionado
-  const selectedStatusTemplate = (option) => {
+  const selectedStatusTemplate = (option: StatusOption | null) => {
     if (option) {
       return (
         <div className="flex items-center">

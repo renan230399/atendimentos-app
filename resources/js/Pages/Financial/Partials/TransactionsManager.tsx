@@ -8,52 +8,18 @@ import 'react-datepicker/dist/react-datepicker.css';
 import InputLabel from '@/Components/InputLabel';
 import { format, setHours, setMinutes, setSeconds } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import {Account, Transaction, Category, PaymentMethod, PaymentMethodsFee} from '../FinancialInterfaces';
+import { Sidebar } from 'primereact/sidebar';
 
 // Registra o locale para o DatePicker
 registerLocale('pt-BR', ptBR);
 
-interface Account {
-  id: number;
-  name: string;
-}
 
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Transaction {
-  id: number;
-  account_id: number;
-  category_id: number;
-  type: 'income' | 'expense' | 'transfer';
-  amount: number;
-  description: string;
-  transaction_date: string;
-  related?: {
-    name?: string;
-    description?: string;
-  };
-  status: boolean;
-}
-interface PaymentMethod {
-  id: number;
-  account_id: number;
-  name: string;
-  type: string;
-}
-interface PaymentMethodFee {
-  id: number;
-  payment_method_id: number;
-  installments: number;
-  fixed_fee: number;
-  percentage_fee: number;
-}
 interface TransactionsManagerProps {
   accounts: Account[];
   categories: Category[];
   paymentMethods:PaymentMethod[];
-  paymentMethodsFees:PaymentMethodFee[];
+  paymentMethodsFees:PaymentMethodsFee[];
   auth: {
     user: {
       name: string;
@@ -64,6 +30,7 @@ interface TransactionsManagerProps {
     };
   };
 }
+
 
 const getCurrentMonthDates = (year = new Date().getFullYear(), month = new Date().getMonth()) => {
   const firstDay = new Date(year, month, 2);  // Primeiro dia do mês
@@ -79,10 +46,13 @@ const getCurrentMonthDates = (year = new Date().getFullYear(), month = new Date(
 const TransactionsManager: React.FC<TransactionsManagerProps> = ({ accounts, categories, auth, paymentMethods, paymentMethodsFees }) => {
   const { firstDay, lastDay } = getCurrentMonthDates();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  const [filters, setFilters] = useState({
-    start_date: new Date(firstDay),
-    end_date: new Date(lastDay),
+  
+  const [filters, setFilters] = useState<{
+      start_date: Date | null;
+      end_date: Date | null;
+  }>({
+      start_date: new Date(firstDay),
+      end_date: new Date(lastDay),
   });
   
   const adjustDateToStartOfDay = (date: Date) => {
@@ -115,8 +85,9 @@ const TransactionsManager: React.FC<TransactionsManagerProps> = ({ accounts, cat
 
         // Converte diretamente o objeto Date para o formato ISO antes de enviá-lo
 // Ajuste as datas antes de formatar
-const startDateFormatted = format((filters.start_date), 'yyyy-MM-dd');
-const endDateFormatted = format((filters.end_date), 'yyyy-MM-dd');
+const startDateFormatted = filters.start_date ? format(filters.start_date, 'yyyy-MM-dd') : '';
+const endDateFormatted = filters.end_date ? format(filters.end_date, 'yyyy-MM-dd') : '';
+
 console.log(filters.start_date, '-' ,startDateFormatted );
 // Criação da URL de busca usando as datas ajustadas
 const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date=${endDateFormatted}`;
@@ -177,15 +148,15 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
           <DatePicker
               selected={filters.start_date}
               onChange={(dates) => {
-                const [start, end] = dates as [Date | null, Date | null];
+                const [start, end] = dates as [Date | null, Date | null]; // Garantimos que dates pode ser Date ou null
                 setFilters({
-                  ...filters,
-                  start_date: start ? new Date(start) : null, 
-                  end_date: end ? new Date(end) : null,
+                    ...filters,
+                    start_date: start ? new Date(start) : null, // Define como null se start for null
+                    end_date: end ? new Date(end) : null, // Define como null se end for null
                 });
-              }}
-              startDate={filters.start_date}
-              endDate={filters.end_date}
+            }}
+              startDate={filters.start_date || undefined}  // Converte null para undefined
+              endDate={filters.end_date || undefined}   
               selectsRange
               monthsShown={2}
               locale="pt-BR"  // Define o locale corretamente
@@ -251,23 +222,25 @@ const fetchUrl = `/transactions/filter?start_date=${startDateFormatted}&end_date
           categories={categories}/>
       </div>
 
+
+ 
       {/* Lazy loading do popup */}
-      {isConfirmedTransactionPopupOpen && (
-        <Suspense fallback={<div>Carregando popup...</div>}>
-          <PopupComponent
-            id="confirmed_transation"
-            zindex="120"
-            paddingTop="100px"
-            paddingLeft="100px"
-            params={popupParams}
-            classPopup='bg-white w-[60vw] h-[70vh] resize'
-            onClose={handleCloseConfirmedTransactionPopup}
-    
-          >
-            <ConfirmedTransaction transaction={selectedTransaction} accounts={accounts} logo={auth.user.company?.company_logo ? (auth.user.company.company_logo):('')}/>
-          </PopupComponent>
-        </Suspense>
-      )}
+          <Sidebar 
+                visible={isConfirmedTransactionPopupOpen} 
+                position="right" 
+                className='pt-0 xl:w-[65vw] md:w-[65vw] sm:w-[75vw] overflow-auto bg-white' 
+                onHide={() => setIsConfirmedTransactionPopupOpen(false)}>
+                          <Suspense fallback={<div>Carregando popup...</div>}>
+
+                        <ConfirmedTransaction 
+                          transaction={selectedTransaction} 
+                          accounts={accounts} 
+                          logo={auth.user.company?.company_logo ? (auth.user.company.company_logo):('')}
+                        />    
+                          </Suspense>
+  
+              </Sidebar>  
+ 
     </div>
   );
 };

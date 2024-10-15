@@ -170,9 +170,6 @@ class CompanyController extends Controller
     
         return Inertia::render('Companies/CompanyDashboard', [
             'employees' => $employees,
-            'paymentMethods' => $paymentMethods,
-            'paymentMethodsFees' => $paymentMethodsFees,
-            'accounts' => $accounts,
             'auth' => [
                 'user' => $request->user(),
             ],

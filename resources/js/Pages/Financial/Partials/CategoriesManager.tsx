@@ -4,12 +4,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { PlusCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
-
-interface Category {
-  id: number;
-  name: string;
-  type: string;
-}
+import {Category} from '../FinancialInterfaces'
 
 interface CategoriesManagerProps {
   categories: Category[];

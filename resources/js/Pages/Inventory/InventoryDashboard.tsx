@@ -14,18 +14,12 @@ import StockLocalsManager from './StockLocals/StockLocalsManager';
 import { RiListOrdered } from "react-icons/ri";
 import OrdersManager from './OrderItems/OrdersManager';
 import { Product, Supplier, Category, stockLocals } from './interfaces'; // Ajuste o caminho conforme necessário
+import { User } from '@/types';
 
 
 interface InventoryDashboardProps {
     auth: {
-        user: {
-            id: number;
-            name: string;
-            email: string;
-            company: {
-                suppliers: string; // Supondo que suppliers é um JSON string
-            };
-        };
+        user: User;
     };
     categories: Category[];
     products: Product[];
