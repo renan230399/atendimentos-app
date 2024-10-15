@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Ana Flávia',
                 'email' => 'ana@example.com',
-                'password' => Hash::make('password'), // Senha padrão
+                'password' => Hash::make('teste'), // Senha padrão
                 'company_id' => $company->id,  // Substituído empresa_id para company_id
                 'role' => 1, // Cargo fictício como inteiro 
             ],
