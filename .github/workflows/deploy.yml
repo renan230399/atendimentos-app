@@ -20,9 +20,10 @@ jobs:
           node-version: '18'  # Versão do Node.js que você deseja usar
 
       - name: Instalar dependências e Build
-        run: |
-          npm install
-          npm run build
+          run: |
+            npm install
+            npm install ziggy-js
+            npm run build
 
       - name: Configurar SSH para EC2
         uses: webfactory/ssh-agent@v0.5.3
