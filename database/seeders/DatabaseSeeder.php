@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,6 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpa todas as tabelas do banco de dados
+        $tables = Schema::getConnection()->getSchemaBuilder()->getAllTables();
+        
+        foreach ($tables as $table) {
+            DB::table($table)->truncate(); // Limpa cada tabela
+        }
+
         // Chama os seeders de usuário, paciente e formulário de anamnese
         $this->call([
             UserSeeder::class,
