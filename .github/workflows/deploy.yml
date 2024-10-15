@@ -3,8 +3,8 @@ name: Deploy para EC2 Pública
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - master  # Branch monitorada para o deploy
+  workflow_dispatch:  # Permite rodar o workflow manualmente pela interface do GitHub
 
 jobs:
   deploy:
@@ -17,53 +17,42 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '18'  # Versão do Node.js que você deseja usar
 
       - name: Instalar dependências e Build
         run: |
           npm install
-          npm run build
+          npm install ziggy-js  # Caso você use o ziggy-js no projeto
+          npm run build  # Builda os arquivos no servidor do GitHub Actions
+
+      - name: Verificar arquivos do build
+        run: |
+          ls -l public/build  # Verifica se os arquivos de build foram gerados corretamente
 
       - name: Configurar SSH para EC2
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}  # Nome do segredo criado para a chave da instância pública
 
-      - name: Atualizar código na EC2
+      - name: Copiar arquivos para a instância pública
         run: |
-          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 '
-            cd /home/ec2-user/atendimentos-app &&
-            git pull origin master
-          '
+          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r * ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/
 
-      - name: Criar diretório de build no servidor, se não existir
+      - name: Copiar arquivos buildados
         run: |
-          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 '
-            mkdir -p /var/www/html/public/build
-          '
-
-      - name: Copiar Build para a instância pública
-        run: |
-          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build/* ec2-user@3.95.59.48:/var/www/html/public/build/
-
-      - name: Ajustar permissões no diretório de build
-        run: |
-          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 '
-            sudo chown -R www-data:www-data /var/www/html/public/build &&
-            sudo chmod -R 755 /var/www/html/public/build
-          '
+          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/public/build/
 
       - name: Reiniciar Docker no EC2
         run: |
-          ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=120 -o StrictHostKeyChecking=no -o ConnectTimeout=120 ec2-user@3.95.59.48 '
+          ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
             cd /home/ec2-user/atendimentos-app &&
             docker-compose down &&
             docker-compose up -d --build
           '
 
-      - name: Executar Database Seeder com migrate:fresh
+      - name: Limpar e Semear o Banco de Dados
         run: |
-          ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=120 -o StrictHostKeyChecking=no -o ConnectTimeout=120 ec2-user@3.95.59.48 '
+          ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
             cd /home/ec2-user/atendimentos-app &&
             docker-compose exec laravel.test php artisan migrate:fresh --seed
           '
