@@ -40,7 +40,7 @@ jobs:
 
       - name: Copiar Build para a instância pública
         run: |
-          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/public/build/
+          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build ec2-user@3.95.59.48:/var/www/html/public/build/
 
       - name: Reiniciar Docker no EC2
         run: |
