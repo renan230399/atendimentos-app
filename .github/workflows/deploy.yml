@@ -30,6 +30,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}
 
+      # Esta etapa garante que o código do repositório seja atualizado no servidor
+      - name: Atualizar código na EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" ec2-user@3.95.59.48 '
+            cd /home/ec2-user/atendimentos-app &&
+            git pull origin master
+          '
+
       - name: Copiar Build para a instância pública
         run: |
           scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/public/build/
