@@ -77,7 +77,7 @@ const Patients: React.FC<PatientsProps> = ({ auth, patients = [], employees = []
                 {/* Barra de busca */}
                 <form className="w-4/5 pr-6 h-[10vh] overflow-hidden w-[80%] rounded-br-xl ">
                     <div className='md:w-[50%] w-[100%] pl-5 mt-6'>
-                        <div>renan border matins casdaf</div>
+                        <div>Tudo deu certo!!!!! </div>
                         <FloatLabel>
                             <TextInput
                                 id="search"
