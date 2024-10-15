@@ -34,13 +34,21 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}  # Nome do segredo criado para a chave da instância pública
 
-      - name: Copiar arquivos para a instância pública
+      - name: Copiar arquivos para a instância pública (sem node_modules)
         run: |
-          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r * ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/
+          rsync -avz --exclude 'node_modules' -e "ssh -o StrictHostKeyChecking=no -i ${{
+            secrets.EC2_SSH_KEY_PEM }}" ./ ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/
 
       - name: Copiar arquivos buildados
         run: |
           scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY_PEM }}" -r public/build ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/public/build/
+
+      - name: Reinstalar dependências dentro do container
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
+            cd /home/ec2-user/atendimentos-app &&
+            docker-compose exec laravel.test npm install
+          '
 
       - name: Reiniciar Docker no EC2
         run: |
@@ -52,7 +60,7 @@ jobs:
 
       - name: Limpar e Semear o Banco de Dados
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
+          ssh -o StrictHostKeyChecking-no ec2-user@3.95.59.48 '
             cd /home/ec2-user/atendimentos-app &&
             docker-compose exec laravel.test php artisan migrate:fresh --seed
           '
