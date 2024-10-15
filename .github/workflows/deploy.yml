@@ -18,15 +18,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}  # Nome do segredo que você criou
 
-        - name: Deploy para EC2
-          run: |
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@44.211.251.239 << 'EOF'
-              ssh -o StrictHostKeyChecking=no -i /home/ec2-user/chaves-teste.pem ec2-user@10.0.135.192 << 'INNER_EOF'
-                cd /var/www/atendimentos-app
-                git pull origin master
-                docker-compose down
-                docker-compose up -d --build
-              INNER_EOF
-            EOF
-
-
+      - name: Deploy para EC2  # Corrigindo a indentação desta linha
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@44.211.251.239 << 'EOF'
+            ssh -o StrictHostKeyChecking=no -i /home/ec2-user/chaves-teste.pem ec2-user@10.0.135.192 << 'INNER_EOF'
+              cd /var/www/atendimentos-app
+              git pull origin master
+              docker-compose down
+              docker-compose up -d --build
+            INNER_EOF
+          EOF
