@@ -28,6 +28,7 @@ jobs:
               docker-compose exec laravel.test npm install &&  # Executar npm dentro do container
               docker-compose exec laravel.test npm run build &&  # Gerar o build do Vite
               docker-compose down &&
-              docker-compose up -d --build
+              docker-compose up -d --build &&
+              docker-compose logs --tail=50  # Exibir os últimos 50 logs após o deploy
             '
           "
