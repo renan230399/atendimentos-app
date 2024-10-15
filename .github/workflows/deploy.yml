@@ -1,0 +1,34 @@
+name: Deploy para EC2
+
+on:
+  push:
+    branches:
+      - main  # Você pode alterar para a branch que deseja monitorar
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}  # Nome do segredo que você criou
+
+      - name: Deploy para EC2 pública e privada
+        run: |
+          # Conectar na instância pública EC2
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@44.211.251.239 << 'EOF'
+            # Conectar na instância privada via SSH da pública
+            ssh -i /home/ec2-user/chaves-teste.pem ec2-user@10.0.135.192 << 'INNER_EOF'
+              # Executar comandos de deploy na instância privada
+              cd /var/www/atendimentos-app  # Caminho correto do projeto
+              git pull origin main
+              docker-compose down
+              docker-compose up -d --build
+            INNER_EOF
+          EOF
+
