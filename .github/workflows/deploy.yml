@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master  # Branch monitorada para o deploy
+  workflow_dispatch:  # Permite rodar o workflow manualmente pela interface do GitHub
 
 jobs:
   deploy:
