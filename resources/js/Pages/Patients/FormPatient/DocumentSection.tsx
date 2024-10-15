@@ -8,15 +8,15 @@ import InputFile from '@/Components/InputFile';
 import CustomDropdown from '@/Components/CustomDropdown';
 // Definição das opções de status com ícones
 const statusOptions = [
-    { value: true, label: 'Realizada', icon: <span className="text-green-500">✔</span> },
-    { value: false, label: 'Pendente', icon: <span className="text-red-500">⏳</span> },
+    { value: true, label: 'Ativo', icon: <span className="text-green-500">✔</span> },
+    { value: false, label: 'Inativo', icon: <span className="text-red-500">⏳</span> },
 ];
 
 interface DocumentSectionProps {
     data: {
         profile_picture: string | File | null;
         patient_name: string;
-        birth_date: string;
+        birth_date: string | null;
         cpf: string;
         gender: string | null; // Permitir que seja string ou null
         status: boolean;
@@ -26,7 +26,7 @@ interface DocumentSectionProps {
     errors: {
         profile_picture?: string;
         patient_name?: string;
-        birth_date?: string;
+        birth_date?: string | null;
         cpf?: string;
         gender?: string; // Pode ser string, já que o erro seria uma mensagem
         status?: string;
@@ -38,13 +38,13 @@ interface DocumentSectionProps {
 const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors }) => {
     return (
         <>
-            <div className="w-[100%] flex flex-wrap gap-1">
+            <div className="w-full flex flex-wrap gap-1 space-y-2">
                 {/* Foto de perfil */}
-                <div>
-                    <InputLabel htmlFor="company_logo" value="Logo da Empresa" />
+                <div className='md:w-[30%] w-full'>
+                    <InputLabel htmlFor="profile_picture" value="Foto" />
 
                     <TextInput
-                        id="company_logo"
+                        id="profile_picture"
                         type="file"
                         className="mt-1 block w-full"
                         onChange={(e) => setData('profile_picture', e.target.files?.[0] || null)} // Armazena o arquivo selecionado
@@ -66,11 +66,8 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
 
                     <InputError className="mt-2" message={errors.profile_picture} />
                 </div>
-                <div className="w-[100%]">
-
-                </div>
                 {/* Nome do paciente */}
-                <div className="w-[100%] md:w-[100%]">
+                <div className="w-[100%] md:w-[68%] m-auto">
                     <InputLabel htmlFor="patient_name" value="Nome do paciente" />
                     <TextInput
                         id="patient_name"
@@ -83,7 +80,7 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                 </div>
                 
                 {/* Data de nascimento */}
-                <div className="w-[100%] md:w-[32%]">
+                <div className="w-[100%] md:w-[32%] m-auto">
                     <DateOfBirthInput
                         value={data.birth_date || ''} // Passa a data no formato ISO como value
                         onChange={(value) => setData('birth_date', value)} // Atualiza o valor no state quando o usuário muda a data
@@ -93,7 +90,7 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                 </div>
 
                 {/* CPF */}
-                <div className="w-[100%] md:w-[32%]">
+                <div className="w-[100%] md:w-[32%] m-auto">
                     <CpfInput
                         value={data.cpf || ''}
                         onChange={(e) => setData('cpf', e.target.value)}
@@ -102,7 +99,7 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                 </div>
 
                 {/* Gênero */}
-                <div className="w-[100%] md:w-[32%]">
+                <div className="w-[100%] md:w-[32%] m-auto">
                     <InputLabel htmlFor="gender" value="Gênero" />
                     <select
                         id="gender"

@@ -8,11 +8,7 @@ interface Contact {
     value: string; // Certifique-se de que o value é sempre uma string
     category: 'phone' | 'link' | 'string'; // Definimos as opções para a categoria
 }
-interface Person {
-    name: string;
-    relation: string;
-    contacts: Contact[];
-}
+
 interface ContactInputProps {
     contact: Contact;
     index: number;

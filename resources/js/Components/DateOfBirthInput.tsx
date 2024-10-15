@@ -49,9 +49,12 @@ const DateOfBirthInput: React.FC<DateOfBirthInputProps> = ({ value = '', onChang
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newDate = e.target.value;
         setLocalValue(newDate);
-        onChange(newDate);
         const calculatedAge = calculateAge(newDate);
         setAge(calculatedAge);
+    };
+
+    const handleBlur = () => {
+        onChange(localValue); // Envia o valor somente ao sair do campo
     };
 
     return (
@@ -63,7 +66,7 @@ const DateOfBirthInput: React.FC<DateOfBirthInputProps> = ({ value = '', onChang
                 value={localValue}
                 className="mt-1 block w-full"
                 onChange={handleDateChange}
-                required
+                onBlur={handleBlur} // Só envia o valor ao sair do campo
             />
 
             <InputError message={errors?.[id] || ''} className="mt-2" />

@@ -14,8 +14,8 @@ export interface Patient {
     id?: number;
     company_id?: number;
     patient_name: string;
-    phone: string;
-    birth_date: string; // ou Date, se você estiver lidando com objetos Date
+    personal_contacts: ContactDetail[] | null;
+    birth_date: string | null; // ou Date, se você estiver lidando com objetos Date
     gender: string | null;
     neighborhood: string;
     street: string;
@@ -24,7 +24,7 @@ export interface Patient {
     city: string;
     state: string;
     cpf: string;
-    contacts: Contact[] | string; // Aqui você pode ajustar se sempre receberá um array ou uma string
+    contacts: Contact[] |  null; // Aqui você pode ajustar se sempre receberá um array ou uma string
     complaints: string | null;
     notes: string;
     profile_picture: string | null;

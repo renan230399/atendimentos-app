@@ -25,7 +25,7 @@ class Patient extends Model
     protected $fillable = [
         'company_id',           // Referência para a empresa associada
         'patient_name',         // Nome do paciente
-        'phone',                // Telefone
+        'personal_contacts',                // Telefone
         'birth_date',           // Data de nascimento
         'gender',               // Gênero
         'neighborhood',         // Bairro
@@ -48,6 +48,7 @@ class Patient extends Model
      * @var array
      */
     protected $casts = [
+        'personal_contacts' => 'array',
         'contacts' => 'array',         // Converte contatos JSON para array
         'complaints' => 'array',       // Converte reclamações JSON para array
         'birth_date' => 'date',        // Converte data de nascimento para objeto Carbon

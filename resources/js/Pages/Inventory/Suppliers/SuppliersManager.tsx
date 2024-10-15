@@ -142,14 +142,13 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
             </div>
 
             <Sidebar visible={isPopupVisible} position="right" className='xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-hidden' onHide={handleClosePopup}>
-            {selectedSupplier && (
+
                 <SupplierForm
                     onClose={handleClosePopup}
                     setSaveSupplier={setSaveSupplier}
                     initialData={selectedSupplier}
                     categories={categories}
                 />
-            )}
             </Sidebar>
         </div>
     );

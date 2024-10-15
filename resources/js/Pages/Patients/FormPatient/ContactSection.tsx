@@ -2,45 +2,26 @@ import React from 'react';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { RiDeleteBin5Fill } from "react-icons/ri";
-import ContactInput from '@/Pages/Inventory/Suppliers/ContactInput';
-
-interface Contact {
-    type: string;
-    value: string;
-    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
-}
-
-interface Person {
-    name: string;
-    relation: string;
-    contacts: Contact[];
-}
+import ContactInput from '@/Components/ContactInput';
+import { Contact, ContactDetail } from '../interfacesPatients';
+import PersonalContactSection from './PersonalContactSection';
 
 interface ContactSectionProps {
     data: {
-        contacts: Person[];
+        contacts: Contact[];
+        personal_contacts: ContactDetail[];
     };
     setData: (field: string, value: any) => void;
 }
 
-const contactTypes = [
-    { label: 'Instagram', value: 'instagram' },
-    { label: 'Facebook', value: 'facebook' },
-    { label: 'WhatsApp', value: 'whatsapp' },
-    { label: 'Email', value: 'email' },
-    { label: 'LinkedIn', value: 'linkedin' },
-];
-
 const ContactSection: React.FC<ContactSectionProps> = ({ data, setData }) => {
 
     // Atualiza os dados gerais da pessoa (nome, relação)
-    const handlePersonChange = (personIndex: number, field: keyof Person, value: any) => {
+    const handlePersonChange = (personIndex: number, field: keyof Contact, value: any) => {
         const updatedContacts = [...data.contacts];
         updatedContacts[personIndex][field] = value;
         setData('contacts', updatedContacts);
     };
-    
-    
     
 
     // Atualiza os contatos de uma pessoa específica
@@ -130,6 +111,13 @@ const addContact = () => {
 
             <div className='w-[100%] md:w-[78%] flex flex-wrap gap-1 border-b-2 pb h-auto overflow-y-auto'>
                 <h2 className="font-bold">Contatos</h2>
+                <div className='w-full'>
+                    <PersonalContactSection 
+                        personal_contacts={data.personal_contacts}
+                        setData={setData}
+                    />
+                </div>
+
                 {Array.isArray(data.contacts) && data.contacts.length > 0 ? (
                     data.contacts.map((person, personIndex) => (
                         <div key={personIndex} className="space-y-4 bg-gray-100 md:space-y-0 md:space-x-4 flex flex-wrap flex-col md:flex-row items-start gap-4 px-4 border rounded-lg shadow-sm">
@@ -188,6 +176,7 @@ const addContact = () => {
                 ) : (
                     <p className="text-gray-500">Nenhuma pessoa inserida.</p>
                 )}
+
                 <div className='w-full'>
                     <button
                         type="button"

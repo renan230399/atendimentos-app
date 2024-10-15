@@ -26,7 +26,7 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
         id: patient?.id || 0,
         company_id: patient?.company_id || 0,
         patient_name: patient?.patient_name || '',
-        phone: patient?.phone || '',
+        personal_contacts: Array.isArray(patient?.personal_contacts) ? patient.personal_contacts : [],
         birth_date: patient?.birth_date || '',
         gender: patient?.gender || '',
         neighborhood: patient?.neighborhood || '',
@@ -49,7 +49,7 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
         if (patient) {
             setData({
                 patient_name: patient.patient_name || '',
-                phone: patient.phone || '',
+                personal_contacts: Array.isArray(patient.personal_contacts) ? patient.personal_contacts : [], // Converte para array se necessário
                 birth_date: patient.birth_date || '',
                 gender: patient.gender || '',
                 neighborhood: patient.neighborhood || '',
@@ -66,16 +66,45 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
                 complaints: patient.complaints || '', // Adiciona complaints com valor padrão
             });
         }
-    }, [patient, setData]);
+    }, []);
     
     
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
+    
+        // Função para limpar espaços e caracteres especiais
+        const cleanPhoneNumber = (number: string) => {
+            return number.replace(/\D/g, ''); // Remove tudo que não é dígito
+        };
+    
+        // Limpeza dos contatos pessoais
+        const cleanedPersonalContacts = (data.personal_contacts || []).map(contact => ({
+            ...contact,
+            value: contact.category === 'phone' ? cleanPhoneNumber(contact.value) : contact.value,
+        }));
+    
+        // Limpeza dos contatos da pessoa, garantindo que data.contacts não seja null
+        const cleanedContacts = (data.contacts || []).map(person => ({
+            ...person,
+            contacts: (person.contacts || []).map(contact => ({
+                ...contact,
+                value: contact.category === 'phone' ? cleanPhoneNumber(contact.value) : contact.value,
+            })),
+        }));
+    
+        // Atualiza os dados com os contatos limpos
+        const updatedData = {
+            ...data,
+            personal_contacts: cleanedPersonalContacts,
+            contacts: cleanedContacts,
+        };
+    
+        console.log(updatedData); // Exibir dados limpos no console
         if (patient) {
             // Modo de edição
             put(route('patients.update', patient.id!), {
+                data: updatedData, // Use os dados atualizados aqui
                 preserveScroll: true,
                 onSuccess: () => {
                     reset();
@@ -87,6 +116,7 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
         } else {
             // Modo de criação
             post(route('patients.store'), {
+                data: updatedData, // Use os dados atualizados aqui
                 preserveScroll: true,
                 onSuccess: () => {
                     reset();
@@ -97,12 +127,14 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
             });
         }
     };
+    
+    
 
     return (
         <>
             <PopupHeader icon='' title={patient ? 'Editar Paciente' : 'Cadastrar novo paciente'} />
 
-            <div className="w-[90%] mx-auto">
+            <div className="w-[100%] mx-auto">
                 <form onSubmit={handleSubmit} className="space-y-6 flex flex-wrap gap-1">
                     <div className='w-[100%] z-10 rounded p-5 border-b-2 flex flex-wrap gap-1'>
                         <DocumentSection
@@ -111,18 +143,21 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
                             errors={errors}
                         />
                     </div>
-                    <div className='w-[100%] z-20 rounded p-5 border-b-2 border-black-200 flex flex-wrap'>
-                        <AddressSection data={data} setData={setData} errors={errors} />
-                    </div>
                     <div className='w-[100%] z-30 rounded border-2 border-black-200 flex flex-wrap gap-1 shadow-2xl'>
                     <ContactSection
-                            data={{
-                                ...data,
-                                contacts: Array.isArray(data.contacts) ? data.contacts : [], // Garante que contacts seja um array
-                            }}
+                        data={{
+                            ...data,
+                            contacts: Array.isArray(data.contacts) ? data.contacts : [], // Garante que contacts seja um array
+                            personal_contacts: Array.isArray(data.personal_contacts) ? data.personal_contacts : [], // Garante que other_contacts seja um array
+                        }}
+
                             setData={setData}
                         />
                     </div>
+                    <div className='w-[100%] z-20 rounded p-5 border-b-2 border-black-200 flex flex-wrap'>
+                        <AddressSection data={data} setData={setData} errors={errors} />
+                    </div>
+
                     <div className='w-[100%] md:w-[50%] pt-5'>
                         <InputLabel htmlFor="notes" value="Observações" />
                         <TextArea

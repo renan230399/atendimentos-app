@@ -3,14 +3,14 @@ import { formatDateAndAge } from '@/Components/Utils/dateUtils';
 import { FaPhone, FaMapMarkerAlt, FaIdCard } from 'react-icons/fa';
 import { UserIcon, PhoneIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import PrimaryButton from '@/Components/PrimaryButton';
-import ConsultationsList from '@/Pages/Consultations/ConsultationsList';
+import ConsultationsList from '@/Pages/Patients/ConsultationsList';
 import FormResponseList from './FormResponseList';
 import { FaTransgender } from "react-icons/fa6";
 import CreatePatient from './FormPatient/CreatePatient';
 import { Sidebar } from 'primereact/sidebar';
 import DynamicForm from './Forms/DynamicForm';
 import InputLabel from '@/Components/InputLabel';
-import {Patient, Form} from './interfacesPatients'
+import {Patient, Form, Contact, ContactDetail} from './interfacesPatients'
 interface ViewPatientProps {
     patient: Patient; // O paciente a ser visualizado
     forms: Form[]; // Lista de formulários
@@ -25,6 +25,7 @@ const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePa
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
     const [isFormResponse, setIsFormResponse] = useState(false);
     const [selectedForm, setSelectedForm] = useState<Form | null>(null);
+
 
     
     // Função para buscar as consultas do paciente usando fetch
@@ -80,7 +81,32 @@ const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePa
         setSelectedForm(null);
         setIsFormResponse(false);
     }, []);
-    console.log(patient);
+        console.log(patient);
+        // Verifique se contacts é uma string antes de fazer o parsing
+        let parsedContacts: Contact[] = [];
+
+        // Verifique se contacts é uma string e faça o parsing, ou se já é um array
+        if (typeof patient.contacts === 'string') {
+            try {
+                parsedContacts = JSON.parse(patient.contacts);
+            } catch (error) {
+                console.error("Erro ao fazer o parsing dos contatos:", error);
+            }
+        } else if (Array.isArray(patient.contacts)) {
+            parsedContacts = patient.contacts;
+        }
+        let parsedPersonalContacts: ContactDetail[] = [];
+
+        // Verifique se contacts é uma string e faça o parsing, ou se já é um array
+        if (typeof patient.personal_contacts === 'string') {
+            try {
+                parsedPersonalContacts = JSON.parse(patient.personal_contacts);
+            } catch (error) {
+                console.error("Erro ao fazer o parsing dos contatos:", error);
+            }
+        } else if (Array.isArray(patient.personal_contacts)) {
+            parsedPersonalContacts = patient.personal_contacts;
+        } 
     return (
         <>
 
@@ -106,7 +132,9 @@ const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePa
             {/* Detalhes do Paciente */}
                 <div className="w-full text-left ml-40 flex flex-wrap pb-10 border-b border-gray-400">
                     <div className="w-[30%]">
-                        <p className="text-lg">{formatDateAndAge(patient.birth_date)}</p>
+                    <p className="text-lg">
+                        {patient.birth_date ? formatDateAndAge(patient.birth_date) : 'Data de nascimento não disponível'}
+                    </p>
                     </div>
                     
                     <div className="flex items-center space-x-2 w-[30%]">
@@ -121,12 +149,6 @@ const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePa
                         <p className="text-lg">
                             <strong>Gênero:</strong>
                             <br /> {patient.gender ?? 'Não informado'}
-                        </p>
-                    </div>
-                    <div className="flex items-center space-x-2 w-[30%]">
-                        <FaPhone className="text-gray-600" />
-                        <p className="text-lg">
-                            <strong>Telefone:</strong> {patient.phone ?? 'Não informado'}
                         </p>
                     </div>
 
@@ -200,25 +222,16 @@ const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePa
                 <div className="w-[100%] md:w-[78%] flex flex-wrap gap-1 border-b-2 p-5">
     <div className="w-[100%]">
         <p className="text-xl font-semibold mb-4"><strong>Contatos:</strong></p>
-
-        {Array.isArray(patient.contacts) && patient.contacts.length > 0 ? (
-            <div className="flex flex-wrap gap-4">
-                {patient.contacts.map((contact, index) => (
-                    <div
-                        key={index}
-                        className="w-full md:w-[100%] py-3 bg-white flex shadow-md rounded-lg border border-gray-200"
-                    >
-                        <div className="flex items-center m-auto">
-                            <UserIcon className="h-5 w-5 text-blue-500 mr-2" />
-                            <p><strong>Nome:</strong> {contact.name}</p>
-                        </div>
-                        <div className="flex items-center m-auto">
-                            <UserGroupIcon className="h-5 w-5 text-green-500 mr-2" />
-                            <p><strong>Relação:</strong> {contact.relation}</p>
-                        </div>
-                        <div className="flex items-center m-auto flex-wrap ">
-                            {contact.contacts.map((detail, contactIndex) => (
-                                <div key={contactIndex} className="flex items-center m-auto w-full">
+                    {Array.isArray(patient.personal_contacts) && patient.personal_contacts.length > 0 ? (
+                        patient.personal_contacts.map((detail, contactIndex) => (
+                            <div key={contactIndex} className="flex items-center m-auto w-full">
+                                <div className='m-2'>
+                                    <p><strong>Tipo:</strong> {detail.type}</p>
+                                </div>
+                                <div className='m-2'>
+                                    <p><strong>Categoria:</strong> {detail.category}</p>
+                                </div>
+                                <div className='m-2'>
                                     {detail.category === 'link' ? (
                                         <a
                                             href={detail.value}
@@ -232,14 +245,64 @@ const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePa
                                         <p>{detail.value}</p>
                                     )}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                ))}
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">Nenhum detalhe de contato disponível.</p>
+                    )}
+        {Array.isArray(parsedContacts) && parsedContacts.length > 0 ? (
+    <div className="flex flex-wrap gap-4">
+        {parsedContacts.map((contact, index) => (
+            <div
+                key={index}
+                className="w-full md:w-[100%] py-3 bg-white flex flex-wrap shadow-md rounded-lg border border-gray-200"
+            >
+                <div className="flex items-center m-auto">
+                    <UserIcon className="h-5 w-5 text-blue-500 mr-2" />
+                    <p><strong>Nome:</strong> {contact.name}</p>
+                </div>
+                <div className="flex items-center m-auto">
+                    <UserGroupIcon className="h-5 w-5 text-green-500 mr-2" />
+                    <p><strong>Relação:</strong> {contact.relation}</p>
+                </div>
+                <div className="flex flex-wrap items-center m-auto w-full">
+                    {Array.isArray(contact.contacts) && contact.contacts.length > 0 ? (
+                        contact.contacts.map((detail, contactIndex) => (
+                            <div key={contactIndex} className="flex items-center m-auto w-full">
+                                <div className='m-2'>
+                                    <p><strong>Tipo:</strong> {detail.type}</p>
+                                </div>
+                                <div className='m-2'>
+                                    <p><strong>Categoria:</strong> {detail.category}</p>
+                                </div>
+                                <div className='m-2'>
+                                    {detail.category === 'link' ? (
+                                        <a
+                                            href={detail.value}
+                                            className="text-blue-500 underline"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {detail.value}
+                                        </a>
+                                    ) : (
+                                        <p>{detail.value}</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">Nenhum detalhe de contato disponível.</p>
+                    )}
+                </div>
             </div>
-        ) : (
-            <p className="text-gray-600">Não há contatos disponíveis.</p>
-        )}
+        ))}
+    </div>
+) : (
+    <p className="text-gray-600">Não há contatos disponíveis.</p>
+)}
+
+
     </div>
 </div>
 

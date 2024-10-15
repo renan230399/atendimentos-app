@@ -76,9 +76,10 @@ const Birthdays: React.FC<BirthdaysProps> = ({ patients }) => {
                                     </div>
                                     <div className='flex flex-wrap justify-between w-full'>
                                         <h3 className="text-lg font-bold w-full text-left">{patient.patient_name}</h3>
-                                        <p>Telefone: {patient.phone}</p>
                                         <p>Data de nascimento: {moment(patient.birth_date).format('DD/MM/YYYY')}</p>
-                                        <p>Idade: {calculateAge(patient.birth_date)} anos</p>
+                                        <p>
+                                            Idade: {patient.birth_date ? calculateAge(patient.birth_date) : 'Idade não disponível'} anos
+                                        </p>
                                         <a href={`https://wa.me/5535997785809?text=${birthdayMessage}`} target="_blank" rel="noopener noreferrer">
                                             <div className='bg-green-500 text-white flex p-3 rounded gap-2 zoom'>
                                                 <FaWhatsapp className='m-auto'/>

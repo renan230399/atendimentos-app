@@ -78,10 +78,9 @@ class PatientController extends Controller
     {
         $validatedData = $request->validate([
             'patient_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'birth_date' => 'required|date',
+            'birth_date' => 'nullable|date',
             'gender' => 'nullable|string',
-
+            'personal_contacts' => 'nullable|array',
             'neighborhood' => 'nullable|string|max:100',
             'street' => 'nullable|string|max:200',
             'house_number' => 'nullable|string|max:10',
@@ -108,9 +107,12 @@ class PatientController extends Controller
             $validatedData['profile_picture'] = Storage::disk('s3')->url($path);
         }
     
-        $validatedData['contacts'] = $validatedData['contacts'] ?? json_encode([]);
-        $validatedData['complaints'] = $validatedData['complaints'] ?? json_encode([]);
+        $validatedData['contacts'] = $validatedData['contacts'] ?? [];
+        $validatedData['complaints'] = $validatedData['complaints'] ?? [];
+        $validatedData['personal_contacts'] = $validatedData['personal_contacts'] ?? []; // Mantenha como array
     
+        
+
         Patient::create($validatedData); // Use 'Patient' instead of 'Pacient'
     
         return redirect()->route('patients.index')->with('success', 'Paciente criado com sucesso!');
@@ -142,8 +144,8 @@ class PatientController extends Controller
         // Validação dos dados
         $validatedData = $request->validate([
             'patient_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'birth_date' => 'required|date',
+            'personal_contacts' => 'nullable|array',
+            'birth_date' => 'nullable|date',
             'gender' => 'nullable|string',
             'neighborhood' => 'nullable|string|max:100',
             'street' => 'nullable|string|max:200',
@@ -198,7 +200,8 @@ class PatientController extends Controller
         // Converte 'contacts' e 'complaints' para JSON, se não houver, mantém como array vazio
         $validatedData['contacts'] = $validatedData['contacts'] ?? json_encode([]);
         $validatedData['complaints'] = $validatedData['complaints'] ?? json_encode([]);
-    
+        $validatedData['personal_contacts'] = json_encode($validatedData['personal_contacts'] ?? []);
+
         \Log::info('Atualizando o paciente com os dados validados.', ['validated_data_final' => $validatedData]);
     
         // Atualiza o paciente com os dados validados

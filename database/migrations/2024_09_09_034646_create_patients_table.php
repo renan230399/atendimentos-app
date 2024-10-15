@@ -19,10 +19,10 @@ return new class extends Migration
 
             // Patient information
             $table->string('patient_name');
-            $table->string('phone')->nullable(); // Patient's phone
+            $table->jsonb('personal_contacts')->nullable(); // Patient's phone
 
             // Birth information
-            $table->date('birth_date'); // Patient's birth date
+            $table->date('birth_date')->nullable(); // Patient's birth date
             $table->string('gender')->nullable(); // Patient's gender
             // Address information
             $table->string('neighborhood')->nullable(); // Neighborhood

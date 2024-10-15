@@ -15,7 +15,7 @@ class PatientSeeder extends Seeder
     public function run()
     {
         // Cria 10 pacientes fictícios conforme o factory
-        Patient::factory()->count(5)->create();
+        Patient::factory()->count(500)->create();
     }
 }
 

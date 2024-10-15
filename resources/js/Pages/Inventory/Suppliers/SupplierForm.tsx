@@ -8,7 +8,7 @@ import TextArea from '@/Components/TextArea';
 import { FaTrashAlt } from 'react-icons/fa';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
-import ContactInput from './ContactInput'; 
+import ContactInput from '../../../Components/ContactInput'; 
 import { MdContactPhone } from "react-icons/md";
 
 // Definindo a interface para o contato
@@ -85,7 +85,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ onClose, setSaveSupplier, i
     const toast = useRef<Toast | null>(null); // Definindo o tipo do toast como Toast ou null
     const buttonEl = useRef(null);
     const [visible, setVisible] = useState(false);
-
+console.log("renan");
     const accept = () => {
         if (toast.current) {
             toast.current.show({
@@ -311,25 +311,27 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ onClose, setSaveSupplier, i
                         className="w-full border border-gray-400 rounded px-2 py-1"
                     />
                 </div>
+
                 <div className='flex justify-between w-full'>
-                {initialData && (
-                    <div className='my-auto'>
+    
+                                    {initialData && (
+                        <div>
                         <Toast ref={toast} />
                         <ConfirmPopup 
+                            target={buttonEl.current || undefined} // Verifica se buttonEl.current é null
                             visible={visible} 
                             onHide={() => setVisible(false)} 
                             message="Tem certeza de que deseja deletar este fornecedor?" 
                             icon="pi pi-exclamation-triangle" 
-                            acceptLabel="Sim, deletar Fornecedor" // Texto personalizado para o botão de aceite
-                            rejectLabel="Cancelar" // Texto personalizado para o botão de rejeição
-                            acceptClassName="p-button-success bg-red-500 text-white p-1 m-auto" // Classe para estilizar o botão de aceite
-                            rejectClassName="p-button-success bg-green-500 text-white p-1 mx-5" // Classe para estilizar o botão de rejeição
+                            acceptLabel="Sim, deletar Fornecedor" 
+                            rejectLabel="Cancelar" 
+                            acceptClassName="p-button-success bg-red-500 text-white p-1 m-auto" 
+                            rejectClassName="p-button-success bg-green-500 text-white p-1 mx-5" 
                             accept={accept} 
                             reject={reject} 
                         />
-
                         <div
-                            ref={buttonEl}
+                            ref={buttonEl} // Define o ref aqui
                             className="px-4 flex items-center gap-2 py-2 bg-red-500 text-white rounded cursor-pointer"
                             onClick={() => setVisible(true)}
                         >
