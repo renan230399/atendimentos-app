@@ -4,184 +4,197 @@ import { Button } from 'primereact/button';
 import { Badge } from 'primereact/badge';
 import { InputText } from 'primereact/inputtext';
 import AddSubcategoryDialog from './AddSubcategoryDialog';
-import { useForm } from '@inertiajs/react'; // Importa useForm do Inertia.js
-import { Category } from '../interfaces'; // Ajuste o caminho conforme necessário
+import { Category, CategoryNode } from '../interfaces'; // Ajuste o caminho conforme necessário
+import useCategoryExpansion from '../Hooks/useCategoryExpansion';
+import useCategoryEdit from '../Hooks/useCategoryEdit.ts:';
+import classNames from 'classnames';
 
 interface CategoriesManagerProps {
     categories: Category[];
 }
 
-// Definindo nossa própria interface para os nós da árvore
-interface CategoryNode {
-    key: string | number | undefined; // Adiciona 'undefined' para compatibilidade com TreeNode
-    label: string;
-    children?: CategoryNode[];
-    depth?: number;
-    className?: string;
-    style?: React.CSSProperties;
-}
+const buildCategoryTree = (categories: Category[]): CategoryNode[] => {
+    const categoryMap: { [key: number]: CategoryNode } = {};
 
+    const calculateDepth = (category: Category, depth: number = 0): number => {
+        if (!category.parent_id) return depth;
+        const parentCategory = categories.find(cat => cat.id === category.parent_id);
+        return parentCategory ? calculateDepth(parentCategory, depth + 1) : depth;
+    };
 
+    const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
+
+    sortedCategories.forEach((category) => {
+        const depth = calculateDepth(category);
+        categoryMap[category.id] = {
+            key: String(category.id),
+            label: category.name,
+            children: [],
+            className: category.parent_id ? 'p-node-leaf' : 'p-node-parent',
+            style: { paddingLeft: `${depth * 10}px` },
+            depth,
+        };
+    });
+
+    const tree: CategoryNode[] = [];
+    sortedCategories.forEach((category) => {
+        const parentNode = category.parent_id ? categoryMap[category.parent_id] : null;
+        const currentNode = categoryMap[category.id];
+        
+        if (category.parent_id && parentNode && currentNode) {
+            parentNode.children = parentNode.children || [];
+            parentNode.children.push(currentNode);
+        } else if (currentNode) {
+            tree.push(currentNode);
+        }
+    });
+
+    return tree;
+};
 
 export default function CategoriesManager({ categories }: CategoriesManagerProps) {
     const [nodes, setNodes] = useState<CategoryNode[]>([]);
-    const [expandedKeys, setExpandedKeys] = useState<{ [key: string]: boolean }>({});
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedCategories, setEditedCategories] = useState<{ [key: number]: string }>({});
     const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
     const [selectedParentCategory, setSelectedParentCategory] = useState<CategoryNode | null>(null);
-    const [saveAddCategory, setSaveAddCategory] = useState(false);
-    const [saveSuccessEditing, setSaveSuccessEditing] = useState(false);
 
-    // Configura o useForm para lidar com as categorias editadas
-    const { data, setData, put, processing } = useForm({
-        editedCategories: {} as { [key: number]: string }, // Tipando o objeto como um dicionário
-    });
-
+    const { isEditing, editedCategories, handleEditToggle, handleInputChange, handleSaveChanges, processing, put, setEditedCategories } = useCategoryEdit(categories); // put agora disponível
+    const { expandedKeys, setExpandedKeys, expandAll, collapseAll } = useCategoryExpansion(nodes);
+    const onCategoryDragDrop = (event: any) => {
+        const dragNodeKey = event.dragNode.key; // Categoria que foi arrastada
+        const dropNodeKey = event.dropNode?.key || null; // Categoria em que foi solta (ou null para raiz)
+    
+        const draggedCategory = categories.find(category => category.id === parseInt(dragNodeKey));
+    
+        // Verifica se foi solto na raiz (sem `dropNodeKey`)
+        if (draggedCategory) {
+            const updatedCategory = {
+                ...editedCategories[draggedCategory.id], // Mantém o name
+                parent_id: dropNodeKey ? parseInt(dropNodeKey) : null, // Atualiza para null se for solto na raiz
+            };
+    
+            // Usa handleInputChange para atualizar o estado
+            handleInputChange(draggedCategory.id, updatedCategory);
+    
+            // Atualiza visualmente a árvore
+            const updatedCategoryList = categories.map(category => {
+                if (category.id === draggedCategory.id) {
+                    return {
+                        ...category,
+                        parent_id: dropNodeKey ? parseInt(dropNodeKey) : null, // Atualiza para null se for solto na raiz
+                    };
+                }
+                return category;
+            });
+    
+            setNodes(buildCategoryTree(updatedCategoryList)); // Atualiza a árvore visual
+            console.log("Categorias atualizadas:", updatedCategoryList);
+        }
+    };
+    
+    
+    
+    
     useEffect(() => {
         const groupedCategories = buildCategoryTree(categories);
         setNodes(groupedCategories);
     }, [categories]);
-    const buildCategoryTree = (categories: Category[]): CategoryNode[] => {
-        const categoryMap: { [key: number]: CategoryNode } = {};
-    
-        const calculateDepth = (category: Category, depth: number = 0): number => {
-            if (!category.parent_id) return depth;
-            const parentCategory = categories.find(cat => cat.id === category.parent_id);
-            return parentCategory ? calculateDepth(parentCategory, depth + 1) : depth;
-        };
-    
-        const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
-    
-        sortedCategories.forEach((category) => {
-            const depth = calculateDepth(category);
-            categoryMap[category.id] = {
-                key: String(category.id), // Garantindo que a chave seja string
-                label: category.name,
-                children: [],
-                className: category.parent_id ? 'p-node-leaf' : 'p-node-parent', // Classe CSS baseada no parent_id
-                style: { paddingLeft: `${depth * 15}px` }, // Estilo de indentação baseado na profundidade
-                depth, // Mantendo o dado de profundidade
-            };
-        });
-    
-        const tree: CategoryNode[] = [];
-        sortedCategories.forEach((category) => {
-            const parentNode = category.parent_id ? categoryMap[category.parent_id] : null;
-            const currentNode = categoryMap[category.id];
-            
-            if (category.parent_id && parentNode && currentNode) {
-                // Garante que parentNode.children seja um array antes de tentar usá-lo
-                parentNode.children = parentNode.children || [];
-                parentNode.children.push(currentNode);
-            } else if (currentNode) {
-                tree.push(currentNode);
-            }
-            
-        });
-    
-        return tree;
-    };
-    
-    
-    
-    
-    
-    
-
-    const handleEditToggle = () => {
-        setIsEditing(!isEditing);
-        if (!isEditing) {
-            const initialEditedCategories: { [key: number]: string } = categories.reduce((acc, category) => {
-                acc[category.id] = category.name;
-                return acc;
-            }, {} as { [key: number]: string }); // Tipando o acumulador
-            setEditedCategories(initialEditedCategories);
-        }
-    };
-
-    const handleInputChange = (id: number, newName: string) => {
-        const updatedCategories: { [key: number]: string } = {
-            ...editedCategories,
-            [id]: newName,
-        };
-        setEditedCategories(updatedCategories);
-        setData('editedCategories', updatedCategories);
-    };
-
-    const handleSaveChanges = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Envia os dados editados para o backend
-        put(route('categories.update'), {
-            data,
-            onSuccess: () => {
-                setSaveSuccessEditing(true);
-                setIsEditing(false);
-            },
-        });
-    };
-
-    const expandAll = () => {
-        let _expandedKeys: { [key: string]: boolean } = {};
-        for (let node of nodes) {
-            expandNode(node, _expandedKeys);
-        }
-        setExpandedKeys(_expandedKeys);
-    };
-
-    const collapseAll = () => {
-        setExpandedKeys({});
-    };
 
     const openAddSubcategoryDialog = (parentCategory: CategoryNode) => {
         setSelectedParentCategory(parentCategory);
         setShowAddSubcategoryDialog(true);
     };
-
-    const expandNode = (node: CategoryNode, _expandedKeys: { [key: string]: boolean | number }) => {
-        if (node.children && node.children.length) {
-            const key = node.key;
+    const handleNodeClick = (node: CategoryNode) => {
+        // Faz uma cópia do estado de expandedKeys
+        const newExpandedKeys: { [key: string]: boolean } = { ...expandedKeys };
     
-            if (key !== undefined && key !== null) { // Verifica se key é definido e válido
-                _expandedKeys[key.toString()] = true; // Converte a chave para string se necessário
-            }
-    
-            for (let child of node.children) {
-                expandNode(child, _expandedKeys);
+        if(node.key){
+            // Verifica se o nó está expandido, se sim, recolhe, se não, expande
+            if (newExpandedKeys[node.key]) {
+                delete newExpandedKeys[node.key]; // Recolhe o nó removendo-o dos expandedKeys
+            } else {
+                newExpandedKeys[node.key] = true; // Expande o nó adicionando-o aos expandedKeys
             }
         }
+        // Atualiza o estado com os novos expandedKeys
+        setExpandedKeys(newExpandedKeys);
     };
+ 
     
-    
-
     return (
-        <div className="w-full px-3">
-            <div className="flex flex-wrap fixed top-0 justify-between items-center gap-5 p-4 bg-gray-100 shadow-lg rounded-md">
+        <div className="w-full px-3 overflow-y-hidden">
+            <div className="flex absolute top-0 left-0 overflow-y-hidden h-[5vh] md:h-[7vh] xl:h-[10vh] justify-between items-center gap-5 p-4 bg-gray-100 shadow-lg rounded-md">
                 <div className="flex items-center gap-3">
                     <img src="/images/icons/suppliers.png" className="w-14 h-14" alt="Suppliers Icon" />
-                    <h2 className="text-3xl font-bold text-gray-700">Categorias de Itens</h2>
+                    <h2 className="md:text-3xl font-bold text-gray-700">Categorias de Itens</h2>
                 </div>
                 <div className="flex gap-3">
                     {isEditing && (
                         <Button
                             icon="pi pi-undo"
-                            label={"Cancelar"}
-                            className={"px-2 py-1 rounded shadow text-white p-button-primary bg-red-500"}
+                            label=""
+                            className={classNames("px-2 py-1 rounded shadow text-white p-button-primary", "bg-red-500")}
                             onClick={handleEditToggle}
                         />
                     )}
                     <Button
-                        icon="pi pi-pencil"
+                        icon={processing ? "pi pi-spin pi-spinner" : "pi pi-pencil"}
                         label={isEditing ? "Salvar Alterações" : "Editar Locais"}
-                        className={`px-2 py-1 rounded shadow text-white ${isEditing ? "p-button-success bg-green-500 " : "p-button-primary bg-blue-500"}`}
+                        className={classNames(
+                            "px-2 py-1 rounded shadow text-white",
+                            { "p-button-success bg-green-500": isEditing, "p-button-primary bg-blue-500": !isEditing }
+                        )}
                         onClick={isEditing ? handleSaveChanges : handleEditToggle}
+                        disabled={processing}
                     />
                 </div>
             </div>
-            <div className="card flex flex-col items-center justify-center mt-6 ">
-                <h3 className="text-white text-lg font-semibold mb-4">Gerenciar Categorias</h3>
-                <div className="flex gap-4">
+
+            <div className=" flex flex-col h-[82vh] md:h-[73vh] xl:h-[73vh] mb-2 shadow rounded-md border border-gray-200 w-full overflow-y-auto md:mt-10 bg-white">
+
+
+            <Tree
+    value={nodes}
+    expandedKeys={expandedKeys}
+    onToggle={(e) => setExpandedKeys(e.value)}
+    className="w-full bg-white"
+    nodeTemplate={(node, options) => (
+        <div
+            className={`flex gap-1 border-b p-0 border cursor-grab bg-white shadow-sm border-gray-300 mb-1 rounded p-1 ${options.className}`}
+            draggable={isEditing} // Somente permite arrastar no modo de edição
+            onDragStart={(e) => e.currentTarget.style.cursor = 'grabbing'}
+            onDragEnd={(e) => e.currentTarget.style.cursor = 'grab'}
+        >
+            <i className={`pi my-auto ${node.children && node.children.length > 0 ? 'pi-th-large text-blue-500' : 'pi-box text-green-500'}`}></i>
+            {isEditing ? (
+                <>
+                    <InputText
+                        value={editedCategories[node.key as number]?.name || categories.find(cat => cat.id === Number(node.key))?.name || ''}
+                        onChange={(e) => handleInputChange(node.key as number, { ...editedCategories[node.key as number], name: e.target.value })}
+                        className="w-full py-0 m-0 border-gray-200 rounded shadow bg-gray-50"
+                    />
+                </>
+            ) : (
+                <span className='my-auto' onClick={() => handleNodeClick(node as CategoryNode)}>
+                    {node.label}
+                </span>
+            )}
+            <Button
+                icon="pi pi-plus"
+                className="p-button-rounded p-button-text p-button-secondary"
+                onClick={() => openAddSubcategoryDialog({ key: node.key as number, label: node.label || '' })}
+                title="Adicionar Subcategoria"
+            />
+            {node.children && node.children.length > 0 && <Badge value={node.children.length} severity="info" className="m-auto" />}
+        </div>
+    )}
+    dragdropScope={isEditing ? "category-drag" : undefined}  // Habilita drag and drop apenas no modo de edição
+    onDragDrop={isEditing ? onCategoryDragDrop : undefined}  // Habilita drag and drop apenas no modo de edição
+/>
+
+
+
+            </div>
+            <div className="flex gap-4 justify-center pt-4">
                     <Button
                         type="button"
                         icon="pi pi-angle-double-down"
@@ -197,56 +210,18 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                         onClick={collapseAll}
                     />
                 </div>
-            </div>
-            <Tree
-    value={nodes}
-    expandedKeys={expandedKeys}
-    onToggle={(e) => setExpandedKeys(e.value)}
-    className="w-full bg-white p-4"
-    nodeTemplate={(node, options) => (
-        <div className={`flex gap-2 border-b pb-1 bg-gray-100 p-1 ${options.className}`}
-        >
-            <i className={`pi my-auto ${node.children && node.children.length > 0 ? 'pi-th-large text-blue-500' : 'pi-box text-green-500'} mr-`}></i>
-            {isEditing ? (
-                <>
-                    <InputText
-                        value={editedCategories[node.key as number] || ''}
-                        onChange={(e) => handleInputChange(node.key as number, e.target.value)}
-                        className="p-inputtext-sm w-full py-0 m-0"
-                    />
-                    <Button
-                        icon="pi pi-plus"
-                        className="p-button-rounded p-button-text p-button-secondary"
-                        onClick={() => openAddSubcategoryDialog({ key: node.key as number, label: node.label || '' })}
-                        title="Adicionar Subcategoria"
-                    />
+            <AddSubcategoryDialog
+                visible={showAddSubcategoryDialog}
+                onHide={() => setShowAddSubcategoryDialog(false)}
+                parentCategoryName={selectedParentCategory?.label || ''}
+                parentCategoryId={
+                    typeof selectedParentCategory?.key === 'string'
+                        ? parseInt(selectedParentCategory.key)
+                        : selectedParentCategory?.key || null
+                }
 
-                </>
-            ) : (
-                <span>{node.label}</span>
-            )}
-            {node.children && node.children.length > 0 && <Badge value={node.children.length} severity="info" className="ml-auto" />}
-        </div>
-    )}
-/>
-
-
-
-
-                <AddSubcategoryDialog
-                    visible={showAddSubcategoryDialog}
-                    onHide={() => setShowAddSubcategoryDialog(false)}
-                    parentCategoryName={selectedParentCategory?.label || ''}
-                    parentCategoryId={
-                        typeof selectedParentCategory?.key === 'string'
-                            ? parseInt(selectedParentCategory.key)
-                            : selectedParentCategory?.key || null
-                    }
-                    setSaveAddCategory={() => setSaveAddCategory(true)} // Altere a função para uma que não precisa de argumento
-                    setIsEditing={() => setIsEditing(true)} // Altere a função para uma que não precisa de argumento
-                    setSelectedParentCategory={() => setSelectedParentCategory(null)} // Altere a função para uma que não precisa de argumento
-                />
-
+                setSelectedParentCategory={() => setSelectedParentCategory(null)}
+            />
         </div>
     );
 }

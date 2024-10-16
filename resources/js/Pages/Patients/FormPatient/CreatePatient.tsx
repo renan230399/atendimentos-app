@@ -9,7 +9,6 @@ import ContactSection from '@/Pages/Patients/FormPatient/ContactSection';
 import PopupHeader from '@/Layouts/PopupHeader';
 import { useForm } from '@inertiajs/react';
 import {Patient, Contact} from '../interfacesPatients';
-import axios from 'axios';
 
 
 

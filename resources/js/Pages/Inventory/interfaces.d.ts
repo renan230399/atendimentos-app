@@ -96,3 +96,17 @@ export interface ProductFormData {
     measuring_unit_of_unit: string | null;
     status: boolean;
 }
+export interface TreeNode {
+    key: string;
+    label: string;
+    value: string;
+    children: TreeNode[];
+}
+export interface CategoryNode {
+    key: string | number | undefined; // Adiciona 'undefined' para compatibilidade com TreeNode
+    label: string;
+    children?: CategoryNode[];
+    depth?: number;
+    className?: string;
+    style?: React.CSSProperties;
+}

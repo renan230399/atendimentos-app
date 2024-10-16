@@ -55,29 +55,34 @@ class CategoryProductController extends Controller
         // Valida os dados recebidos para garantir que o campo 'editedCategories' seja um array
         $validatedData = $request->validate([
             'editedCategories' => 'required|array',
-            'editedCategories.*' => 'required|string|max:255', // Valida cada nome de categoria
+            'editedCategories.*.name' => 'required|string|max:255', // Valida o nome de cada categoria
+            'editedCategories.*.parent_id' => 'nullable|integer', // Valida o parent_id (pode ser nulo)
         ]);
-
+    
         // Usar uma transação para garantir a integridade dos dados
         DB::beginTransaction();
-
+    
         try {
             // Loop para atualizar cada categoria individualmente
-            foreach ($validatedData['editedCategories'] as $id => $name) {
+            foreach ($validatedData['editedCategories'] as $id => $categoryData) {
                 // Atualiza a categoria correspondente
                 CategoryProduct::where('id', $id)->update([
-                    'name' => $name,
+                    'name' => $categoryData['name'],
+                    'parent_id' => $categoryData['parent_id'], // Atualiza também o parent_id
                 ]);
             }
-
-            // Confirma a transação se todas as atualizações foram bem-sucedidas
+    
+            // Confirma a transação se todas as atualizações forem bem-sucedidas
             DB::commit();
+            return redirect()->route('inventory.dashboard')->with('success', 'Categorias atualizadas com sucesso.');
         } catch (\Exception $e) {
             // Reverte a transação em caso de falha
             DB::rollBack();
-            return redirect()->route('inventory.dashboard')->with('success', 'Erro!');
+            return redirect()->route('inventory.dashboard')->with('error', 'Erro ao atualizar as categorias.');
         }
     }
+    
+    
 
     /**
      * Remove the specified category product from storage.

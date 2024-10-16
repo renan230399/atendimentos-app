@@ -1,88 +1,102 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { useForm } from '@inertiajs/react';
-interface CategoryNode {
-    key: number; // ou string, dependendo do tipo de key que você está usando
-    label: string;
-    children?: CategoryNode[]; // Array de CategoryNode para representar as subcategorias
-}
+import { z } from 'zod'; // Importando o Zod para validação
+import { CategoryNode } from '../interfaces';
+// Definindo o esquema de validação com Zod
+const subcategorySchema = z.object({
+    name: z.string().min(2, { message: "O nome é obrigatório e deve ter pelo menos dois caracteres" }), // Campo de nome obrigatório
+    parent_id: z.number().nullable(), // parent_id pode ser número ou nulo
+});
+
+
 
 interface AddSubcategoryDialogProps {
     visible: boolean;
     onHide: () => void;
     parentCategoryName: string;
     parentCategoryId: number | null;
-    setSaveAddCategory: (value: boolean) => void; // Altere para aceitar um booleano
-    setIsEditing: (value: boolean) => void; // Altere para aceitar um booleano
-    setSelectedParentCategory: (value: CategoryNode | null) => void; // Aceita CategoryNode ou null
+    setSelectedParentCategory: (value: CategoryNode | null) => void;
 }
-
 
 const AddSubcategoryDialog: React.FC<AddSubcategoryDialogProps> = ({
     visible,
     onHide,
     parentCategoryName,
     parentCategoryId,
-    setSaveAddCategory,
-    setIsEditing,
-    setSelectedParentCategory
 
+    setSelectedParentCategory,
 }) => {
-    // Utilizando useForm do Inertia para gerenciar o estado do formulário e envio de dados
     const { data, setData, post, processing, reset } = useForm({
         name: '',
         parent_id: parentCategoryId,
     });
 
+    const [validationErrors, setValidationErrors] = useState<{ name?: string }>({});
+
     // Atualiza o estado do formulário quando o parentCategoryId muda
     useEffect(() => {
-        if (parentCategoryId !== data.parent_id) { // Verifica se o parent_id realmente mudou
+        if (parentCategoryId !== data.parent_id) {
             setData('parent_id', parentCategoryId);
         }
     }, [parentCategoryId]);
 
+    // Função para validar e enviar o formulário
     const handleAddSubcategory = (e: React.FormEvent) => {
         e.preventDefault();
-        if (data.name.trim() !== '' && parentCategoryId !== null) { // Verificando se não é nulo
-            post(route('categories.store'), {
-                data,
-                onSuccess: () => {
-                    reset();
-                    onHide();
-                    setSaveAddCategory(true);
-                    setIsEditing(false);
-                    setSelectedParentCategory(null); // Ou alguma lógica que você precise
-                }
-            });
+
+        // Fazendo a validação com Zod
+        const result = subcategorySchema.safeParse(data);
+
+        if (!result.success) {
+            const errors = result.error.format();
+            setValidationErrors({ name: errors.name?._errors[0] });
+            return;
         }
+
+        // Se passar na validação, faz o post
+        post(route('categories.store'), {
+            data,
+            onSuccess: () => {
+                reset();
+                onHide();
+                setSelectedParentCategory(null);
+            },
+        });
     };
 
     return (
         <Dialog
             header="Adicionar Nova Subcategoria"
             visible={visible}
-            className='w-[30vw]'
+            className="w-[30vw]"
             modal
             footer={
-                <div className='w-full justify-between flex'>
+                <div className="w-full justify-between flex">
                     <Button label="Cancelar" icon="pi pi-times" onClick={onHide} className="p-button-text" />
                     <Button label="Adicionar" icon="pi pi-check" onClick={handleAddSubcategory} autoFocus disabled={processing} />
                 </div>
             }
             onHide={onHide}
         >
-            <p className='pb-3'>
-                <strong>Categoria pai:</strong> {' '}{parentCategoryName}
+            <p className="pb-3">
+                <strong>Categoria pai:</strong> {parentCategoryName}
             </p>
             <InputText
                 value={data.name}
-                onChange={(e) => setData('name', e.target.value)}
+                onChange={(e) => {
+                    setData('name', e.target.value);
+                    setValidationErrors({}); // Limpa os erros ao alterar o valor
+                }}
                 placeholder="Nome da Subcategoria"
                 className="w-full"
                 required
             />
+            {validationErrors.name && (
+                <small className="p-error block">{validationErrors.name}</small>
+            )}
         </Dialog>
     );
 };

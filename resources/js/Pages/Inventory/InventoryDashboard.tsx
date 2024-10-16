@@ -37,24 +37,24 @@ export default function InventoryDashboard({ auth, categories, products, stockLo
         <AuthenticatedLayout user={auth.user}>
             <div className="fixed right-0 pl-2 ml-5 h-screen w-[5vw]">
                 <IconButton
-                    icon={<FaSitemap size={30} className="text-white" />}
-                    title="Categorias de Itens"
-                    onClick={() => setCategoriesSideBar(true)}
-                />
-                <IconButton
                     icon={<TbTruckDelivery size={30} className="text-white" />}
                     title="Fornecedores"
                     onClick={() => setSuppliersPopupOpen(true)}
                 />
                 <IconButton
-                    icon={<FaMagnifyingGlassLocation size={30} className="text-white" />}
-                    title="Locais do estoque"
-                    onClick={() => setStockLocalsSideBar(true)}
-                />
-                <IconButton
                     icon={<RiListOrdered size={30} className="text-white" />}
                     title="Pedidos"
                     onClick={() => setViewOrders(true)}
+                />
+                <IconButton
+                    icon={<FaSitemap size={30} className="text-white" />}
+                    title="Categorias de Itens"
+                    onClick={() => setCategoriesSideBar(true)}
+                />
+                <IconButton
+                    icon={<FaMagnifyingGlassLocation size={30} className="text-white" />}
+                    title="Locais do estoque"
+                    onClick={() => setStockLocalsSideBar(true)}
                 />
             </div>
             <Head title="Inventário" />
@@ -100,7 +100,7 @@ export default function InventoryDashboard({ auth, categories, products, stockLo
             <Sidebar
                 visible={categoriesSideBar}
                 position="bottom"
-                className="pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-auto bg-white"
+                className="pt-0 xl:w-[90vw] md:w-[90vw] w-[96vw] h-screen overflow-y-hidden bg-white"
                 onHide={() => setCategoriesSideBar(false)}
             >
                 <CategoriesManager categories={categories} />
