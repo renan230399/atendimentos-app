@@ -31,7 +31,7 @@ const buildCategoryTree = (categories: Category[]): CategoryNode[] => {
             label: category.name,
             children: [],
             className: category.parent_id ? 'p-node-leaf' : 'p-node-parent',
-            style: { paddingLeft: `${depth * 10}px` },
+            style: { paddingLeft: `${depth * 8}px` },
             depth,
         };
     });
@@ -57,7 +57,7 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
     const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
     const [selectedParentCategory, setSelectedParentCategory] = useState<CategoryNode | null>(null);
 
-    const { isEditing, editedCategories, handleEditToggle, handleInputChange, handleSaveChanges, processing, put, setEditedCategories } = useCategoryEdit(categories); // put agora disponível
+    const { isEditing, editedCategories, handleEditToggle, handleInputChange, handleSaveChanges, processing, put, setEditedCategories } = useCategoryEdit(categories, setNodes, buildCategoryTree); // put agora disponível
     const { expandedKeys, setExpandedKeys, expandAll, collapseAll } = useCategoryExpansion(nodes);
     const onCategoryDragDrop = (event: any) => {
         const dragNodeKey = event.dragNode.key; // Categoria que foi arrastada
@@ -65,31 +65,17 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
     
         const draggedCategory = categories.find(category => category.id === parseInt(dragNodeKey));
     
-        // Verifica se foi solto na raiz (sem `dropNodeKey`)
         if (draggedCategory) {
             const updatedCategory = {
                 ...editedCategories[draggedCategory.id], // Mantém o name
                 parent_id: dropNodeKey ? parseInt(dropNodeKey) : null, // Atualiza para null se for solto na raiz
             };
     
-            // Usa handleInputChange para atualizar o estado
+            // Usa handleInputChange para atualizar o estado e a árvore visual
             handleInputChange(draggedCategory.id, updatedCategory);
-    
-            // Atualiza visualmente a árvore
-            const updatedCategoryList = categories.map(category => {
-                if (category.id === draggedCategory.id) {
-                    return {
-                        ...category,
-                        parent_id: dropNodeKey ? parseInt(dropNodeKey) : null, // Atualiza para null se for solto na raiz
-                    };
-                }
-                return category;
-            });
-    
-            setNodes(buildCategoryTree(updatedCategoryList)); // Atualiza a árvore visual
-            console.log("Categorias atualizadas:", updatedCategoryList);
         }
     };
+    
     
     
     
