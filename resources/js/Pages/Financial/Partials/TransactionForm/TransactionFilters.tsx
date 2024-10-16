@@ -1,11 +1,11 @@
 import React from 'react';
 import { MultiSelect } from 'primereact/multiselect';
 import { Dropdown } from 'primereact/dropdown';
-//import DatePicker from 'react-datepicker';
 import InputLabel from '@/Components/InputLabel';
 import CategoryTreeBuilder from '@/Components/Utils/CategoryTreeBuilder';
 import { TreeSelect, TreeSelectSelectionKeysType } from 'primereact/treeselect';
 import { TreeNode } from 'primereact/treenode';
+import { Calendar } from 'primereact/calendar';
 
 interface TransactionFiltersProps {
   filterDate: Date | null;
@@ -49,16 +49,16 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
       {/* Filtro por Data */}
       <div className='m-auto w-[12%]'>
         <InputLabel htmlFor="filter_date" className="w-full m-auto" value="Selecione um dia" />
-        {/*<DatePicker
+        <Calendar
           id="filter_date"
-          selected={filterDate}
-          onChange={(date) => setFilterDate(date)}
-          isClearable
-          autoComplete='off'
-          placeholderText="Selecione uma data"
-          dateFormat="dd/MM/yyyy"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.value ? new Date(e.value) : null)}
+          placeholder="Selecione uma data"
+          dateFormat="dd/mm/yy"
+          showIcon
           className="w-full p-2 border rounded"
-        />*/}
+        />
+
       </div>
 
       {/* Filtro por Tipo de Transação */}

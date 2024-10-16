@@ -51,22 +51,25 @@ const Patients: React.FC<PatientsProps> = ({ auth, patients = [], employees = []
         search: search || '',
     });
 
-    // Função para buscar pacientes e mostrar spinner
+    // Função para buscar pacientes, ordenar e mostrar spinner
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setData('search', e.target.value);
         
         // Ativa o loading enquanto filtra
         setLoading(true);
         
-        const filtered = patients.filter((patient) =>
-            patient.patient_name.toLowerCase().includes(e.target.value.toLowerCase())
-        );
+        const filtered = patients
+            .filter((patient) =>
+                patient.patient_name.toLowerCase().includes(e.target.value.toLowerCase())
+            )
+            .sort((a, b) => a.patient_name.localeCompare(b.patient_name)); // Ordena alfabeticamente
 
         // Atualiza os pacientes filtrados e desativa o loading
         setFilteredPatients(filtered);
         setCurrentPage(0);
         setLoading(false);  // Desativa o loading quando o filtro termina
     };
+
 
     const handlePageClick = (data: { selected: number }) => {
         setCurrentPage(data.selected);
@@ -87,7 +90,10 @@ const Patients: React.FC<PatientsProps> = ({ auth, patients = [], employees = []
         setIsCreatePopupOpen(false);
         setSelectedPatient(null);
     };
-
+const closePopupPatient = () =>{
+    setSelectedPatient(null);
+    setIsViewPopupOpen(false);
+}
     return (
         <AuthenticatedLayout user={auth.user}>
             <Head title="Pacientes" />
@@ -194,14 +200,15 @@ const Patients: React.FC<PatientsProps> = ({ auth, patients = [], employees = []
             {/* Modal de visualização de paciente */}
             <Dialog
                 visible={isViewPopupOpen}
-                onHide={() => setIsViewPopupOpen(false)}
+                onHide={() => closePopupPatient()}
                 className="w-[96vw] h-[98vh] m-auto rounded-xl "
             >
                 {selectedPatient && (
                     <ViewPatient
                         patient={selectedPatient}
-                        handleClosePatientForm={(e) => handleOpenPopup(e, selectedPatient)}
                         forms={forms}
+                        closePopupPatient={() => closePopupPatient() }
+
                     />
                 )}
             </Dialog>

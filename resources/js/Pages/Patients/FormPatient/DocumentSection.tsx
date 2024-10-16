@@ -8,8 +8,8 @@ import InputFile from '@/Components/InputFile';
 import CustomDropdown from '@/Components/CustomDropdown';
 // Definição das opções de status com ícones
 const statusOptions = [
-    { value: true, label: 'Ativo', icon: <span className="text-green-500">✔</span> },
-    { value: false, label: 'Inativo', icon: <span className="text-red-500">⏳</span> },
+    { value: 1, label: 'Ativo', icon: <span className="text-green-500">✔</span> },
+    { value: 0, label: 'Inativo', icon: <span className="text-red-500">⏳</span> },
 ];
 
 interface DocumentSectionProps {
@@ -47,8 +47,13 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                         id="profile_picture"
                         type="file"
                         className="mt-1 block w-full"
-                        onChange={(e) => setData('profile_picture', e.target.files?.[0] || null)} // Armazena o arquivo selecionado
+                        onChange={(e) => {
+                            const selectedFile = e.target.files?.[0] || null;
+                            setData('profile_picture', selectedFile);
+                            console.log('Imagem selecionada:', selectedFile); // Verifica se a imagem foi capturada corretamente
+                        }}
                     />
+
 
                     {/* Exibe uma prévia do logo existente, caso já tenha sido salvo */}
                     {data?.profile_picture && (

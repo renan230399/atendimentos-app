@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
 
     // Rotas para pacientes (patients)
     Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
-    Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
+    Route::post('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
 
     Route::get('/patients/for-consultation', [PatientController::class, 'getPatientsForAddConsultation'])->name('patients.consultation.add');
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');

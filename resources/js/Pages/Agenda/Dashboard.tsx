@@ -25,7 +25,6 @@ interface DashboardProps {
   }
 
 moment.locale('pt-br');
-const localizer = momentLocalizer(moment);
 
 const Dashboard: React.FC<DashboardProps> = ({ auth, events: initialEvents, forms = [] }) => {
     const [events, setEvents] = useState<EventPatient[]>(
@@ -66,12 +65,6 @@ const Dashboard: React.FC<DashboardProps> = ({ auth, events: initialEvents, form
         setCurrentDate(newDate);
     }, []);
 
-    const handleEventResize = useCallback(({ event, start, end }: { event: EventPatient; start: Date; end: Date }) => {
-        const nextEvents = events.map(existingEvent => 
-            existingEvent.id === event.id ? { ...existingEvent, start, end } : existingEvent
-        );
-        setEvents(nextEvents);
-    }, [events]);
 
     // Função para abrir o modal e criar um novo evento ao selecionar um slot
     const handleSelectSlot = useCallback(({ start, end }: { start: Date; end: Date }) => {
@@ -79,26 +72,43 @@ const Dashboard: React.FC<DashboardProps> = ({ auth, events: initialEvents, form
             setNewEventData({ start, end });
         }
     }, [currentView]);
-
+/*
 // Função para calcular o horário mínimo e máximo apenas para a visualização de dias
 const { minTime, maxTime } = useMemo(() => {
     if (currentView !== Views.DAY) {
+        // Corrigir para garantir que minTime e maxTime sejam do tipo Date
         return {
-            minTime: new Date(new Date().setHours(0, 0, 0)),
-            maxTime: new Date(new Date().setHours(23, 59, 59)),
+            minTime: new Date(new Date().setHours(0, 0, 0, 0)), // Instância de Date
+            maxTime: new Date(new Date().setHours(23, 59, 59, 999)), // Instância de Date
         };
     }
 
     const todayEvents = events.filter(event => moment(event.start).isSame(currentDate, 'day'));
+
     if (todayEvents.length === 0) {
         return {
-            minTime: new Date(new Date().setHours(6, 0, 0)),
-            maxTime: new Date(new Date().setHours(23, 59, 59)),
+            minTime: new Date(new Date().setHours(6, 0, 0, 0)), // Instância de Date
+            maxTime: new Date(new Date().setHours(23, 59, 59, 999)), // Instância de Date
         };
     }
 
-    const minEventTime = new Date(Math.min(...todayEvents.map(event => event.start.getTime())));
-    const maxEventTime = new Date(Math.max(...todayEvents.map(event => event.end.getTime())));
+    const eventStartTimes = todayEvents
+        .map(event => event.start instanceof Date ? event.start.getTime() : NaN)
+        .filter(time => !isNaN(time));
+
+    const eventEndTimes = todayEvents
+        .map(event => event.end instanceof Date ? event.end.getTime() : NaN)
+        .filter(time => !isNaN(time));
+
+    if (eventStartTimes.length === 0 || eventEndTimes.length === 0) {
+        return {
+            minTime: new Date(new Date().setHours(6, 0, 0, 0)), // Instância de Date
+            maxTime: new Date(new Date().setHours(23, 59, 59, 999)), // Instância de Date
+        };
+    }
+
+    const minEventTime = new Date(Math.min(...eventStartTimes));
+    const maxEventTime = new Date(Math.max(...eventEndTimes));
 
     const eventDuration = (maxEventTime.getTime() - minEventTime.getTime()) / (1000 * 60 * 60);
 
@@ -115,6 +125,14 @@ const { minTime, maxTime } = useMemo(() => {
 
     return { minTime: minEventTime, maxTime: maxEventTime };
 }, [events, currentDate, currentView]);
+*/
+
+
+
+
+
+
+
 
 
 
@@ -142,7 +160,7 @@ const { minTime, maxTime } = useMemo(() => {
                         />
                     </div>
 
-                    <div className="z-30 w-[96%] xl:w-[77%] xl:h-[80vh] md:h-[80vh] m-auto xl:mx-0 h-[50vh]">
+                    <div className="z-30 w-[96%] xl:w-[77%] xl:h-[80vh] md:h-[80vh] m-auto xl:mx-0 h-[60vh]">
                         <div className="place-items-center m-auto text-center">
                             {label}
                         </div>
@@ -159,8 +177,7 @@ const { minTime, maxTime } = useMemo(() => {
                                 endAccessor="end"
                                 view={currentView}
                                 date={currentDate}
-                                min={minTime}  // Horário mínimo exibido
-                                max={maxTime}  // Horário máximo exibido
+
                                 onView={handleViewChange}
                                 onNavigate={handleNavigate}
                                 components={{ toolbar: () => null }}

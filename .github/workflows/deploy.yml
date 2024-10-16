@@ -21,9 +21,8 @@ jobs:
 
       - name: Instalar dependências e Build
         run: |
-          npm install
-          npm install ziggy-js  # Caso você use o ziggy-js no projeto
-          npm run build  # Builda os arquivos no servidor do GitHub Actions
+          yarn install
+          yarn build  # Builda os arquivos no servidor do GitHub Actions
 
       - name: Verificar arquivos do build
         run: |
@@ -42,7 +41,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
             cd /home/ec2-user/atendimentos-app &&
-            docker-compose exec laravel.test npm install
+            docker-compose exec laravel.test yarn install
           '
 
       - name: Reiniciar Docker no EC2

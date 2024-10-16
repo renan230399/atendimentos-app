@@ -79,6 +79,8 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({ onClose, employee, is
                     onChange={(e) => setData('name', e.target.value)}
                     className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
+                    autoComplete="off"
+
                 />
                 <InputError message={errors.name} className="mt-2 text-red-600 text-sm" />
             </div>
@@ -125,6 +127,8 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({ onClose, employee, is
                                 onChange={(e) => setData('password', e.target.value)}
                                 className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                 required={!isEditMode}
+                                autoComplete="new-password"
+
                             />
                             <button
                                 type="button"
@@ -148,6 +152,8 @@ const NewEmployeeForm: React.FC<NewEmployeeFormProps> = ({ onClose, employee, is
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
                                 className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                 required={!isEditMode}
+                                autoComplete="new-password"
+
                             />
                             <button
                                 type="button"

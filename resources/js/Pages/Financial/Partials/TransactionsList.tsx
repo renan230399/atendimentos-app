@@ -9,6 +9,8 @@ import TransactionFilters from './TransactionForm/TransactionFilters';
 import TransactionItem from './TransactionForm/TrasactionItem'; 
 import Pagination from '@/Components/Pagination';
 import {Account, Transaction, Category} from '../FinancialInterfaces';
+import { TreeSelectSelectionKeysType } from 'primereact/treeselect';
+
 const statusOptions = [
   { value: 'true', label: 'Realizada', icon: <FaCheckCircle className='text-green-500'/> },
   { value: 'false', label: 'Pendente', icon: <FaExclamationTriangle className='text-red-500' /> },
@@ -134,7 +136,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
   const [filterType, setFilterType] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<boolean | null>(null);
   const [filterAccountIds, setFilterAccountIds] = useState<number[]>([]);
-  const [filterCategory, setFilterCategory] = useState<number[]>([]);
+  const [filterCategory, setFilterCategory] = useState<TreeSelectSelectionKeysType[]>([]);
   const groupedCategories = categories;
 
   // Estado para paginação
@@ -210,19 +212,20 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
       .map((transaction) => {
         return (
       <div>
-        {/*
+        {
           <TransactionItem
             key={transaction.id}
             transaction={transaction}
-            accounts={accounts}
-            categories={categories}
-            handleOpenConfirmedTransactionPopup={handleOpenConfirmedTransactionPopup}
+            accounts={typeof accounts === 'string' ? [] : accounts}    
+            categories={typeof categories === 'string' ? [] : categories}           
+       
+            handleOpenConfirmedTransactionPopup={(transaction) => handleOpenConfirmedTransactionPopup(transaction)} 
             toggleTransactionDetails={toggleTransactionDetails}
             openTransactions={openTransactions}
             getTransactionBorderClass={getTransactionBorderClass}
             getStatusBorderClass={getStatusBorderClass}
           />
-       */ }
+        }
       </div>
     );
       });
@@ -235,22 +238,22 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
 
   return (
     <>
-    {/*
+    
 
       <TransactionFilters
         filterDate={filterDate}
         setFilterDate={setFilterDate}
         filterType={filterType}
         setFilterType={setFilterType}
-        filterStatus={filterStatus}
-        setFilterStatus={setFilterStatus}
+        filterStatus={filterStatus ? 'true' : filterStatus === false ? 'false' : null}
+        setFilterStatus={(status) => setFilterStatus(status === 'true' ? true : status === 'false' ? false : null)}
         filterCategory={filterCategory}
         setFilterCategory={setFilterCategory}
         filterAccountIds={filterAccountIds}
         setFilterAccountIds={setFilterAccountIds}
         statusOptions={statusOptions}
-        accounts={accounts}
-        categories={groupedCategories}
+        accounts={typeof accounts === 'string' ? [] : accounts} // Se for string, passa um array vazio; caso contrário, passa os accounts
+        categories={typeof categories === 'string' ? [] : categories} // Se for string, passa um array vazio; caso contrário, passa as categorias
         selectedStatusTemplate={selectedStatusTemplate}
         statusOptionTemplate={statusOptionTemplate}
       />
@@ -295,7 +298,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ transactions, handl
       </div>
 
       <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
-  */}
+  
     </>
 
  );

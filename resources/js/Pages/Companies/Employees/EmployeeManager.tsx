@@ -6,6 +6,8 @@ import PopUpComponent from '@/Layouts/PopupComponent';
 import EmployeeTable from './EmployeesManager/EmployeeTable';
 import DeleteConfirmationModal from './EmployeesManager/DeleteConfirmationModal';
 
+import { Dialog } from 'primereact/dialog';
+
 interface Employee {
     id: number;
     name: string;
@@ -71,7 +73,6 @@ const EmployeeManager: React.FC<EmployeeManagerProps> = ({ employees }) => {
 
     return (
         <div>
-            <h1 className="text-2xl font-bold mb-4">Funcionários da Empresa</h1>
             <div className="flex justify-end">
                 <button 
                     onClick={handleOpenCreatePopup} 
@@ -94,12 +95,16 @@ const EmployeeManager: React.FC<EmployeeManagerProps> = ({ employees }) => {
                 </PopUpComponent>
             )}
 
-            {isEditPopupOpen && selectedEmployee && (
-                <PopUpComponent id="editar_funcionario_popup" params={popupParams} onClose={handleCloseEditPopup}>
-                    <NewEmployeeForm employee={selectedEmployee} onClose={handleCloseEditPopup} isEditMode={true} />
-                </PopUpComponent>
-            )}
 
+                <Dialog
+                visible={isEditPopupOpen}
+                onHide={() => setIsEditPopupOpen(false)}
+                className="w-[96vw] h-[98vh] m-auto rounded-xl "
+                >
+                {selectedEmployee && (
+                    <NewEmployeeForm employee={selectedEmployee} onClose={handleCloseEditPopup} isEditMode={true} />
+                )}
+                </Dialog>
                 <DeleteConfirmationModal
                     isOpen={showModal} // Deve estar correto
                     employeeName={selectedEmployee?.name || null} // Deve estar correto

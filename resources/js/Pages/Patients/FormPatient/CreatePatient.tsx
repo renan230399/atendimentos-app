@@ -9,6 +9,7 @@ import ContactSection from '@/Pages/Patients/FormPatient/ContactSection';
 import PopupHeader from '@/Layouts/PopupHeader';
 import { useForm } from '@inertiajs/react';
 import {Patient, Contact} from '../interfacesPatients';
+import axios from 'axios';
 
 
 
@@ -20,7 +21,6 @@ interface CreatePatientProps {
     handleClosePatientForm: () => void;
 }
 const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleClosePatientForm }) => {
-    const initialContacts: Contact[] = Array.isArray(patient?.contacts) ? patient.contacts : [];
 
     const { data, setData, post, put, processing, errors, reset } = useForm<Patient>({
         id: patient?.id || 0,
@@ -37,36 +37,15 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
         state: patient?.state || '',
         cpf: patient?.cpf || '',
         contacts: Array.isArray(patient?.contacts) ? patient.contacts : [],
-        complaints: patient?.complaints || null,
+        complaints: Array.isArray(patient?.complaints) ? patient.complaints : [],
         notes: patient?.notes || '',
-        profile_picture: patient?.profile_picture || null,
+        profile_picture: null,
         status: patient?.status || true,
         created_at: patient?.created_at || '',
         updated_at: patient?.updated_at || '',
     });
     
-    useEffect(() => {
-        if (patient) {
-            setData({
-                patient_name: patient.patient_name || '',
-                personal_contacts: Array.isArray(patient.personal_contacts) ? patient.personal_contacts : [], // Converte para array se necessário
-                birth_date: patient.birth_date || '',
-                gender: patient.gender || '',
-                neighborhood: patient.neighborhood || '',
-                street: patient.street || '',
-                house_number: patient.house_number || '',
-                address_complement: patient.address_complement || '',
-                city: patient.city || '',
-                state: patient.state || '',
-                cpf: patient.cpf || '',
-                contacts: Array.isArray(patient.contacts) ? patient.contacts : [], // Converte para array se necessário
-                notes: patient.notes || '',
-                profile_picture: patient.profile_picture || null,
-                status: patient.status ?? true, // Usa true como padrão se indefinido
-                complaints: patient.complaints || '', // Adiciona complaints com valor padrão
-            });
-        }
-    }, []);
+
     
     
 
@@ -92,18 +71,21 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
                 value: contact.category === 'phone' ? cleanPhoneNumber(contact.value) : contact.value,
             })),
         }));
-    
+        const cleanedComplaints = data.complaints ? JSON.stringify(data.complaints) : '[]';
+
         // Atualiza os dados com os contatos limpos
         const updatedData = {
             ...data,
             personal_contacts: cleanedPersonalContacts,
             contacts: cleanedContacts,
+            complaints: cleanedComplaints, 
+
         };
     
         console.log(updatedData); // Exibir dados limpos no console
         if (patient) {
             // Modo de edição
-            put(route('patients.update', patient.id!), {
+            post(route('patients.update', patient.id!), {
                 data: updatedData, // Use os dados atualizados aqui
                 preserveScroll: true,
                 onSuccess: () => {
@@ -129,13 +111,18 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
     };
     
     
+    
+    
+    
+    
+    
 
     return (
         <>
             <PopupHeader icon='' title={patient ? 'Editar Paciente' : 'Cadastrar novo paciente'} />
 
             <div className="w-[100%] mx-auto">
-                <form onSubmit={handleSubmit} className="space-y-6 flex flex-wrap gap-1">
+                <form onSubmit={handleSubmit}  encType="multipart/form-data" className="space-y-6 flex flex-wrap gap-1">
                     <div className='w-[100%] z-10 rounded p-5 border-b-2 flex flex-wrap gap-1'>
                         <DocumentSection
                             data={data}
@@ -170,7 +157,7 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
                     </div>
 
                     <div className="m-auto pt-20">
-                        <PrimaryButton disabled={processing}>
+                        <PrimaryButton disabled={processing} >
                             {patient ? 'Atualizar informações' : 'Cadastrar paciente'}
                         </PrimaryButton>
                     </div>

@@ -25,13 +25,40 @@ export interface Patient {
     state: string;
     cpf: string;
     contacts: Contact[] |  null; // Aqui você pode ajustar se sempre receberá um array ou uma string
-    complaints: string | null;
+    complaints: Complaints[] | null;
     notes: string;
-    profile_picture: string | null;
+    profile_picture: string | null ;
     status: boolean;
     created_at?: string; // ou Date, se você estiver lidando com objetos Date
     updated_at?: string; // ou Date, se você estiver lidando com objetos Date
 
+}
+export interface PatientForm {
+    id?: number;
+    company_id?: number;
+    patient_name: string;
+    personal_contacts: ContactDetail[] | null;
+    birth_date: string | null; // ou Date, se você estiver lidando com objetos Date
+    gender: string | null;
+    neighborhood: string;
+    street: string;
+    house_number: string;
+    address_complement: string;
+    city: string;
+    state: string;
+    cpf: string;
+    contacts: Contact[] |  null; // Aqui você pode ajustar se sempre receberá um array ou uma string
+    complaints: Complaints[] | null;
+    notes: string;
+    profile_picture: File | null;
+    status: boolean;
+    created_at?: string; // ou Date, se você estiver lidando com objetos Date
+    updated_at?: string; // ou Date, se você estiver lidando com objetos Date
+
+}
+export interface Complaints{
+    name: string | null;
+    tipo: string | null;
 }
 export interface Form {
     id: number;

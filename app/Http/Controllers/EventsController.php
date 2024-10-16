@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Consultation; // Adiciona a importação do modelo Consultation
 use App\Models\Form;
+use Illuminate\Support\Facades\Cache;
 
 class EventsController extends Controller
 {
@@ -15,19 +16,23 @@ class EventsController extends Controller
      */
     public function index(Request $request)
     {
-        // Obtém o usuário autenticado com a empresa associada
         $user = $request->user()->load('company');
-        
-        // Obtém o ID da empresa do usuário autenticado
         $companyId = $user->company->id; 
-
-        // Busca eventos do usuário autenticado
-        $events = Event::where('user_id', $user->id)->get();
-        
-        // Busca consultas relacionadas à empresa do usuário e carrega os dados completos dos pacientes
-        $consultations = Consultation::with('patient')->where('company_id', $user->company->id)->get();
-        
-        // Transforma as consultas no formato esperado para o calendário, incluindo os dados completos dos pacientes
+    
+        // Usando cache e `select()` para otimizar a consulta dos pacientes
+        $consultations = Cache::remember('consultations_company_' . $companyId, 60, function () use ($companyId) {
+            return Consultation::with([
+                'patient' => function ($query) {
+                    $query->select([
+                        'id', 'company_id', 'patient_name', 'birth_date',
+                        'neighborhood', 'street', 'house_number', 'address_complement',
+                        'city', 'state', 'cpf', 'contacts', 'complaints', 'notes', 'profile_picture', 'status'
+                    ]);
+                }
+            ])->where('company_id', $companyId)->get();
+        });
+    
+        // Transformando as consultas para o formato de eventos
         $consultationEvents = $consultations->map(function ($consultation) {
             return [
                 'id' => $consultation->id,
@@ -37,41 +42,23 @@ class EventsController extends Controller
                 'end' => $consultation->date . ' ' . $consultation->end_time,
                 'type' => 'consulta',
                 'price' => $consultation->price,
-                'patient' => [ // Inclui todas as informações relevantes do paciente
-                    'id' => $consultation->patient->id,
-                    'company_id' => $consultation->patient->company_id,
-                    'patient_name' => $consultation->patient->patient_name,
-                    'phone' => $consultation->patient->phone,
-                    'birth_date' => $consultation->patient->birth_date,
-                    'neighborhood' => $consultation->patient->neighborhood,
-                    'street' => $consultation->patient->street,
-                    'house_number' => $consultation->patient->house_number,
-                    'address_complement' => $consultation->patient->address_complement,
-                    'city' => $consultation->patient->city,
-                    'state' => $consultation->patient->state,
-                    'cpf' => $consultation->patient->cpf,
-                    'contacts' => $consultation->patient->contacts,
-                    'complaints' => $consultation->patient->complaints,
-                    'notes' => $consultation->patient->notes,
-                    'profile_picture' => $consultation->patient->profile_picture,
-                    'status' => $consultation->patient->status,
-                ]
+                'patient' => $consultation->patient->toArray(), // Enviar os dados do paciente
             ];
         });
-        
-        // Junta eventos e consultas
-        $allEvents = $events->concat($consultationEvents);
-        $forms = Form::where('company_id', $companyId)->get(); // Busca os formulários da empresa do usuário
-
-        // Retorna os dados para o Inertia com eventos e consultas, incluindo dados completos dos pacientes
+    
+        // Unindo eventos e consultas
+        $events = Event::where('user_id', $user->id)->get()->concat($consultationEvents);
+        $forms = Form::where('company_id', $companyId)->get();
+    
         return Inertia::render('Agenda/Dashboard', [
-            'events' => $allEvents,
-            'forms' => $forms, // Envia os formulários para o frontend
+            'events' => $events,
+            'forms' => $forms,
             'auth' => [
-                'user' => $user, // Envia o usuário com a empresa para o frontend
+                'user' => $user,
             ],
         ]);
     }
+    
     
     
 

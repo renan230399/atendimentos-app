@@ -46,7 +46,8 @@ const CompanyDashboard: React.FC<CompanyDashboardProps> = ({ auth, employees }) 
             {/* Card para Gerenciamento de Funcionários */}
             <div className="w-full max-w-4xl mx-auto mb-8 p-6 bg-white shadow-lg rounded-lg">
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4 flex items-center">
-                    <span className="text-green-500 mr-2">👥</span> Gerenciamento de Funcionários
+                    <img src='/images/icons/employees.png' className='w-24 h-24 mr-2'/>
+                    Gerenciamento de Funcionários
                 </h2>
                  <EmployeeManager employees={employees} />
             </div>

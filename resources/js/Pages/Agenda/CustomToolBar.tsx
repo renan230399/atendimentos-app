@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { BiSolidSkipNextCircle } from "react-icons/bi";
 import { IoPlaySkipBackCircleSharp } from "react-icons/io5";
 import moment from 'moment';
-import { Calendar } from 'primereact/calendar';
 interface CustomToolbarProps {
     label: string;
     onNavigate: (newDate: Date) => void;
@@ -14,8 +13,8 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({ label, onNavigate, date, 
     const currentYear = moment(date).year();
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-    const months = moment.months();
-    const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
+    //const months = moment.months();
+    //const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
 
     const views = {
         month: 'Mês',
@@ -47,7 +46,7 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({ label, onNavigate, date, 
         onNavigate(newDate);
     };
 
-    const handleMonthChange = (selectedDate: Date | undefined) => {
+ /*   const handleMonthChange = (selectedDate: Date | undefined) => {
         if (selectedDate instanceof Date) {
             setCurrentMonth(selectedDate);
             onNavigate(selectedDate); // Navega para o mês selecionado
@@ -57,7 +56,7 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({ label, onNavigate, date, 
     const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newYear = moment(date).year(parseInt(e.target.value)).toDate();
         onNavigate(newYear);
-    };
+    };*/
 
     const handleViewChange = (value: string) => {
         if (Object.keys(views).includes(value)) {

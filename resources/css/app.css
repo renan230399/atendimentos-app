@@ -29,7 +29,6 @@
     display: flex;
     background-color: #f8f9fa; /* Cor de fundo clara e elegante */
 }
-
 /* ===== Estilos para o Calendário ===== */
 .calendario {
     border-radius: 12px;
@@ -113,11 +112,13 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    font-size:0.8rem;
 }
 
 .rbc-event:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color:black;
 }
 
 .rbc-current-time-indicator {
@@ -430,5 +431,5 @@ transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
 
 .p-stepper-content {
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 0.1 !important;
   }

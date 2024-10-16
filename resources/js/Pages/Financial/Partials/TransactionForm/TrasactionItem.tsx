@@ -10,7 +10,7 @@ interface TransactionItemProps {
   transaction: Transaction;
   accounts: Account[];
   categories: Category[];
-  handleOpenConfirmedTransactionPopup: (e: React.MouseEvent<HTMLButtonElement>, transaction: Transaction) => void;
+  handleOpenConfirmedTransactionPopup: (transaction: Transaction) => void;
   toggleTransactionDetails: (id: number) => void;
   openTransactions: number[];
   getTransactionBorderClass: (type: string) => string;
@@ -62,8 +62,8 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
         {!transaction.status ? (
           <button
             className="border rounded bg-blue-500 text-white p-1"
-            onClick={(e) => handleOpenConfirmedTransactionPopup(e, transaction)}
-          >
+            onClick={() => handleOpenConfirmedTransactionPopup(transaction)} // Chama a função apenas com a transação
+            >
             Executar
           </button>
         ) : (

@@ -14,10 +14,9 @@ import {Patient, Form, Contact, ContactDetail} from './interfacesPatients'
 interface ViewPatientProps {
     patient: Patient; // O paciente a ser visualizado
     forms: Form[]; // Lista de formulários
-    handleClosePatientForm: (e: any) => void; // Adicione esta linha
-
+    closePopupPatient: () =>void;
 }
-const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, handleClosePatientForm }) => {
+const ViewPatient: React.FC<ViewPatientProps> = ({ patient, forms, closePopupPatient }) => {
     const [consultations, setConsultations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formResponses, setFormResponses] = useState([]); // Estado para respostas de formulários
