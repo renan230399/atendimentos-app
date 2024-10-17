@@ -5,6 +5,7 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import PriceInput from '@/Components/PriceInput';
 import InputLabel from '@/Components/InputLabel';
+
 interface AddPaymentFeeFormProps {
     paymentMethodId: number | null;
     onSuccess: () => void;
@@ -14,20 +15,18 @@ const AddPaymentFeeForm: React.FC<AddPaymentFeeFormProps> = ({ paymentMethodId, 
     const { data, setData, post, reset, errors } = useForm({
         payment_method_id: paymentMethodId,
         installments: 1,
-        fixed_fee: '0', // Agora armazenamos como string para trabalhar em centavos
+        fixed_fee: '0',
         percentage_fee: 0,
     });
 
     const handleAddFee = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!paymentMethodId) return; // Certifique-se de que o ID do método de pagamento está definido
-
-        // Converta o valor de fixed_fee para centavos
+    
+        // Converte o valor de fixed_fee para centavos
         const feeInCents = parseInt(data.fixed_fee, 10) || 0;
-
+    
         // Envie o valor correto para o servidor
         post(route('payment_method_fees.store'), {
-            preserveScroll: true,
             data: {
                 ...data,
                 fixed_fee: feeInCents, // Enviando o valor em centavos
@@ -43,8 +42,6 @@ const AddPaymentFeeForm: React.FC<AddPaymentFeeFormProps> = ({ paymentMethodId, 
         });
     };
 
-  
-
     return (
         <form onSubmit={handleAddFee} className="flex flex-wrap">
             <div className='m-auto'>
@@ -56,24 +53,19 @@ const AddPaymentFeeForm: React.FC<AddPaymentFeeFormProps> = ({ paymentMethodId, 
                     value={data.installments}
                     onChange={(e) => setData('installments', parseInt(e.target.value, 10))}
                 />
+                <InputError message={errors.installments} />
             </div>
+
             <div className='m-auto'>
                 <InputLabel value='Taxa Fixa (R$)' />
                 <PriceInput
                     id="fixed_fee"
                     label="Valor da parcela (R$)"
-                    value={data.fixed_fee.toString()} // Converte o número para string
-                    onChange={(newValue) => {
-                        const parsedValue = parseInt(newValue, 10); // Converte o valor para número
-                        if (!isNaN(parsedValue)) {
-                            setData('fixed_fee', parsedValue.toString()); // Converte o valor para string ao passar para setData
-                        } else {
-                            setData('fixed_fee', '0'); // Define um valor padrão como string
-                        }
-                    }}
+                    value={data.fixed_fee.toString()}
+                    onChange={(newValue) => setData('fixed_fee', newValue)}
                     required={true}
                 />
-
+                <InputError message={errors.fixed_fee} />
             </div>
 
             <div className='m-auto'>
@@ -86,14 +78,12 @@ const AddPaymentFeeForm: React.FC<AddPaymentFeeFormProps> = ({ paymentMethodId, 
                     value={data.percentage_fee}
                     onChange={(e) => setData('percentage_fee', parseFloat(e.target.value))}
                 />
-            </div>
-            <div className='w-full mt-2 flex flex-col'>
-            <InputError message={errors.installments} className="m-auto" />
-            <InputError message={errors.fixed_fee} className="m-auto" />
-            <InputError message={errors.percentage_fee} className="m-auto" />
-            <PrimaryButton type="button" onClick={handleAddFee} className="m-auto bg-green-500 hover:bg-green-700">Salvar Taxa</PrimaryButton>
+                <InputError message={errors.percentage_fee} />
             </div>
 
+            <div className='w-full mt-2 flex flex-col'>
+                <PrimaryButton type="submit" className="m-auto bg-green-500 hover:bg-green-700">Salvar Taxa</PrimaryButton>
+            </div>
         </form>
     );
 };

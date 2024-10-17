@@ -98,7 +98,7 @@ const closePopupPatient = () =>{
         <AuthenticatedLayout user={auth.user}>
             <Head title="Pacientes" />
               {/* Botões de ações */}
-              <div className="fixed right-0 pl-2 ml-5 h-screen w-[5vw]">
+              <div className="fixed right-0 pl-2 ml-5 h-screen w-[15vw] md:w-[5vw] xl:w-[5vw]">
               <IconButton
                     icon={<FaUserPlus size={30} className="text-white" />}
                     title="Locais do estoque"
@@ -114,6 +114,7 @@ const closePopupPatient = () =>{
                     bgColorTo="to-pink-400"
                     hoverBgColorFrom="from-blue-800"
                     hoverBgColorTo="to-red-800"
+                    text="Aniversariantes"
                 /> 
             </div>
 
@@ -136,7 +137,7 @@ const closePopupPatient = () =>{
                 </div>
 
                 {/* Lista de pacientes e paginação */}
-                <div className='w-[88%] md:w-[94vw] h-[70%] top-0 xl:h-[68vh] md:h-[85%] pb-6 xl:border bg-gray-100 rounded overflow-x-hidden overflow-y-auto'>
+                <div className='w-[88%] md:w-[94vw] h-[75vh] top-0 xl:h-[68vh] md:h-[85%] pb-6 xl:border bg-gray-100 rounded overflow-x-hidden overflow-y-auto'>
                 <div className='flex flex-wrap md:p-1'>
                     {/* Se estiver carregando, mostra o spinner, caso contrário, renderiza os pacientes */}
                     {loading ? (
@@ -156,7 +157,7 @@ const closePopupPatient = () =>{
             </div>
 
   
-                <div className="mt-6 m-auto w-full h-[20%] z-1000 bottom-0 p-4 justify-center bg-white">
+                <div className="mt-6 m-auto w-full h-[20%] bottom-0 p-4 justify-center bg-white">
                         <ReactPaginate
                             previousLabel={'← Anterior'}
                             nextLabel={'Próxima →'}

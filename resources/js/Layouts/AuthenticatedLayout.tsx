@@ -149,13 +149,10 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 <ResponsiveNavLink href={route('forms.index')} active={route().current('forms.index')}>
                                     Fichas
                                 </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('employees.index')} active={route().current('employees.index')}>
-                                    Funcionários
+                                <ResponsiveNavLink href={route('company')} active={route().current('company')}>
+                                    Empresa
                                 </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('reports.index')} active={route().current('reports.index')}>
-                                    Relatórios
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('financial.dashboard')} active={route().current('reports.index')}>
+                                <ResponsiveNavLink href={route('inventory.dashboard')} active={route().current('reports.index')}>
                                     Inventário
                                 </ResponsiveNavLink>
                                 <ResponsiveNavLink href={route('financial.dashboard')} active={route().current('financial.dashboard')}>
@@ -174,9 +171,9 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('profile.edit')}>Perfil</ResponsiveNavLink>
                             <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                                Log Out
+                                Sair da conta
                             </ResponsiveNavLink>
                         </div>
                     </div>

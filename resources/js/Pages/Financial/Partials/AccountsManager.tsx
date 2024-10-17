@@ -103,7 +103,12 @@ const AccountsManager: React.FC<AccountsManagerProps> = ({ accounts, company_log
                 {(Number(account.balance) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </div>
               
-              <button  onClick={() => hadlePaymentManager(account)} >Métodos de pagamento</button>
+              <button
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-1 px-4 rounded-lg shadow-lg transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
+            onClick={() => hadlePaymentManager(account)}
+        >
+            Ver Métodos de pagamento
+        </button>
             </div>
           </div>
         ))}

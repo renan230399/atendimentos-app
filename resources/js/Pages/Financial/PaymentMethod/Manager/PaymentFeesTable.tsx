@@ -7,18 +7,10 @@ import AddPaymentFeeForm from './AddPaymentFeeForm';
 import { PlusCircleIcon } from '@heroicons/react/24/solid';
 import { PaymentMethod, PaymentMethodsFee, Account } from '../../FinancialInterfaces';
 
-interface PaymentMethodFee {
-    id: number;
-    payment_method_id: number;
-    installments: number;
-    fixed_fee: number; // Em centavos
-    percentage_fee: number;
-    status:boolean;
-}
 
 interface PaymentFeesTableProps {
     methodId: number;
-    fees: PaymentMethodFee[];
+    fees: PaymentMethodsFee[];
 }
 
 const PaymentFeesTable: React.FC<PaymentFeesTableProps> = ({ methodId, fees }) => {
@@ -36,10 +28,11 @@ const PaymentFeesTable: React.FC<PaymentFeesTableProps> = ({ methodId, fees }) =
     const initializeEditedFees = () => {
         const initialFees = fees.reduce((acc, fee) => {
             acc[fee.id] = {
-                installments: fee.installments,
+                installments: fee.installments ?? 1, // Use 1 como valor padrão caso seja null
                 fixed_fee: fee.fixed_fee.toString(),
                 percentage_fee: fee.percentage_fee
             };
+            
             return acc;
         }, {} as Record<number, { installments: number; fixed_fee: string; percentage_fee: number }>);
         setData('editedFees', initialFees);
@@ -80,7 +73,7 @@ const PaymentFeesTable: React.FC<PaymentFeesTableProps> = ({ methodId, fees }) =
 
     return (
         <>
-            <div className="overflow-x-auto border shadow relative">
+            <div className="overflow-x-auto relative">
                 <div className="flex justify-between mb-4">
                     <button
                         className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -116,64 +109,51 @@ const PaymentFeesTable: React.FC<PaymentFeesTableProps> = ({ methodId, fees }) =
                         </tr>
                     </thead>
                     <tbody>
-                        {fees
-                            .filter((fee) => fee.payment_method_id === methodId)
-                            .map((methodFee) => (
+    {fees
+        .filter((fee) => fee.payment_method_id === methodId)
+        .map((methodFee) => (
+            <tr key={`fee-${methodFee.id}`} className="border-b hover:bg-gray-50">
+                <td className="py-2 px-4 text-gray-700 text-center">
+                    {isEditing ? (
+                        <input
+                            type="number"
+                            value={data.editedFees[methodFee.id]?.installments || 1}
+                            onChange={(e) => handleFeeChange(methodFee.id, 'installments', e.target.value)}
+                            className="w-full px-2 py-1 border rounded"
+                        />
+                    ) : (
+                        methodFee.installments === 1 ? 'À vista' : `${methodFee.installments} parcelas`
+                    )}
+                </td>
+                <td className="py-2 px-4 text-gray-700 text-center">
+                    {isEditing ? (
+                        <PriceInput
+                            id={`fixed_fee_${methodFee.id}`}
+                            label=""
+                            value={data.editedFees[methodFee.id]?.fixed_fee || '0'}
+                            onChange={(value) => handleFeeChange(methodFee.id, 'fixed_fee', value)}
+                            required
+                        />
+                    ) : (
+                        `R$ ${(methodFee.fixed_fee / 100).toFixed(2).replace('.', ',')}`
+                    )}
+                </td>
+                <td className="py-2 px-4 text-gray-700 text-center">
+                    {isEditing ? (
+                        <input
+                            type="number"
+                            value={data.editedFees[methodFee.id]?.percentage_fee || ''}
+                            onChange={(e) => handleFeeChange(methodFee.id, 'percentage_fee', e.target.value)}
+                            className="w-full px-2 py-1 border rounded"
+                        />
+                    ) : (
+                        `${Number(methodFee.percentage_fee || 0).toFixed(2)}%`
+                    )}
+                </td>
+            </tr>
+        ))}
+</tbody>
 
-                                <tr key={`fee-${methodFee.id}`} className="border-b hover:bg-gray-50">
-
-                                    <td className="py-2 px-4 text-gray-700 text-center">
-                                        {isEditing ? (
-                                            <input
-                                                type="number"
-                                                value={data.editedFees[methodFee.id]?.installments || 1}
-                                                onChange={(e) => handleFeeChange(methodFee.id, 'installments', e.target.value)}
-                                                className="w-full px-2 py-1 border rounded"
-                                            />
-                                        ) : (
-                                            methodFee.installments === 1 ? 'À vista' : `${methodFee.installments} parcelas`
-                                        )}
-                                    </td>
-                                    <td className="py-2 px-4 text-gray-700 text-center">
-                                        {isEditing ? (
-                                            <PriceInput
-                                                id={`fixed_fee_${methodFee.id}`}
-                                                label=""
-                                                value={data.editedFees[methodFee.id]?.fixed_fee || '0'}
-                                                onChange={(value) => handleFeeChange(methodFee.id, 'fixed_fee', value)}
-                                                required
-                                            />
-                                        ) : (
-                                            `R$ ${(methodFee.fixed_fee / 100).toFixed(2).replace('.', ',')}`
-                                        )}
-                                    </td>
-                                    <td className="py-2 px-4 text-gray-700 text-center">
-                                        {isEditing ? (
-                                            <input
-                                                type="number"
-                                                value={data.editedFees[methodFee.id]?.percentage_fee || ''}
-                                                onChange={(e) => handleFeeChange(methodFee.id, 'percentage_fee', e.target.value)}
-                                                className="w-full px-2 py-1 border rounded"
-                                            />
-                                        ) : (
-                                            `${Number(methodFee.percentage_fee || 0).toFixed(2)}%`
-                                        )}
-                                    </td>
-                                    <td className="py-2 px-4 text-gray-700 text-center">
-                                        {isEditing ? (
-                                            <input
-                                                type="number"
-                                                value={data.editedFees[methodFee.id]?.percentage_fee || ''}
-                                                onChange={(e) => handleFeeChange(methodFee.id, 'percentage_fee', e.target.value)}
-                                                className="w-full px-2 py-1 border rounded"
-                                            />
-                                        ) : (
-                                            `${Number(methodFee.status || 0)}`
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                    </tbody>
                 </table>
 
                 {errors && (

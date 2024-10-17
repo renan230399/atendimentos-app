@@ -14,10 +14,9 @@ export interface PaymentMethod {
 export interface PaymentMethodsFee {
     id: number;
     payment_method_id: number;
-    installments: number;
+    installments: number | null;
     fixed_fee: number; // Em centavos
     percentage_fee: number;
-    status:boolean;
 }
 export interface Category {
   id: number;

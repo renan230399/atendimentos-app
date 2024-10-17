@@ -15,7 +15,7 @@ interface PatientListItemProps {
 
 const PatientListItem: React.FC<PatientListItemProps> = ({ patient, openViewPatient }) => (
     <div 
-        className="zoom md:w-[32%] w-[96%] m-auto z-10 rounded/2 p-2 border border-gray-300 flex flex-wrap gap-1 shadow-md bg-white my-3 rounded-xl"
+        className="zoom md:w-[32%] w-[96%] m-auto  rounded/2 p-2 border border-gray-300 flex flex-wrap gap-1 shadow-md bg-white my-3 rounded-xl"
         onClick={(e) => openViewPatient(e, patient)}  // Passando o paciente ao abrir o popup
         key={patient.id}
     >
