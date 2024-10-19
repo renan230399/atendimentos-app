@@ -35,18 +35,18 @@ jobs:
 
       - name: Copiar arquivos para a instância pública (inclui build)
         run: |
-          rsync -avz --exclude 'node_modules' --include 'public/build/' -e "ssh -i /dev/shm/.ssh/ssh_key -o StrictHostKeyChecking=no" ./ ec2-user@3.95.59.48:/home/ec2-user/atendimentos-app/
+          rsync -avz --exclude 'node_modules' --include 'public/build/' -e "ssh -i /dev/shm/.ssh/ssh_key -o StrictHostKeyChecking=no" ./ ec2-user@54.145.7.112:/home/ec2-user/atendimentos-app/
 
       - name: Reinstalar dependências dentro do container
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
+          ssh -o StrictHostKeyChecking=no ec2-user@54.145.7.112 '
             cd /home/ec2-user/atendimentos-app &&
             docker-compose exec laravel.test yarn install
           '
 
       - name: Reiniciar Docker no EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
+          ssh -o StrictHostKeyChecking=no ec2-user@54.145.7.112 '
             cd /home/ec2-user/atendimentos-app &&
             docker-compose down &&
             docker-compose up -d --build
@@ -54,7 +54,7 @@ jobs:
 
       - name: Limpar e Semear o Banco de Dados
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@3.95.59.48 '
+          ssh -o StrictHostKeyChecking=no ec2-user@54.145.7.112 '
             cd /home/ec2-user/atendimentos-app &&
             docker-compose exec laravel.test php artisan migrate:fresh --seed
           '
