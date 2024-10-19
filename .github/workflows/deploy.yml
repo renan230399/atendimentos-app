@@ -1,3 +1,11 @@
+name: Deploy para EC2 Pública
+
+on:
+  push:
+    branches:
+      - master  # Branch monitorada para o deploy
+  workflow_dispatch:  # Permite rodar o workflow manualmente pela interface do GitHub
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -9,32 +17,44 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '18'  # Versão do Node.js que você deseja usar
 
       - name: Instalar dependências e Build
         run: |
           yarn install
-          yarn build
+          yarn build  # Builda os arquivos no servidor do GitHub Actions
+
+      - name: Verificar arquivos do build
+        run: |
+          ls -l public/build  # Verifica se os arquivos de build foram gerados corretamente
 
       - name: Configurar SSH para EC2
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}
-
-      - name: Garantir que o Docker esteja rodando
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@54.145.7.112 '
-            if ! systemctl is-active --quiet docker; then
-              echo "Docker não está rodando. Iniciando o serviço Docker...";
-              sudo systemctl start docker;
-            else
-              echo "Docker já está rodando.";
-            fi
-          '
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY_PEM }}  # Nome do segredo criado para a chave da instância pública
 
       - name: Copiar arquivos para a instância pública (inclui build)
         run: |
           rsync -avz --exclude 'node_modules' --include 'public/build/' -e "ssh -i /dev/shm/.ssh/ssh_key -o StrictHostKeyChecking=no" ./ ec2-user@54.145.7.112:/home/ec2-user/atendimentos-app/
+
+      - name: Garantir que o Docker esteja rodando
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@54.145.7.112 '
+            if (! sudo systemctl is-active --quiet docker); then
+              echo "Docker não está rodando. Iniciando Docker..."
+              sudo systemctl start docker &&
+              sudo systemctl enable docker
+            else
+              echo "Docker já está rodando."
+            fi
+          '
+
+      - name: Reinstalar dependências dentro do container
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@54.145.7.112 '
+            cd /home/ec2-user/atendimentos-app &&
+            docker-compose exec laravel.test yarn install
+          '
 
       - name: Reiniciar Docker no EC2
         run: |
@@ -42,13 +62,6 @@ jobs:
             cd /home/ec2-user/atendimentos-app &&
             docker-compose down &&
             docker-compose up -d --build
-          '
-
-      - name: Verificar containers em execução
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@54.145.7.112 '
-            cd /home/ec2-user/atendimentos-app &&
-            docker-compose ps
           '
 
       - name: Limpar e Semear o Banco de Dados
