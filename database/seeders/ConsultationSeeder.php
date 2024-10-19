@@ -24,11 +24,11 @@ class ConsultationSeeder extends Seeder
         $companies = Company::all(); // Buscar todas as empresas
         $patients = Patient::all(); // Buscar todos os pacientes
 
-        foreach (range(1, 50) as $index) {
+        foreach (range(1, 700) as $index) {
             // Criar uma consulta
             $consultation = Consultation::create([
                 'company_id' => 1, // Seleciona uma empresa fixa ou aleatória
-                'patient_id' => $patients->random()->id, // Seleciona um paciente aleatório
+                'patient_id' => 1, // Seleciona um paciente aleatório
                 'date' => $faker->dateTimeBetween('2024-10-01', '2024-10-31')->format('Y-m-d'), // Data entre 1º de julho e 31 de dezembro de 2024
                 'start_time' => $startTime = $faker->dateTimeBetween('07:00', '18:00')->format('H:i:s'), // Hora de início aleatória a partir das 7:00 AM
                 'end_time' => \Carbon\Carbon::createFromFormat('H:i:s', $startTime)->addMinutes(rand(40, 60))->format('H:i:s'), // Adiciona de 40 a 60 minutos ao horário de início

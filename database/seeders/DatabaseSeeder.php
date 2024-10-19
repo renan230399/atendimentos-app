@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             CategoryProductSeeder::class,
             SupplierSeeder::class,
             StockLocalSeeder::class,
-            //ProductSeeder::class,
+            ProductSeeder::class,
             TransactionCategorySeeder::class,
             AccountSeeder::class,
             ConsultationSeeder::class,

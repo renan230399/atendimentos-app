@@ -1,9 +1,9 @@
 import React from 'react';
-import {FormResponse, FormField, FormResponseDetail, Form} from './interfacesPatients'
+import {FormResponse, Field, FormResponseDetail, Form} from './interfacesPatients'
 
 // Tipando as props do componente
 interface FormResponseFieldProps {
-    field: FormField;
+    field: Field;
     response: string | boolean | string[] | null | undefined;
 }
 

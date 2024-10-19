@@ -4,15 +4,24 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { useForm } from '@inertiajs/react';
 import TextArea from '@/Components/TextArea';
+import { z } from 'zod'; // Importa o Zod
+import { useState } from 'react';
 
 interface AddStockLocalDialogProps {
     visible: boolean;
     onHide: () => void;
-    parentLocalName: string;
+    parentLocalName: string | null;
     parentLocalId: number | null; // ID do local pai para associar o novo sublocal
-    setSaveAddLocal: (value: boolean) => void; // Função para definir o estado de sucesso da adição
-    setIsEditing: (value: boolean) => void; // Função para controlar o estado de edição
+    setSaveAddLocal: () => void; // Função para fechar o diálogo (sem necessidade de passar um valor)
 }
+
+
+// Define o esquema de validação com Zod
+const stockLocalSchema = z.object({
+    name: z.string().min(1, 'O nome do local é obrigatório.').max(255, 'O nome é muito longo.'), // Validação de nome
+    description: z.string().max(255, 'A descrição é muito longa.').nullable(), // Descrição opcional
+    parent_id: z.number().nullable(), // parent_id pode ser nulo
+});
 
 const AddStockLocalDialog: React.FC<AddStockLocalDialogProps> = ({
     visible,
@@ -20,41 +29,52 @@ const AddStockLocalDialog: React.FC<AddStockLocalDialogProps> = ({
     parentLocalName,
     parentLocalId,
     setSaveAddLocal,
-    setIsEditing,
 }) => {
-    // Utilizando useForm do Inertia para gerenciar o estado do formulário e envio de dados
     const { data, setData, post, processing, reset } = useForm({
         name: '',
         description: '',
         parent_id: parentLocalId,
     });
 
-    // Atualiza o estado do formulário quando o parentLocalId muda
+    // Armazena erros de validação
+    const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+
     useEffect(() => {
-        if (parentLocalId !== data.parent_id) { // Verifica se o parent_id realmente mudou
+        if (parentLocalId !== data.parent_id) {
             setData('parent_id', parentLocalId);
         }
     }, [parentLocalId, setData, data.parent_id]);
 
+    // Valida os dados antes de enviar
     const handleAddStockLocal = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Executa a validação com Zod
+        const result = stockLocalSchema.safeParse(data);
 
-        if (data.name.trim() !== '') {
-            // Envia os dados do formulário para o backend usando o método post do Inertia
-            post(route('stockLocals.store'), {
-                data: {
-                    name: data.name,
-                    description: data.description,
-                    parent_id: data.parent_id,
-                },
-                onSuccess: () => {
-                    reset(); // Reseta os campos do formulário usando a função reset do useForm
-                    onHide(); // Fecha o diálogo
-                    setSaveAddLocal(true); // Atualiza o estado indicando que a adição foi bem-sucedida
-                    setIsEditing(false); // Finaliza o modo de edição
-                },
+        /*if (!result.success) {
+            // Se houver erros de validação, armazena-os
+            const errors = result.error.format();
+            setValidationErrors({
+                name: errors.name?._errors[0] || '',
+                description: errors.description?._errors[0] || '',
             });
-        }
+            return; // Não prossegue com o envio
+        }*/
+
+        // Se a validação for bem-sucedida, procede com o envio
+        post(route('stockLocals.store'), {
+            data: {
+                name: data.name,
+                description: data.description,
+                parent_id: data.parent_id,
+            },
+            onSuccess: () => {
+                reset(); // Reseta os campos do formulário
+                onHide(); // Fecha o diálogo
+                setSaveAddLocal(); // Indica que a adição foi bem-sucedida
+            },
+        });
     };
 
     return (
@@ -78,15 +98,18 @@ const AddStockLocalDialog: React.FC<AddStockLocalDialogProps> = ({
                 value={data.name}
                 onChange={(e) => setData('name', e.target.value)}
                 placeholder="Nome do Local"
-                className="w-full mb-3"
+                className="w-full"
                 required
             />
+            {validationErrors.name && <small className="p-error">{validationErrors.name}</small>}
+
             <TextArea
                 value={data.description}
                 onChange={(e) => setData('description', e.target.value)}
                 placeholder="Descrição do Local"
-                className="w-full"
+                className="w-full mt-3"
             />
+            {validationErrors.description && <small className="p-error">{validationErrors.description}</small>}
         </Dialog>
     );
 };

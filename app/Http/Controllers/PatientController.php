@@ -196,9 +196,9 @@ class PatientController extends Controller
         }
     
         // Converte 'contacts' e 'complaints' para JSON, se não houver, mantém como array vazio
-        $validatedData['contacts'] = $validatedData['contacts'] ?? json_encode([]);
-        $validatedData['complaints'] = $validatedData['complaints'] ?? json_encode([]);
-        $validatedData['personal_contacts'] = json_encode($validatedData['personal_contacts'] ?? []);
+        $validatedData['contacts'] = $validatedData['contacts'?? [] ];
+        $validatedData['complaints'] = $validatedData['complaints'] ?? [];
+        $validatedData['personal_contacts'] = $validatedData['personal_contacts'] ?? [];
 
         \Log::info('Atualizando o paciente com os dados validados.', ['validated_data_final' => $validatedData]);
     

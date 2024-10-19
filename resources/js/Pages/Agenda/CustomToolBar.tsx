@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BiSolidSkipNextCircle } from "react-icons/bi";
 import { IoPlaySkipBackCircleSharp } from "react-icons/io5";
 import moment from 'moment';
+import 'primeicons/primeicons.css'; // Certifique-se de importar os estilos dos ícones
 interface CustomToolbarProps {
     label: string;
     onNavigate: (newDate: Date) => void;
@@ -22,7 +23,12 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({ label, onNavigate, date, 
         day: 'Dia',
         agenda: 'Agenda',
     };
-
+    const iconMap: Record<string, string> = {
+        month: 'pi pi-calendar',       // Ícone de calendário para o mês
+        week: 'pi pi-calendar-plus',   // Ícone para a semana
+        day: 'pi pi-clock',            // Ícone de relógio para o dia
+        agenda: 'pi pi-list',          // Ícone de lista para a agenda
+    };
     const handleNavigate = (action: 'PREV' | 'NEXT') => {
         let newDate: Date;
 
@@ -87,18 +93,32 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({ label, onNavigate, date, 
                     className='w-10 h-10 text-blue-500 cursor-pointer hover:text-blue-600' 
                 />
             </div>
-
             <div className="flex flex-wrap space-x-4">
-                {Object.entries(views).map(([key, label]) => (
-                    <button 
-                        key={key}
-                        onClick={() => handleViewChange(key)}
-                        className={`p-2 m-auto rounded ${view === key ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-500 hover:text-white`}
-                    >
-                        {label}
-                    </button>
-                ))}
-            </div>
+
+
+
+    <div className="flex flex-wrap space-x-4">
+        {Object.entries(views).map(([key, label]) => (
+            <button 
+                key={key}
+                onClick={() => handleViewChange(key)}
+                className={`
+                    p-1 px-5 m-auto rounded-lg 
+                    shadow-lg transition duration-300 ease-in-out transform hover:scale-105 
+                    ${view === key ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white' : 'bg-gray-100 text-gray-700'}
+                    hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600 hover:text-white
+                `}
+            >
+                {/* Adicionando o ícone de acordo com a view */}
+                <i className={`${iconMap[key]} mr-2`} /> {/* Ícone diferente para cada view */}
+                {label}
+            </button>
+        ))}
+    </div>
+
+
+</div>
+
 
             
         </div>

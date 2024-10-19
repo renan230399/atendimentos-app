@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import ReactPaginate from 'react-paginate';
 import moment from 'moment';
 
@@ -13,13 +14,27 @@ interface Consultation {
 
 // Propriedades recebidas pelo componente
 interface ConsultationsListProps {
-    consultations: Consultation[];
-    loading: boolean;
+    patientId: number;
 }
 
-const ConsultationsList: React.FC<ConsultationsListProps> = ({ consultations, loading }) => {
+// Função para buscar os dados (agora isolada para ser usada no React Query)
+const fetchConsultations = async (patientId: number): Promise<Consultation[]> => {
+    const response = await fetch(`/patients/${patientId}/consultations`);
+    if (!response.ok) {
+        throw new Error('Erro ao buscar consultas');
+    }
+    return response.json();
+};
+
+const ConsultationsList: React.FC<ConsultationsListProps> = ({ patientId }) => {
     const [currentPage, setCurrentPage] = useState<number>(0);
-    const itemsPerPage = 5;
+    const itemsPerPage = 7;
+
+    // Usando React Query para buscar os dados
+    const { data: consultations = [], isLoading, error } = useQuery({
+        queryKey: ['consultations', patientId], // queryKey
+        queryFn: () => fetchConsultations(patientId), // queryFn
+    });
 
     // Função para lidar com a mudança de página
     const handlePageClick = (selectedPage: { selected: number }) => {
@@ -31,16 +46,20 @@ const ConsultationsList: React.FC<ConsultationsListProps> = ({ consultations, lo
     const currentConsultations = consultations.slice(offset, offset + itemsPerPage);
     const pageCount = Math.ceil(consultations.length / itemsPerPage);
 
-    return (
-        <div className="flex flex-wrap mt-8">
-            <div className="w-full p-6 bg-gray-50 rounded-lg shadow-md">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-6">Consultas do Paciente</h2>
+    if (isLoading) {
+        return <p className="text-gray-600">Carregando consultas...</p>;
+    }
 
-                {loading ? (
-                    <p className="text-gray-600">Carregando consultas...</p>
-                ) : consultations.length > 0 ? (
+    if (error) {
+        return <p className="text-red-600">Erro ao carregar consultas: {error.message}</p>;
+    }
+
+    return (
+        <div className="flex flex-wrap md:w-full xl:w-full m-auto">
+            <div className="w-full bg-gray-50 rounded-lg shadow-md">
+                {consultations.length > 0 ? (
                     <>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-hidden">
                             <table className="min-w-full bg-white rounded-lg shadow">
                                 <thead className="bg-blue-500 text-white">
                                     <tr>
@@ -53,7 +72,6 @@ const ConsultationsList: React.FC<ConsultationsListProps> = ({ consultations, lo
                                 </thead>
                                 <tbody>
                                     {currentConsultations.map((consultation, index) => {
-                                        // Mapeamento de status para português
                                         const statusMap: Record<string, string> = {
                                             pending: 'Pendente',
                                             completed: 'Realizada',
@@ -63,16 +81,14 @@ const ConsultationsList: React.FC<ConsultationsListProps> = ({ consultations, lo
                                         const formattedStartTime = consultation.start_time.slice(0, 5); // Pega apenas HH:mm
                                         const formattedEndTime = consultation.end_time.slice(0, 5); // Pega apenas HH:mm
 
-                                        // Cálculo da duração da consulta usando moment.js
                                         const start = moment(consultation.start_time, 'HH:mm');
                                         const end = moment(consultation.end_time, 'HH:mm');
                                         const duration = moment.duration(end.diff(start));
 
-                                        // Formatação elegante da duração, evitando mostrar "0 hora" ou "0 minutos" e ajustando o plural
                                         const formattedDuration = [
                                             duration.hours() > 0 ? `${duration.hours()} ${duration.hours() === 1 ? 'hora' : 'horas'}` : '',
                                             duration.minutes() > 0 ? `${duration.minutes()} ${duration.minutes() === 1 ? 'minuto' : 'minutos'}` : ''
-                                        ].filter(Boolean).join(' '); // Remove partes vazias e junta com espaço
+                                        ].filter(Boolean).join(' ');
 
                                         return (
                                             <tr key={index} className="border-t border-gray-200 hover:bg-gray-100">

@@ -14,18 +14,21 @@ export default function useCategoryEdit(categories: Category[], setNodes: (nodes
     
 
     const handleEditToggle = useCallback(() => {
-        setIsEditing((prevIsEditing) => !prevIsEditing);
-        if (!isEditing) {
-            const initialEditedCategories = categories.reduce((acc, category) => {
-                acc[category.id] = {
-                    name: category.name,
-                    parent_id: category.parent_id, // Inclui o parent_id no objeto de categoria
-                };
-                return acc;
-            }, {} as { [key: number]: { name: string; parent_id: number | null } });
-            setEditedCategories(initialEditedCategories);
-        }
-    }, [isEditing, categories]);
+        setIsEditing((prevIsEditing) => {
+            if (!prevIsEditing) {
+                const initialEditedCategories = categories.reduce((acc, category) => {
+                    acc[category.id] = {
+                        name: category.name,
+                        parent_id: category.parent_id,
+                    };
+                    return acc;
+                }, {} as { [key: number]: { name: string; parent_id: number | null } });
+                setEditedCategories(initialEditedCategories);
+            }
+            return !prevIsEditing;
+        });
+    }, [categories]);
+    
     
     const handleInputChange = useCallback((id: number, updatedCategory: { name: string; parent_id: number | null }) => {
         // Atualiza o estado das categorias editadas

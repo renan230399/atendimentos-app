@@ -4,17 +4,55 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Http\Resources\ProductResource;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the products.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('company')->get();
-        return view('products.index', compact('products'));
+        // Validação dos parâmetros de entrada
+        $validated = $request->validate([
+            'name' => 'string|nullable|max:255',
+            'category' => 'string|nullable',
+            'with_stocks' => 'boolean|nullable',
+        ]);
+    
+        // Inicia a query base com produtos ativos
+        $productsQuery = Product::active();
+    
+        // Condicionalmente carrega estoques ativos
+        if ($request->query('with_stocks')) {
+            $productsQuery->with(['stocks' => function($query) {
+                $query->active(); // Usando o scope
+            }]);
+        }
+    
+        // Aplica o filtro de nome
+        if ($productName = $request->query('name')) {
+            $productsQuery->where('name', 'like', '%' . $productName . '%');
+        }
+    
+        // Aplica o filtro de categorias
+        if ($categoryIds = $request->query('category')) {
+            $categoryIdsArray = explode(',', $categoryIds);
+            $productsQuery->whereIn('category_id', $categoryIdsArray);
+        }
+    
+        // Paginação com ordenação alfabética
+        try {
+            $products = $productsQuery->orderBy('name', 'asc')->paginate(10);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao buscar produtos.'], 500);
+        }
+    
+        // Retorna produtos formatados via API Resource
+        return ProductResource::collection($products);
     }
+    
+    
 
     /**
      * Show the form for creating a new product.

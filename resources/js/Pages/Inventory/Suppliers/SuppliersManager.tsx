@@ -2,16 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar } from 'primereact/sidebar';
 import SupplierForm from './SupplierForm';
 import { FaPlusCircle, FaEdit } from "react-icons/fa";
-interface Contact {
-    type: string;
-    value: string;
-    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
-}
+import { ContactDetail } from '@/Pages/Patients/interfacesPatients';
 interface Supplier {
     id?: number; // Propriedade id é opcional
     name: string;
     category: string;
-    contacts: Contact[];
+    contacts: ContactDetail[];
     address: string;
     state: string;
     notes: string;
@@ -65,7 +61,7 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
 
     // Função para converter a string JSON de contatos em um array de objetos
 
-    const convertContactsToArray = (contacts: string | Contact[]): Contact[] => {
+    const convertContactsToArray = (contacts: string | ContactDetail[]): ContactDetail[] => {
         try {
             // Se já for um array, retorna diretamente
             if (Array.isArray(contacts)) {
@@ -79,13 +75,13 @@ export default function SuppliersManager({ suppliers }: SuppliersManagerProps) {
             return Array.isArray(parsedContacts)
                 ? parsedContacts
                 : Object.entries(parsedContacts).map(([key, value]) => ({
-                    type: key,
+                    type: Number(key),
                     value: value?.value ?? '',
                     category: value?.category ?? 'string', // Define um valor padrão se category estiver indefinido
                 }));
         } catch (error) {
             console.error('Erro ao converter contatos:', error);
-            return [{ type: 'Telefone Principal', value: '', category: 'phone' }]; // Valor padrão em caso de erro
+            return [{ type: 1, value: '', category: 'phone' }]; // Valor padrão em caso de erro
         }
     };
 

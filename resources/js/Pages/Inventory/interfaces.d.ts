@@ -1,7 +1,7 @@
 // src/interfaces.ts
 
 export interface Contact {
-    type: string;
+    type: number;
     value: string;
     category: 'phone' | 'link' | 'string';
 }
@@ -28,23 +28,21 @@ export interface Product {
     name: string;
     description: string;
     measuring_unit: 'unidade' | 'peso' | 'volume' | null; // Modificado aqui
-    company_id: number;
     category_id: number;
     quantities_per_unit: number;
     measuring_unit_of_unit: string;
     status: boolean;
-    photo: string[];
-    stocks: {
-        id: number;
-        local_id: number;
-        quantity: number;
-        entry_date: string;
-        expiration_date?: string;
-        location: string;
-        cost_price?: number;
-    }[];
+    stocks: Stock[] | [];
 }
-
+export interface Stock{
+    id: number;
+    local_id: number;
+    quantity: number;
+    entry_date: string;
+    expiration_date?: string;
+    location: string;
+    cost_price?: number;
+}
 export interface stockLocals{
     id: number;
     company_id: number;
@@ -100,6 +98,8 @@ export interface TreeNode {
     key: string;
     label: string;
     value: string;
+    description?: string; // Descrição do local de estoque
+
     children: TreeNode[];
 }
 export interface CategoryNode {
@@ -109,4 +109,19 @@ export interface CategoryNode {
     depth?: number;
     className?: string;
     style?: React.CSSProperties;
+}
+export interface ItemNode {
+    key: string; // ID do local de estoque convertido em string para usar como chave
+    label: string; // Nome do local de estoque
+    description?: string; // Descrição do local de estoque
+    children: ItemNode[]; // Lista de sublocais
+    className?: string; // Classe CSS para estilização
+    style?: React.CSSProperties; // Estilo CSS para padding e outros ajustes
+}
+
+export interface stockLocals {
+    id: number;
+    name: string;
+    description: string;
+    parent_id: number | null;
 }

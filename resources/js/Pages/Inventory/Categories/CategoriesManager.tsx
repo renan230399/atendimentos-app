@@ -6,7 +6,7 @@ import { InputText } from 'primereact/inputtext';
 import AddSubcategoryDialog from './AddSubcategoryDialog';
 import { Category, CategoryNode } from '../interfaces'; // Ajuste o caminho conforme necessário
 import useCategoryExpansion from '../Hooks/useCategoryExpansion';
-import useCategoryEdit from '../Hooks/useCategoryEdit.ts:';
+import useCategoryEdit from '../Hooks/useCategoryEdit';
 import classNames from 'classnames';
 
 interface CategoriesManagerProps {
@@ -83,7 +83,7 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
     useEffect(() => {
         const groupedCategories = buildCategoryTree(categories);
         setNodes(groupedCategories);
-    }, [categories]);
+    }, [categories, isEditing, editedCategories]);
 
     const openAddSubcategoryDialog = (parentCategory: CategoryNode) => {
         setSelectedParentCategory(parentCategory);
@@ -104,7 +104,7 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
         // Atualiza o estado com os novos expandedKeys
         setExpandedKeys(newExpandedKeys);
     };
- 
+    
     
     return (
         <div className="w-full px-3 overflow-y-hidden">
@@ -117,7 +117,7 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                     {isEditing && (
                         <Button
                             icon="pi pi-undo"
-                            label=""
+                            label="Cancelar"
                             className={classNames("px-2 py-1 rounded shadow text-white p-button-primary", "bg-red-500")}
                             onClick={handleEditToggle}
                         />
@@ -205,7 +205,6 @@ export default function CategoriesManager({ categories }: CategoriesManagerProps
                         ? parseInt(selectedParentCategory.key)
                         : selectedParentCategory?.key || null
                 }
-
                 setSelectedParentCategory={() => setSelectedParentCategory(null)}
             />
         </div>

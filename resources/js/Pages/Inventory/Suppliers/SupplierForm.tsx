@@ -10,20 +10,15 @@ import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 import ContactInput from '../../../Components/ContactInput'; 
 import { MdContactPhone } from "react-icons/md";
+import { ContactDetail } from '@/Pages/Patients/interfacesPatients';
 
-// Definindo a interface para o contato
-interface Contact {
-    type: string;
-    value: string;
-    category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
-}
 
 // Definindo a interface para os dados do fornecedor
 interface SupplierData {
     id?: number; // Propriedade id é opcional
     name: string;
     category: string;
-    contacts: Contact[];
+    contacts: ContactDetail[];
     address: string;
     state: string;
     notes: string;
@@ -75,7 +70,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ onClose, setSaveSupplier, i
     const { data, setData, post, put, processing, errors, reset } = useForm<SupplierData>({
         name: '',
         category: '',
-        contacts: [{ type: 'Telefone Principal', value: '', category: 'phone' }],
+        contacts: [{ type: 1, value: '', category: 'phone' }],
         address: '',
         state: '',
         notes: '',
@@ -107,7 +102,7 @@ console.log("renan");
             });
         }
     };
-    const convertContactsToArray = (contacts: any): Contact[] => {
+    const convertContactsToArray = (contacts: any): ContactDetail[] => {
         // Lógica para converter os contatos, se necessário
         return Array.isArray(contacts) ? contacts : [];
     };
@@ -121,14 +116,17 @@ console.log("renan");
         }
     }, [initialData]);
 
-    const handleContactChange = (index: number, field: keyof Contact, value: string) => {
+    const handleContactChange = (index: number, field: keyof ContactDetail, value: string) => {
         const updatedContacts = [...data.contacts];
     
         // Verifique se o campo é 'category' e ajuste o tipo do valor
-        if (field === 'category') {
+        if (field ==='type') {
+            updatedContacts[index][field] = Number(value); // Para outros campos, o tipo é string
+
+        } else if(field === "category"){
             updatedContacts[index][field] = value as 'phone' | 'link' | 'string'; // Afirmar que o valor é um dos tipos esperados
-        } else {
-            updatedContacts[index][field] = value; // Para outros campos, o tipo é string
+        }else if(field === "value"){
+            updatedContacts[index][field] = String(value); // Afirmar que o valor é um dos tipos esperados
         }
     
         setData('contacts', updatedContacts);
@@ -138,7 +136,7 @@ console.log("renan");
     
     
     const handleAddContact = () => {
-        setData('contacts', [...data.contacts, { type: '', value: '', category: 'phone' }]);
+        setData('contacts', [...data.contacts, { type: 1, value: '', category: 'phone' }]);
     };
     
 
@@ -152,7 +150,7 @@ console.log("renan");
     
         // Remove contatos que tenham 'type' ou 'value' vazios
         const filteredContacts = data.contacts.filter(
-            (contact) => contact.type.trim() !== '' || contact.value.trim() !== ''
+            (contact) => contact.value.trim() !== ''
         );
     
         // Atualiza os dados a serem enviados com a lista de contatos filtrada

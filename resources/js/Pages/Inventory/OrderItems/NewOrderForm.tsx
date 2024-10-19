@@ -278,7 +278,6 @@ const NewOrderForm: React.FC<NewOrderFormProps> = ({
                 onHide={() => setSelectItemsPopup(false)}
             >
                 <ProductWithStock
-                    products={products || []}
                     suppliers={suppliers}
                     categories={categories || []}
                     stockLocals={stockLocals || []}

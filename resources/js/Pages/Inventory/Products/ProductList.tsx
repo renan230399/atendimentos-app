@@ -4,7 +4,6 @@ import { Product } from '../interfaces'; // Ajuste o caminho conforme necessári
 interface ProductListProps {
     products: Product[];
     filteredProducts: Product[];
-    stockForProduct: (product: Product) => Product['stocks']; // Função que filtra o estoque do produto
     handleAddProductClick: (product: Product) => void;
     handleOpenForm: (product?: Product) => void;
     onProductSelect?: (productId: number, quantity: number) => void;
@@ -12,25 +11,50 @@ interface ProductListProps {
 
 const ProductList: React.FC<ProductListProps> = ({
     products,
-    filteredProducts,
-    stockForProduct,
+    filteredProducts = [], // Garantimos que `filteredProducts` tenha um valor padrão
     handleAddProductClick,
     handleOpenForm,
     onProductSelect,
 }) => {
+    // Usamos `products` como fallback caso `filteredProducts` esteja vazio
+    const displayedProducts = filteredProducts.length > 0 ? filteredProducts : products; 
+    
+    // Console para verificar o array
+    console.log(displayedProducts);
+    console.log(displayedProducts.length > 0);
+    
     return (
-        <div className="mb-14 overflow-y-auto border border-gray-300 rounded-xl flex-grow">
+        <div className="mb-14 overflow-y-auto border h-[100%] border-gray-300 rounded-xl flex-grow">
             <ul className="h-auto shadow-lg px-6">
-                {filteredProducts.map((product) => {
-                    const stocks = stockForProduct(product);
-
-                    return (
+                {displayedProducts.length > 0 ? (
+                    displayedProducts.map((product) => (
                         <li
                             key={product.id}
-                            className="bg-white text-left px-6 border-b border-b-gray-200 justify-between ease-in-out my-1"
+                            className="bg-white text-left px-6 border-b border-b-gray-200 ease-in-out my-1 flex flex-wrap w-full"
                         >
-                            <div className="flex justify-between">
+                            <div className="flex flex-col w-[40%] border-r border-gray-300 m-1">
                                 <h4 className="font-semibold text-2xl text-left text-gray-800">{product.name}</h4>
+
+                                <p className="text-sm text-left text-gray-600">
+                                    {product.description || 'Descrição indisponível'}
+                                </p>
+
+                                <strong className="text-xs text-left text-gray-800">
+                                    Unidade de Medida: {product.measuring_unit || 'Indisponível'}
+                                </strong>
+
+                                <strong className="text-xs text-left text-gray-800">
+                                    Quantidade por Unidade: {product.quantities_per_unit} {product.measuring_unit_of_unit}
+                                </strong>
+                            </div>
+
+                            <div className="mt-4 w-[40%]">
+                                <p className="text-gray-600">
+                                    {product.status ? 'Produto ativo' : 'Produto inativo'}
+                                </p>
+                            </div>
+
+                            <div className="w-[18%]">
                                 <div
                                     onClick={() => handleOpenForm(product)} // Editar Produto
                                     className="text-sm cursor-pointer text-blue-500 hover:underline"
@@ -46,61 +70,11 @@ const ProductList: React.FC<ProductListProps> = ({
                                     </div>
                                 )}
                             </div>
-                            <p className="text-gray-600 mb-2">{product.description}</p>
-
-                            {/* Tabela para exibir os estoques disponíveis */}
-                            <div className="mt-4">
-                                {stocks.length > 0 ? (
-                                    <table className="w-full text-sm text-left text-gray-700">
-                                        <thead className="bg-blue-500 text-white">
-                                            <tr>
-                                                <th className="px-4 py-2">Local</th>
-                                                <th className="px-4 py-2">Quantidade</th>
-                                                <th className="px-4 py-2">Total</th>
-                                                <th className="px-4 py-2">Entrada</th>
-                                                <th className="px-4 py-2">Validade</th>
-                                                <th className="px-4 py-2">Preço de Custo</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {stocks.map((stock) => (
-                                                <tr key={stock.id} className="border-t">
-                                                    <td className="px-4 py-2">{stock.location || 'Não especificado'}</td>
-                                                    <td className="px-4 py-2">
-                                                        {stock.quantity} unidades de {product.quantities_per_unit}{' '}
-                                                        {product.measuring_unit_of_unit}
-                                                    </td>
-                                                    <td className="px-4 py-2">
-                                                        {stock.quantity && product.quantities_per_unit
-                                                            ? stock.quantity * product.quantities_per_unit
-                                                            : 0}{' '}
-                                                        {product.measuring_unit_of_unit || ''}
-                                                    </td>
-                                                    <td className="px-4 py-2">
-                                                        {new Date(stock.entry_date).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="px-4 py-2">
-                                                        {stock.expiration_date
-                                                            ? new Date(stock.expiration_date).toLocaleDateString()
-                                                            : 'Sem validade'}
-                                                    </td>
-                                                    <td className="px-4 py-2">
-                                                        {(Number(stock.cost_price) / 100).toLocaleString('pt-BR', {
-                                                            style: 'currency',
-                                                            currency: 'BRL',
-                                                        })}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                ) : (
-                                    <p className="text-gray-600">Sem estoque disponível com o filtro atual</p>
-                                )}
-                            </div>
                         </li>
-                    );
-                })}
+                    ))
+                ) : (
+                    <p className="text-gray-600">Nenhum produto encontrado</p>
+                )}
             </ul>
         </div>
     );

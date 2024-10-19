@@ -36,10 +36,10 @@ return new class extends Migration
             $table->string('cpf')->nullable(); // Patient's CPF
 
             // Contacts - Stores multiple responsible persons in JSON format
-            $table->jsonb('contacts')->nullable(); // JSON column for multiple contacts
+            $table->json('contacts')->nullable(); // JSON column for multiple contacts
 
             // Main complaints - Stores multiple complaints in JSON format
-            $table->jsonb('complaints')->nullable(); // JSON column for multiple complaints
+            $table->json('complaints')->nullable(); // JSON column for multiple complaints
             
             // Other fields
             $table->text('notes')->nullable(); // Field for additional notes

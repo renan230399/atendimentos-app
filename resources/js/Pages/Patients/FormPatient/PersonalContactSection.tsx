@@ -11,7 +11,7 @@ interface PersonalContactSection {
 const PersonalContactSection: React.FC<PersonalContactSection> = ({ personal_contacts, setData }) => {
     const handlePersonalContactChange = (index: number, field: keyof ContactDetail, value: string) => {
         const updatedContacts = [...personal_contacts];
-    
+        
         // Verifica se o campo é 'category' e faz a atribuição adequada
         if (field === 'category') {
             // Certifica-se de que o valor é um dos tipos esperados
@@ -20,16 +20,20 @@ const PersonalContactSection: React.FC<PersonalContactSection> = ({ personal_con
             } else {
                 console.error(`Valor inválido para category: ${value}`);
             }
-        } else {
-            updatedContacts[index][field] = value; // Para outros campos, o tipo é string
-        }
-    
+        } else if(field === 'type') {
+            updatedContacts[index][field] = Number(value); // Para outros campos, o tipo é string
+        }else{
+            updatedContacts[index][field] = String(value); // Para outros campos, o tipo é string
+        }          
+
+
         setData('personal_contacts', updatedContacts);
+
     };
     
 
     const handleAddPersonalContact = () => {
-        setData('personal_contacts', [...personal_contacts, { type: '', value: '', category: 'phone' }]);
+        setData('personal_contacts', [...personal_contacts, { type: 1, value: '', category: 'phone' }]);
     };
 
     const handleRemovePersonalContact = (index: number) => {
@@ -38,7 +42,7 @@ const PersonalContactSection: React.FC<PersonalContactSection> = ({ personal_con
     };
 
     return (
-        <div>
+        <div className=''>
             <h2 className="font-bold">Outros Contatos</h2>
             {personal_contacts.map((contact, index) => (
                 <ContactInput

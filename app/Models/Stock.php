@@ -49,4 +49,10 @@ class Stock extends Model
     {
         return $this->belongsTo(StockLocal::class, 'local_id');
     }
+
+    
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
 }

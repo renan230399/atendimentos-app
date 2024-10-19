@@ -1,20 +1,37 @@
 import React from 'react';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
-import { RiDeleteBin5Fill } from "react-icons/ri";
-import ContactInput from '@/Components/ContactInput';
+import { FaUsersBetweenLines, FaMapLocationDot  } from "react-icons/fa6";
+import { PiUserListFill } from "react-icons/pi";
 import { Contact, ContactDetail } from '../interfacesPatients';
 import PersonalContactSection from './PersonalContactSection';
-
+import { TabView } from 'primereact/tabview';
+import { TabPanel } from 'primereact/tabview';
+import PersonContactCard from './PersonContactCard';
+import AddressSection from './AddressSection'
 interface ContactSectionProps {
     data: {
         contacts: Contact[];
         personal_contacts: ContactDetail[];
+        state: string;
+        city: string;
+        neighborhood: string;
+        street: string;
+        house_number: string;
+        address_complement?: string;
+        [key: string]: any; // Permite campos adicionais
     };
     setData: (field: string, value: any) => void;
+    errors: {
+        state?: string;
+        city?: string;
+        neighborhood?: string;
+        street?: string;
+        house_number?: string;
+        address_complement?: string;
+        [key: string]: any;
+    };
 }
 
-const ContactSection: React.FC<ContactSectionProps> = ({ data, setData }) => {
+const ContactSection: React.FC<ContactSectionProps> = ({ data, setData, errors }) => {
 
     // Atualiza os dados gerais da pessoa (nome, relação)
     const handlePersonChange = (personIndex: number, field: keyof Contact, value: any) => {
@@ -105,77 +122,58 @@ const addContact = () => {
 
     return (
         <>
-            <div className='w-[100%] md:w-[20%] m-auto'>
-                <img src="https://keyar-atendimentos.s3.amazonaws.com/icones/contatos.png" className="m-auto w-20 h-20 md:w-40 md:h-40" alt="Contatos" />
-            </div>
 
-            <div className='w-[100%] md:w-[78%] flex flex-wrap gap-1 border-b-2 pb h-auto overflow-y-auto'>
-                <h2 className="font-bold">Contatos</h2>
-                <div className='w-full'>
-                    <PersonalContactSection 
-                        personal_contacts={data.personal_contacts}
-                        setData={setData}
-                    />
-                </div>
 
-                {Array.isArray(data.contacts) && data.contacts.length > 0 ? (
-                    data.contacts.map((person, personIndex) => (
-                        <div key={personIndex} className="space-y-4 bg-gray-100 md:space-y-0 md:space-x-4 flex flex-wrap flex-col md:flex-row items-start gap-4 px-4 border rounded-lg shadow-sm">
-                            {/* Nome da pessoa */}
-                            <div className="flex-1">
-                                <InputLabel htmlFor={`person_name_${personIndex}`} value="Nome da pessoa" />
-                                <TextInput
-                                    id={`person_name_${personIndex}`}
-                                    value={person.name}
-                                    className="mt-1 block w-full border-gray-300 rounded-md"
-                                    onChange={(e) => handlePersonChange(personIndex, 'name', e.target.value)}
+            <div className='w-[100%] md:w-full flex flex-wrap gap-1 border-b-2 pb overflow-y-auto'>
+            <TabView
+                className="shadow-lg rounded-lg w-full  dark:border-gray-800 bg-white dark:bg-gray-900"
+                panelContainerClassName=""
+                >
+                        <TabPanel header={ 
+                            <div className='flex'>
+                                <PiUserListFill 
+                                    className="w-8 h-8 md:w-6 md:h-6 object-cover transition-transform duration-300 ease-in-out hover:scale-105"
+                                />
+                                <p className="my-auto ml-2">Contatos</p>
+                            </div>
+                        }>
+                            <div className='flex'>
+                                <div className='w-[100%] md:w-[20%] m-auto'>
+                                    <img src="https://keyar-atendimentos.s3.amazonaws.com/icones/contatos.png" className="m-auto w-20 h-20 md:w-40 md:h-40" alt="Contatos" />
+                                </div>
+                                
+                            <div className='w-[80%]'>
+                                <PersonalContactSection 
+                                    personal_contacts={data.personal_contacts}
+                                    setData={setData}
                                 />
                             </div>
-                            {/* Relação com o paciente */}
-                            <div className="flex-1">
-                                <InputLabel htmlFor={`relation_${personIndex}`} value="(A/O) paciente é o que dessa pessoa?" />
-                                <div className="flex items-center gap-2">
-                                    <TextInput
-                                        id={`relation_${personIndex}`}
-                                        value={person.relation}
-                                        className="mt-1 block w-full border-gray-300 rounded-md"
-                                        onChange={(e) => handleRelationChange(personIndex, e.target.value)}
-                                    />
-                                </div>
                             </div>
-                            <div className=''>
-                                <button
-                                    type="button"
-                                    className="bg-green-500 text-white px-4 rounded mt-2"
-                                    onClick={() => addNewContactForPerson(personIndex)}
-                                >
-                                    Adicionar novo contato
-                                </button>
-                            </div>
-                            {/* Lista de contatos para cada pessoa */}
-                            <div className="w-full">
-                                {person.contacts.map((contact, contactIndex) => (
-                                    <ContactInput
-                                        key={contactIndex}
-                                        contact={contact}
-                                        index={contactIndex}
-                                        onChange={(contactIndex, field, value) => handlePersonContactChange(personIndex, contactIndex, field, value)}
-                                        onRemove={() => removeContact(personIndex, contactIndex)}
-                                    />
-                                ))}
-                            </div>
-                            {/* Ícone de exclusão de pessoa */}
-                            <div
-                                className="mt-4 md:mt-0 m-auto flex items-center justify-center bg-red-500 text-white rounded-full w-10 h-10 cursor-pointer transition hover:bg-red-600"
-                                onClick={() => removePerson(personIndex)}
-                            >
-                                <RiDeleteBin5Fill className="w-5 h-5 m-auto" />
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-gray-500">Nenhuma pessoa inserida.</p>
-                )}
+
+                        </TabPanel>
+                        <TabPanel header={ 
+    <div className='flex'>
+        <FaUsersBetweenLines className="w-8 h-8 md:w-6 md:h-6 object-cover transition-transform duration-300 ease-in-out hover:scale-105"
+        />
+        <p className="my-auto ml-2">Contatos Próximos</p>
+    </div>
+}>
+                        {Array.isArray(data.contacts) && data.contacts.length > 0 ? (
+                        data.contacts.map((person, personIndex) => (
+                            <PersonContactCard
+                                key={personIndex}
+                                person={person}
+                                personIndex={personIndex}
+                                handlePersonChange={handlePersonChange}
+                                handlePersonContactChange={handlePersonContactChange}
+                                addNewContactForPerson={addNewContactForPerson}
+                                removeContact={removeContact}
+                                removePerson={removePerson}
+                            />
+                        ))
+                    ) : (
+                        <p className="text-gray-500">Nenhuma pessoa inserida.</p>
+                    )}
 
                 <div className='w-full'>
                     <button
@@ -186,6 +184,23 @@ const addContact = () => {
                         Adicionar nova pessoa
                     </button>
                 </div>
+                        </TabPanel>
+                        <TabPanel header={ 
+                            <div className='flex'>
+                            <FaMapLocationDot 
+                                className="w-8 h-8 md:w-6 md:h-6 object-cover transition-transform duration-300 ease-in-out hover:scale-105"
+                            />
+                            <p className="my-auto ml-2">Endereço</p>
+                        </div>
+                        }>           
+                        <div className='xl:h-[35vh] overflow-y-auto'>  
+                            <AddressSection data={data} setData={setData} errors={errors}/>
+                        </div> 
+                        </TabPanel>
+
+            </TabView>                
+
+                
             </div>
         </>
     );

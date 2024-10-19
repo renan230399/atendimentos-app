@@ -9,7 +9,9 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { addLocale, locale } from 'primereact/api';
 import React, { useState, useEffect } from 'react';
 import SplashScreen from './Layouts/SplashScreen'; // Importa o SplashScreen
-import { CompanyProvider } from './Contexts/CompanyProvider'
+import { CompanyProvider } from './Contexts/CompanyProvider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // Importa QueryClient e QueryClientProvider
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 // Configurações de localidade para o PrimeReact
 addLocale('pt', {
@@ -27,6 +29,9 @@ locale('pt');
 
 const appName = import.meta.env.VITE_APP_NAME || 'Keyar';
 
+// Crie o cliente do React Query
+const queryClient = new QueryClient();
+
 // Defina o componente com SplashScreen
 const InertiaAppWithSplashScreen: React.FC<{ App: any; props: any }> = ({ App, props }) => {
     const [isSplashVisible, setIsSplashVisible] = useState(true);
@@ -34,15 +39,19 @@ const InertiaAppWithSplashScreen: React.FC<{ App: any; props: any }> = ({ App, p
     useEffect(() => {
         const timeout = setTimeout(() => {
             setIsSplashVisible(false);
-        }, 2000); // Ajuste o tempo de exibição do splash screen
+        }, 1000); // Ajuste o tempo de exibição do splash screen
 
         return () => clearTimeout(timeout);
     }, []);
 
     return (
-<CompanyProvider initialLogo="https://example.com/logo.png" initialCompanyName="Minha Empresa" initialTheme="light">
-{isSplashVisible ? <SplashScreen /> : <App {...props} />}
-</CompanyProvider>
+        <QueryClientProvider client={queryClient}> {/* Envolve o app com QueryClientProvider */}
+            <CompanyProvider initialLogo="" initialCompanyName="Minha Empresa" initialTheme="light">
+                {isSplashVisible ? <SplashScreen /> : <App {...props} />}
+                <ReactQueryDevtools initialIsOpen={false} />
+
+            </CompanyProvider>
+        </QueryClientProvider>
     );
 };
 

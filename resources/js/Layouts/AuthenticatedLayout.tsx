@@ -33,7 +33,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                         <div className="flex items-center w-full">
                             <div className="shrink-0">
                                 <Link href="/dashboard">
-                                    {user.company && user.company.company_logo ? (
+                                    {user.company && user.company?.company_logo ? (
                                         <img
                                             src={user.company.company_logo}
                                             alt={user.company.company_name}
@@ -52,9 +52,9 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 <NavLink href={route('patients.index')} active={route().current('patients.index')}>
                                     Pacientes
                                 </NavLink>
-                                {user.role === 1 && user.company && (
+                                {user.role === 1 && (
                                     <>
-                                        <NavLink className='hidden' href={route('forms.index')} active={route().current('forms.index')}>
+                                        <NavLink className='' href={route('forms.index')} active={route().current('forms.index')}>
                                             Fichas
                                         </NavLink>
                                         <NavLink href={route('inventory.dashboard')} active={route().current('inventory.dashboard')}>
@@ -63,6 +63,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                         <NavLink href={route('financial.dashboard')} active={route().current('financial.dashboard')}>
                                             Financeiro
                                         </NavLink>
+
                                         <NavLink href={route('company')} active={route().current('company')}>
                                             Empresa
                                         </NavLink>

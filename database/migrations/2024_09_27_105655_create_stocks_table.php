@@ -25,8 +25,8 @@ return new class extends Migration
 
             $table->date('expiration_date')->nullable()->comment('Data de validade (se aplicável)');
             $table->integer('cost_price')->nullable()->comment('Preço de custo do produto para controle interno');
-            $table->boolean('conferece_status')->comment('Status para ser usado em conferencias e contagens');
-            $table->string('depreciation')->comment('Depreciação do estoque do produto');
+            $table->boolean('conferece_status')->default(false)->comment('Status para ser usado em conferencias e contagens');
+            $table->string('depreciation')->nullable()->comment('Depreciação do estoque do produto');
 
             $table->boolean('status');
 

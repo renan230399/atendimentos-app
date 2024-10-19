@@ -21,7 +21,7 @@ const IconButton: React.FC<IconButtonProps> = ({
     hoverBgColorFrom = 'from-blue-600', // Cor padrão para hover
     hoverBgColorTo = 'to-blue-800', // Cor padrão para hover
     width = 'w-[70vw]',
-    text = 'Cadastrar paciente',
+    text = '',
 }) => {
     const [isHovered, setIsHovered] = useState(false); // Estado para controlar o hover
 

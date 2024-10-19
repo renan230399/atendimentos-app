@@ -80,7 +80,7 @@ class ProductSeeder extends Seeder
                 'entry_date' => Carbon::now()->subDays(rand(1, 30)),
                 'expiration_date' => in_array($product->category_id, [1, 4]) ? Carbon::now()->addMonths(rand(6, 12)) : null, // Data de validade para produtos perecíveis
                 'cost_price' => $unit_price, // Usar o preço de custo do pedido
-                'status' =>1,
+                'status' =>true,
             ]);
         }
     }

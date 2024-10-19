@@ -57,21 +57,37 @@ export default function OrdersManager({ categories, products, suppliers, stockLo
         setNewOrderSideBar(true);
     };
     
+    const [isHovered, setIsHovered] = useState(false); // Estado para controlar o hover
 
     return (
         <>
             <PopupHeader title="Gerenciamento de Pedidos" />
 
+            <div className="absolute right-0 pl-2 ml-5 h-screen w-[5vw] z-100">
             <IconButton
-                icon={<MdAddShoppingCart size={30} className="text-white" />}
-                title="Categorias de Itens"
-                onClick={() => {
-                    setSelectedOrder(null); // Limpa o pedido selecionado para abrir no modo de cadastro
-                    setNewOrderSideBar(true);
-                }}
-                width='w-56'
-                text='Novo pedido'
-            />
+                    icon={<MdAddShoppingCart size={30} className="text-white" />}
+                    title="Pedidos"
+                    onClick={() => {
+                        setSelectedOrder(null); // Limpa o pedido selecionado para abrir no modo de cadastro
+                        setNewOrderSideBar(true);
+                    }}
+                    text="Novo Peddido"
+                />
+
+            </div>
+            <div className="orders-manager bg-gray-100 p-1 rounded-lg shadow-lg">
+                    Filtros
+                    <div className="orders-manager bg-gray-100 p-1 rounded-lg shadow-lg">
+                    Filtros
+                    <div className="orders-manager bg-gray-100 p-1 rounded-lg shadow-lg">
+                    Filtros
+
+
+            </div>
+
+            </div>
+
+            </div>
             <div className="orders-manager bg-gray-100 p-1 rounded-lg shadow-lg">
                 {error && (
                     <div className="text-red-500 font-bold mb-4">Erro: {error}</div>

@@ -252,7 +252,7 @@ class FormFieldSeeder extends Seeder
         // Cria os campos no banco de dados
         foreach ($fields as $field) {
             FormField::create(array_merge($field, ['form_id' => $form->id]));
-        }
+        }*/
         // Cria o formulário de hábitos
         $form_habitos = Form::create([
             'company_id' => 1, // Associe a uma empresa (ajuste conforme necessário)
@@ -428,7 +428,7 @@ $fields_habitos = [
 // Adicionar os campos do formulário de Hábitos
 foreach ($fields_habitos as $field) {
     FormField::create(array_merge($field, ['form_id' => $form_habitos->id]));
-}*/
+}
 // Cria o formulário de exames
 $form_exames = Form::create([
     'company_id' => 1, // Associe a uma empresa (ajuste conforme necessário)
@@ -543,7 +543,7 @@ $fields_exames = [
         'type' => 'date',
         'required' => false,
         'order' => 1,
-        'class' => 'w-[15%]',
+        'class' => '!w-[15%]', // Utilizando '!' para aplicar o importante no Tailwind
         'step' => 0,
     ],
 

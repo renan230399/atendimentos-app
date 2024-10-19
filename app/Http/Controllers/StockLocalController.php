@@ -78,6 +78,7 @@ class StockLocalController extends Controller
             'editedStockLocals' => 'required|array',
             'editedStockLocals.*.name' => 'required|string|max:255', // Valida o campo 'name' de cada local
             'editedStockLocals.*.description' => 'nullable|string|max:255', // Valida o campo 'description' de cada local
+            'editedStockLocals.*.parent_id' => 'nullable|integer|exists:stock_locals,id', // Valida o campo 'parent_id'
         ]);
     
         // Inicia uma transação para garantir a integridade dos dados
@@ -90,6 +91,7 @@ class StockLocalController extends Controller
                 StockLocal::where('id', $id)->update([
                     'name' => $data['name'],
                     'description' => $data['description'],
+                    'parent_id' => $data['parent_id'], // Atualiza o parent_id
                 ]);
             }
     
@@ -104,12 +106,18 @@ class StockLocalController extends Controller
         }
     }
     
+    
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(StockLocal $stockLocal)
+    public function destroy($id)
     {
-        //
+        // Lógica para excluir o local de estoque
+        $stockLocal = StockLocal::findOrFail($id);
+        $stockLocal->delete();
+    
+        return response()->json(['message' => 'Local de estoque excluído com sucesso.']);
     }
+    
 }

@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, TextareaHTMLAttributes } from 'react';
+import { forwardRef, useEffect, TextareaHTMLAttributes } from 'react';
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     className?: string;
@@ -8,13 +8,11 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 
 const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     ({ className = '', isFocused = false, rows = 3, ...props }, ref) => {
-        const textareaRef = ref ? (ref as React.MutableRefObject<HTMLTextAreaElement>) : useRef<HTMLTextAreaElement>(null);
-
         useEffect(() => {
-            if (isFocused && textareaRef.current) {
-                textareaRef.current.focus();
+            if (isFocused && ref && typeof ref !== 'function' && 'current' in ref && ref.current) {
+                ref.current.focus();
             }
-        }, [isFocused]);
+        }, [isFocused, ref]);
 
         return (
             <textarea
@@ -24,7 +22,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
                     'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm ' +
                     className
                 }
-                ref={textareaRef}
+                ref={ref} // Usa o ref passado diretamente
             ></textarea>
         );
     }

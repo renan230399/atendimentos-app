@@ -3,18 +3,20 @@ import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FormBuilder from '@/Pages/Patients/Forms/FormBuilder'; // Componente de criação de formulário
 import PopUpComponent from '@/Layouts/PopupComponent'; // Popup genérico
-import FormEdit from '@/Pages/Patients/Forms/FormEdit'; // Novo componente de visualização de formulário
+import FormEdit from '@/Pages/Patients/Forms/FormManager/FormEdit'; // Novo componente de visualização de formulário
 import { CiEdit } from "react-icons/ci";
 import { User } from '@/types';
-import {FormField, Form} from '@/Pages/Patients/interfacesPatients'
-
+import {Field, Form} from '@/Pages/Patients/interfacesPatients'
+import { Sidebar } from 'primereact/sidebar';
 // Interface das props do componente
 interface IndexProps {
-    user: User;
+    auth:{
+        user: User;
+    }
     forms: Form[];
 }
 
-const Index: React.FC<IndexProps> = ({ user, forms }) => {
+const Index: React.FC<IndexProps> = ({ auth, forms }) => {
     const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false); // Estado para controlar o popup de criação
     const [isViewPopupOpen, setIsViewPopupOpen] = useState<boolean>(false); // Estado para controlar o popup de visualização
     const [popupParams, setPopupParams] = useState<{ clientX?: number; clientY?: number }>({}); // Estado para coordenadas do popup
@@ -53,9 +55,8 @@ const Index: React.FC<IndexProps> = ({ user, forms }) => {
             },
         });
     }, [post, closePopup]);
-
     return (
-        <AuthenticatedLayout user={user}>
+        <AuthenticatedLayout user={auth.user}>
             <Head title="Lista de Formulários" />
             <div className="p-6 bg-white rounded-lg shadow">
                 <h1 className="text-2xl font-bold mb-4">Lista de Formulários</h1>
@@ -110,19 +111,16 @@ const Index: React.FC<IndexProps> = ({ user, forms }) => {
                 </PopUpComponent>
             )}
 
-            {/* Popup de visualização de formulário */}
-            {isViewPopupOpen && selectedForm && (
-                <PopUpComponent
-                    id="formulario_visualizacao_popup"
-                    width="95vw"
-                    height="95vh"
-                    zindex="100"
-                    params={popupParams}
-                    onClose={closePopup}
-                >
+                 <Sidebar
+                visible={isViewPopupOpen}
+                position="left"
+                className="pt-0 xl:w-[96vw] md:w-[96vw] w-[96vw] h-screen overflow-auto bg-white"
+                onHide={closePopup}
+            >
+                {selectedForm && (
                     <FormEdit form={selectedForm} />
-                </PopUpComponent>
-            )}
+                )}
+            </Sidebar> 
         </AuthenticatedLayout>
     );
 };

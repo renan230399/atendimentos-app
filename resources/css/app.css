@@ -310,62 +310,7 @@
     background-color: #e9ecef;
 }
 
-/*
-.conteudo_materiais_cursos {
-    border:3px solid blue;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-    overflow-y: auto;
-    z-index: 300;
-    background: white;
-    width: 50%;
-    height: 95%;
-    overflow-x:hidden !important;
-    border-radius: 5px;
-    border-radius:10px;
-    transition: transform 0.5s ease-in-out;
-    
-}
 
-
-.materiais_cursos.materialShow { 
-visibility: visible;
-opacity: 1;
-}
-.materiais_cursos.materialShow .conteudo_materiais_cursos {
-transform: scale(0.5);
-}
-.materiais_cursos.materialHide .conteudo_materiais_cursos {
-transform: scale(0);
-transition: transform 0.3s ease-in-out;
-}
-
-.materiais_cursos.materialHide {
-opacity: 0;
-transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
-}
-    */
-      /* Barra de rolagem para navegadores WebKit */
-      .conteudo_materiais_cursos::-webkit-scrollbar {
-        width:4px; /* Largura da barra de rolagem */
-        border-radius: 10px;
-    }
-
-    /* Trilha da barra de rolagem */
-    .conteudo_materiais_cursos::-webkit-scrollbar-track {
-        background:gray; /* Cor da trilha */
-        border-radius: 10px; /* Bordas arredondadas */
-    }
-
-    /* Polegar da barra de rolagem */
-    .conteudo_materiais_cursos::-webkit-scrollbar-thumb {
-        background: #001; /* Cor do polegar */
-        border-radius: 10px; /* Bordas arredondadas */
-    }
-
-    /* Polegar da barra de rolagem ao passar o mouse */
-    .conteudo_materiais_cursos::-webkit-scrollbar-thumb:hover {
-        background: white; /* Cor do polegar ao passar o mouse */
-    }
 
 	/* width */
     ::-webkit-scrollbar {
@@ -406,30 +351,46 @@ transition: opacity 0.5s ease-in-out, visibility 0.5s step-end;
     padding: 8px; /* Ajusta o espaçamento interno */
 }
 
-/* Estilização dos itens dentro do dropdown */
-.p-multiselect-item {
-    color: #333; /* Define a cor do texto */
-    padding: 8px; /* Ajusta o espaçamento de cada item */
-}
-.p-multiselect-header {
-    background-color: #b9b9b9; /* Cor de fundo ao passar o mouse sobre o item */
-    
-}
-
-/* Ajusta o estilo dos itens do dropdown do AutoComplete */
-.p-autocomplete-panel .p-autocomplete-item {
-    background-color: #ffffff !important; /* Força o fundo branco */
-    color: #000000 !important; /* Força o texto preto */
-    padding: 8px; /* Adiciona espaço para melhorar a visualização */
-    border-bottom: 1px solid #e0e0e0; /* Adiciona uma borda inferior para separação */
+/* Aba selecionada */
+.p-tabview-selected {
+    background-color: white; /* Cor de fundo para aba selecionada */
+    color: rgb(33, 99, 197);
+        border: 1px solid rgb(33, 99, 197);
+    border-radius: 6px;
+    opacity: 1;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil no hover */
+    transition: all 0.3s ease; /* Transição suave para as mudanças */
 }
 
-.p-autocomplete-panel .p-autocomplete-item:hover {
-    background-color: #e0e0e0 !important; /* Cor de fundo ao passar o mouse */
-    color: #000000 !important; /* Mantém a cor do texto preta */
+
+
+/* Container das abas */
+.p-tabview-nav {
+    background-color: white; /* Cor de fundo clara para o container das abas */
+    display: flex;
+    border-bottom: 1px solid gray;
+    padding: 0 10px; /* Adiciona um espaçamento horizontal nas abas */
 }
 
-.p-stepper-content {
-    margin: 0 !important;
-    padding: 0.1 !important;
-  }
+/* Aba ativa com efeito mais proeminente */
+.p-tabview-nav-link-active {
+    background-color: black;
+    color: rgb(44, 33, 197);
+    opacity: 1;
+    border-bottom: 3px solid rgb(44, 33, 197);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para aba ativa */
+    transition: all 0.3s ease;
+}
+
+/* Estilo do painel (conteúdo da aba) */
+.p-tabview-panel {
+    background-color: white;
+    padding: 20px;
+    border-radius: 0 0 10px 10px; /* Bordas arredondadas na parte inferior */
+    transition: all 0.3s ease;
+    color: #333;
+}
+.p-tabview-panels{
+    padding:0px;
+    width:'100%';
+}

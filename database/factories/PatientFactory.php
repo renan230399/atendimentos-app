@@ -21,7 +21,6 @@ class PatientFactory extends Factory
      */
     public function definition()
     {
-        // Specific fictional patients
         $fictionalPatients = [
             [
                 'patient_name' => 'Kelly Braga Ferreira',
@@ -33,29 +32,48 @@ class PatientFactory extends Factory
                 'city' => 'São Paulo',
                 'state' => 'SP',
                 'cpf' => '123.456.789-01',
-                'contacts' => json_encode([
+                'personal_contacts' => [ // Sem json_encode, fornecemos diretamente o array
+
+                        [
+                            'type' => 1,
+                            'value' => '35999923631',
+                            'category' => 'phone',
+                        ],
+                        [
+                            'type' => 1,
+                            'value' => 'https://www.instagram.com/',
+                            'category' => 'link',
+                        ],
+                        [
+                            'type' => 2,
+                            'value' => 'https://www.facebook.com/',
+                            'category' => 'link',
+                        ],
+
+                ],
+                'contacts' => [ // Sem json_encode, fornecemos diretamente o array
                     [
                         'name' => 'Rosely',
                         'relation' => 'Mãe',
                         'contacts' => [
                             [
-                                'type' => null,
-                                'value' => '(35) 99992-3631',
-                                'category' => null,
+                                'type' => 1,
+                                'value' => '35999923631',
+                                'category' => 'phone',
                             ],
                             [
-                                'type' => 'Instagram',
+                                'type' => 1,
                                 'value' => 'https://www.instagram.com/',
                                 'category' => 'link',
                             ],
                         ],
                     ],
-                ]),
+                ],
                 'notes' => 'Paciente de teste',
-                'profile_picture' => 'https://keyar-atendimentos.s3.amazonaws.com/patient_photos/mlAbH5Wsog0z8wsSDOTUHmU9sdM0RDJbty28kxkj.png',
+                'profile_picture' => 'https://keyar-atendimentos.s3.amazonaws.com/patient_photos/GjJLGhThB8j6vhRQu2elg1YOk7BiA8FKV3F2odnr.png',
                 'status' => true,
             ],
-            
+        
             [
                 'patient_name' => 'Renan',
                 'birth_date' => '1975-06-30',
@@ -66,20 +84,17 @@ class PatientFactory extends Factory
                 'city' => 'Rio de Janeiro',
                 'state' => 'RJ',
                 'cpf' => '987.654.321-00',
-                'contacts' => json_encode([
-                    ['name' => 'Pedro Lima', 'relation' => 'Son', 'phone' => '(21) 97654-3210'],
-                ]),
                 'notes' => 'Patient has high blood pressure.',
                 'profile_picture' => null,
                 'status' => true,
             ],
         ];
-
-        // Select a random fictional patient
+        
+        // Seleciona um paciente fictício aleatório
         $fictionalPatient = $this->faker->randomElement($fictionalPatients);
-
+        
         return array_merge($fictionalPatient, [
-            'company_id' => 1, // Association with a fake company
+            'company_id' => 1, // Associação com uma empresa fictícia
         ]);
     }
 }

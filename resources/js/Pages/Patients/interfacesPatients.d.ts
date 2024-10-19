@@ -1,5 +1,5 @@
 export interface ContactDetail {
-    type: string;
+    type: number | null;
     value: string;
     category: 'phone' | 'link' | 'string'; // Definindo categorias como literais
 }
@@ -60,6 +60,10 @@ export interface Complaints{
     name: string | null;
     tipo: string | null;
 }
+export interface WizardEstructure{
+    order:number;
+    name:string;
+}
 export interface Form {
     id: number;
     company_id: number;
@@ -69,10 +73,10 @@ export interface Form {
     active: boolean;
     icon: string;
     is_wizard: boolean;
-    wizard_structure: null | any; // Você pode definir uma interface específica se souber o formato
+    wizard_structure: [] | WizardEstructure[]; // Você pode definir uma interface específica se souber o formato
     created_at: string; // ou Date
     updated_at: string; // ou Date
-    fields:FormField[];
+    fields:Field[];
 }
 
 export interface Employee {
@@ -85,6 +89,39 @@ export interface Employee {
 
 // Definindo a tipagem dos objetos internos
 // Definição das interfaces Option e OptGroup
+
+/*export interface FormField {
+    id: number;
+    label: string;
+    label_view: string;
+    type: string;
+    required: boolean;
+    default_value: string;
+    options?: string[]; // Supondo que esta propriedade já esteja correta
+    class?: string;
+    photo_select?: string | null; // Altere o tipo para string
+}*/
+
+
+export interface FormResponseDetail {
+    id: number;
+    form_field: Field;
+    response: string;
+}
+
+export interface Field {
+    id: number;
+    label: string;
+    label_view: string | null;
+    default_value: string | null;
+    type: string;
+    step?:number;
+    class?: string;
+    required?: boolean;
+    options?: (string | Option | OptGroup)[]; // Aceita strings, opções individuais ou grupos de opções
+    photo_select?: string | null;
+    order: number;
+}
 interface Option {
     value: string;
     label: string;
@@ -95,34 +132,6 @@ interface Option {
     options: Option[];
   }
   
-  // Interface para os campos do formulário
-  export interface FormField {
-    label: string;
-    label_view?: string;
-    type: "number" | "text" | "textarea" | "select" | "select_with_optgroup" | "radio" | "checkbox" | "checkbox_group" | "date" | "multi_select" | "file" | "email"| "body_selector";
-    required?: boolean;
-    default_value?: string;
-    options?: string[] | (OptGroup & { options: Option[] })[]; // Aceita tanto arrays de strings quanto OptGroups
-    class?: string;
-    photo_select?: File | null;
-  }
-
-export interface FormResponseDetail {
-    id: number;
-    form_field: FormField;
-    response: string;
-}
-
-export interface Field{
-    id: number; // Altere de string para number
-    label: string;
-    type: string;
-    class?: string;
-    required?: boolean;
-    options?: string[] | FieldOption[] ;
-    photo_select?: string;
-    order?: number;
-}
 interface FieldOption {
     label: string;
     value: string;

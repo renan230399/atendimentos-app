@@ -5,7 +5,7 @@ import InputError from '@/Components/InputError';
 import { Dialog } from 'primereact/dialog';
 import TextInput from '@/Components/TextInput';
 import CreatePatient from './FormPatient/CreatePatient';
-import ViewPatient from './ViewPatient';
+import ViewPatient from './View/ViewPatient';
 import PatientListItem from '@/Pages/Patients/PatientListItem';
 import ReactPaginate from 'react-paginate';
 import { FaUserPlus } from 'react-icons/fa';
@@ -17,7 +17,7 @@ import {Patient, Form, Employee} from './interfacesPatients';
 import { User } from '@/types';
 import { InputText } from 'primereact/inputtext';
 import { ProgressSpinner } from 'primereact/progressspinner';
-
+import { Sidebar } from 'primereact/sidebar';
 import IconButton from '@/Components/Utils/IconButton';
 interface PatientsProps {
     auth: {
@@ -36,7 +36,8 @@ const Patients: React.FC<PatientsProps> = ({ auth, patients = [], employees = []
     const offset = currentPage * patientsPerPage;
     const currentPatients = filteredPatients.slice(offset, offset + patientsPerPage);
     const pageCount = Math.ceil(filteredPatients.length / patientsPerPage);
-
+    const totalPatients = filteredPatients.length;
+console.log(patients);
     // Estado de carregamento
     const [loading, setLoading] = useState(true);
 
@@ -139,6 +140,9 @@ const closePopupPatient = () =>{
                 {/* Lista de pacientes e paginação */}
                 <div className='w-[88%] md:w-[94vw] h-[75vh] top-0 xl:h-[68vh] md:h-[85%] pb-6 xl:border bg-gray-100 rounded overflow-x-hidden overflow-y-auto'>
                 <div className='flex flex-wrap md:p-1'>
+                    <div className="w-full text-right pr-6 mt-4">
+                        <h2 className="text-lg font-semibold">Total de Pacientes: {totalPatients}</h2>
+                    </div>
                     {/* Se estiver carregando, mostra o spinner, caso contrário, renderiza os pacientes */}
                     {loading ? (
                         <div className="flex justify-center items-center w-full h-full">
@@ -173,16 +177,17 @@ const closePopupPatient = () =>{
                     </div>
             </div>
             {/* Modal de criação de paciente */}
-            <Dialog
+            <Sidebar
                 visible={isCreatePopupOpen}
                 onHide={handleClosePatientForm}
-                className="w-[96vw] h-[98vh] m-auto rounded-xl "
+                position='right'
+                className="w-[96vw] h-screen rounded-xl "
             >
                 <CreatePatient 
                     onSave={setSavePatient} 
                     handleClosePatientForm={handleClosePatientForm}
                 />
-            </Dialog>
+            </Sidebar>
 
             {/* Popups de aniversariantes */}
             <Dialog
@@ -199,10 +204,10 @@ const closePopupPatient = () =>{
             </Dialog>
 
             {/* Modal de visualização de paciente */}
-            <Dialog
+            <Sidebar
                 visible={isViewPopupOpen}
                 onHide={() => closePopupPatient()}
-                className="w-[96vw] h-[98vh] m-auto rounded-xl "
+                className="w-[99vw] h-[96vh] my-0 p-0 overflow-y-hidden"
             >
                 {selectedPatient && (
                     <ViewPatient
@@ -212,7 +217,7 @@ const closePopupPatient = () =>{
 
                     />
                 )}
-            </Dialog>
+            </Sidebar>
         </AuthenticatedLayout>
     );
 };

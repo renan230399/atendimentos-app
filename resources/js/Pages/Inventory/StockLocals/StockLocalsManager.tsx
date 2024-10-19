@@ -2,54 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { Tree } from 'primereact/tree';
 import { Button } from 'primereact/button';
 import { Badge } from 'primereact/badge';
-import { InputText } from 'primereact/inputtext';
-import AddStockLocalDialog from './AddStockLocalDialog';
-import { useForm } from '@inertiajs/react';
-import TextArea from '@/Components/TextArea';
-import { stockLocals } from '../interfaces'; // Ajuste o caminho conforme necessário
-import { TreeNode } from 'primereact/treenode';
-import { stringify } from 'querystring';
+import { InputText  } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
 
-interface CustomTreeNode extends TreeNode {
-    description?: string; // Adicionando a propriedade description opcional
-}
+import AddStockLocalDialog from './AddStockLocalDialog';
+import TextArea from '@/Components/TextArea';
+import useStockLocalExpansion from '../Hooks/useStockLocalExpansion'; // Hook criado
+import useStockLocalEdit from '../Hooks/useStockLocalEdit'; // Hook criado
+import { stockLocals, ItemNode } from '../interfaces'; // Ajuste o caminho conforme necessário
+import classNames from 'classnames';
+
 interface StockLocalsManagerProps {
     stockLocals: stockLocals[];
 }
-interface ItemNode {
-    key: string; // Alterado para number
-    label: string;
-    value: string;
-    description?: string;
-    children: ItemNode[];
-    className?: string;
-    style?: React.CSSProperties;
-}
-interface EditedStockLocal {
-    name: string;
-    description: string;
-}
-export default function StockLocalsManager({ stockLocals }: StockLocalsManagerProps) {
-    const [nodes, setNodes] = useState<ItemNode[]>([]); // Define que nodes é um array de ItemNode
-    const [expandedKeys, setExpandedKeys] = useState({});
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedStockLocals, setEditedStockLocals] = useState<{ [key: number]: EditedStockLocal }>({});
-    const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
-    const [selectedParentLocal, setSelectedParentLocal] = useState<{ key: number | null; name: string }>({ key: null, name: '' });
-    const [saveAddLocal, setSaveAddLocal] = useState(false);
-    const [saveSuccessEditing, setSaveSuccessEditing] = useState(false);
-    interface ParentLocal {
-        key: string;
-        name: string;
-    }
-    const { data, setData, put, processing } = useForm({
-        editedStockLocals: {},
-    });
-    useEffect(() => {
-        const groupedStockLocals: ItemNode[] = buildStockLocalTree(stockLocals); // Tipagem explícita de groupedStockLocals
-        setNodes(groupedStockLocals); // Garante que nodes é do tipo ItemNode[]
-    }, [stockLocals]);
 
+export default function StockLocalsManager({ stockLocals }: StockLocalsManagerProps) {
+    const [nodes, setNodes] = useState<ItemNode[]>([]);
+    const [expandedKeys, setExpandedKeys] = useState<{ [key: string]: boolean }>({});
+    const [showAddSubcategoryDialog, setShowAddSubcategoryDialog] = useState(false);
+    const [selectedParentLocal, setSelectedParentLocal] = useState<{ key: number | null; name: string } | null>(null);
+    
+    // Função para montar a árvore de locais de estoque
     const buildStockLocalTree = (stockLocals: stockLocals[]): ItemNode[] => {
         const localMap: { [key: number]: ItemNode } = {};
         
@@ -58,7 +31,7 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
             const parentLocal = stockLocals.find(loc => loc.id === local.parent_id);
             return parentLocal ? calculateDepth(parentLocal, depth + 1) : depth;
         };
-        
+        console.log(stockLocals);
         const sortedLocals = [...stockLocals].sort((a, b) => a.name.localeCompare(b.name));
         
         sortedLocals.forEach((local) => {
@@ -66,8 +39,7 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
             localMap[local.id] = {
                 key: String(local.id),
                 label: local.name,
-                value: String(local.id),
-                description: local.description, // Adicionando a descrição
+                description: local.description,
                 children: [],
                 className: local.parent_id ? 'p-node-leaf' : 'p-node-parent',
                 style: { paddingLeft: `${depth * 15}px` },
@@ -85,195 +57,203 @@ export default function StockLocalsManager({ stockLocals }: StockLocalsManagerPr
         
         return tree;
     };
-    
-    
+    const {
+        isEditing,
+        editedStockLocals,
+        handleEditToggle,
+        handleInputChange,
+        handleSaveChanges,
+        processing,
+        setEditedStockLocals,
+        handleDeleteStockLocal,
+    } = useStockLocalEdit(stockLocals, setNodes, buildStockLocalTree);
 
-    const handleEditToggle = () => {
-        setIsEditing(!isEditing);
-        if (!isEditing) {
-            const initialEditedLocals: { [key: number]: EditedStockLocal } = stockLocals.reduce((acc, local) => {
-                acc[local.id] = { name: local.name, description: local.description };
-                return acc;
-            }, {} as { [key: number]: EditedStockLocal }); // Força o tipo do objeto
-            setEditedStockLocals(initialEditedLocals);
-        }
-    };
-    
-    
-    const handleInputChange = (id: number, field: keyof EditedStockLocal, newValue: string) => {
-        const updatedLocals: { [key: number]: EditedStockLocal } = {
-            ...editedStockLocals,
-            [id]: {
-                ...editedStockLocals[id],
-                [field]: newValue,
-            },
-        };
-        setEditedStockLocals(updatedLocals);
-        setData('editedStockLocals', updatedLocals);
-    };
-    
-    
+    const { expandedKeys: expanded, setExpandedKeys: setExpanded, expandAll, collapseAll } = useStockLocalExpansion(nodes);
 
-    const handleSaveChanges = (e: React.FormEvent) => {
-        e.preventDefault();
-        put(route('stockLocals.update'), {
-            data,
-            onSuccess: () => {
-                setSaveSuccessEditing(true);
-                setIsEditing(false);
-            },
-        });
-    };
 
-    const expandAll = () => {
-        let _expandedKeys = {};
-        for (let node of nodes) {
-            expandNode(node, _expandedKeys);
-        }
-        setExpandedKeys(_expandedKeys);
-    };
+    useEffect(() => {
+        const groupedStockLocals = buildStockLocalTree(stockLocals);
+        setNodes(groupedStockLocals);
+    }, [stockLocals, isEditing]);
 
-    const collapseAll = () => {
-        setExpandedKeys({});
-    };
-
-    const openAddSubcategoryDialog = (parentLocal: ParentLocal) => {
-        setSelectedParentLocal({ key: Number(parentLocal.key), name: parentLocal.name });
+    // Função para abrir o diálogo de adicionar subcategoria
+    const openAddStockLocalDialog = (parentLocal: { key: number | null; name: string }) => {
+        setSelectedParentLocal(parentLocal);
         setShowAddSubcategoryDialog(true);
     };
-    
-    
 
-    const expandNode = (node: ItemNode, _expandedKeys: { [key: string]: boolean }) => {
-        if (node.children && node.children.length) {
-            _expandedKeys[node.key] = true;
-            for (let child of node.children) {
-                expandNode(child, _expandedKeys);
-            }
-        }
-    };
-    
+// Função de drag-and-drop para alterar o parent_id
+const onStockLocalDragDrop = (event: any) => {
+    const dragNodeKey = event.dragNode.key; // Local de estoque que foi arrastado
+    const dropNodeKey = event.dropNode?.key || null; // Local onde foi solto (ou null para raiz)
+
+    const draggedLocal = stockLocals.find(local => local.id === parseInt(dragNodeKey));
+
+    if (draggedLocal) {
+        const updatedLocal = {
+            ...editedStockLocals[draggedLocal.id], // Mantém o nome e descrição
+            parent_id: dropNodeKey ? parseInt(dropNodeKey) : null, // Atualiza o parent_id
+        };
+
+        // Usa handleInputChange para atualizar o estado e a árvore visual
+        handleInputChange(draggedLocal.id, 'parent_id', updatedLocal.parent_id); // Passa null corretamente
+    }
+};
+
     const handleNodeClick = (node: ItemNode) => {
         // Faz uma cópia do estado de expandedKeys
         const newExpandedKeys: { [key: string]: boolean } = { ...expandedKeys };
     
-        // Verifica se o nó está expandido, se sim, recolhe, se não, expande
-        if (newExpandedKeys[node.key]) {
-            delete newExpandedKeys[node.key]; // Recolhe o nó removendo-o dos expandedKeys
-        } else {
-            newExpandedKeys[node.key] = true; // Expande o nó adicionando-o aos expandedKeys
+        if(node.key){
+            // Verifica se o nó está expandido, se sim, recolhe, se não, expande
+            if (newExpandedKeys[node.key]) {
+                delete newExpandedKeys[node.key]; // Recolhe o nó removendo-o dos expandedKeys
+            } else {
+                newExpandedKeys[node.key] = true; // Expande o nó adicionando-o aos expandedKeys
+            }
         }
-    
         // Atualiza o estado com os novos expandedKeys
         setExpandedKeys(newExpandedKeys);
     };
-    
-    
-    
     return (
-        <div className="w-full px-3">
-            <div className="flex flex-wrap absolute w-[80%] m-auto top-0 justify-between items-center gap-5 p-4 bg-gray-100 shadow-lg rounded-md">
+        <div className="w-full px-3 overflow-y-hidden">
+            <div className="flex absolute top-0 left-0 overflow-y-hidden h-[5vh] md:h-[7vh] xl:h-[10vh] justify-between items-center gap-5 p-4 bg-gray-100 shadow-lg rounded-md">
                 <div className="flex items-center gap-3">
-                <img src="/images/icons/suppliers.png" className="w-14 h-14" alt="Suppliers Icon" />
-                <h2 className="text-3xl font-bold text-gray-700">Locais de Estoque</h2>
+                    <img src="/images/icons/stock.png" className="w-14 h-14" alt="Stock Icon" />
+                    <h2 className="md:text-3xl font-bold text-gray-700">Locais de Estoque</h2>
                 </div>
                 <div className="flex gap-3">
                     {isEditing && (
                         <Button
                             icon="pi pi-undo"
-                            label={"Cancelar"}
-                            className={"px-2 py-1 rounded shadow text-white p-button-primary bg-red-500"}
+                            label="Cancelar"
+                            className={classNames("px-2 py-1 rounded shadow text-white p-button-primary", "bg-red-500")}
                             onClick={handleEditToggle}
                         />
                     )}
                     <Button
-                        icon="pi pi-pencil"
+                        icon={processing ? "pi pi-spin pi-spinner" : "pi pi-pencil"}
                         label={isEditing ? "Salvar Alterações" : "Editar Locais"}
-                        className={`px-2 py-1 rounded shadow text-white ${isEditing ? "p-button-success bg-green-500 " : "p-button-primary bg-blue-500"}`}
+                        className={classNames(
+                            "px-2 py-1 rounded shadow text-white",
+                            { "p-button-success bg-green-500": isEditing, "p-button-primary bg-blue-500": !isEditing }
+                        )}
                         onClick={isEditing ? handleSaveChanges : handleEditToggle}
-                    />
- 
-
-                </div>
-            </div>
-            <div className="card flex flex-col items-center justify-center mt-6 ">
-                <h3 className="text-white text-lg font-semibold mb-4">Gerenciar Locais de Estoque</h3>
-                <div className="flex gap-4">
-                    <Button
-                        type="button"
-                        icon="pi pi-angle-double-down"
-                        label="Expandir Tudo"
-                        className="p-button-raised p-button-rounded p-button-success bg-blue-500 text-white py-1 px-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-                        onClick={expandAll}
-                    />
-                    <Button
-                        type="button"
-                        icon="pi pi-angle-double-up"
-                        label="Colapsar Tudo"
-                        className="p-button-raised p-button-rounded p-button-warning bg-red-500 text-white py-1 px-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-                        onClick={collapseAll}
+                        disabled={processing}
                     />
                 </div>
             </div>
-            <Tree
-    value={nodes as CustomTreeNode[]}
-    expandedKeys={expandedKeys}
-    onToggle={(e) => setExpandedKeys(e.value)}
-    className="w-full bg-white p-4"
-    nodeTemplate={(node: CustomTreeNode, options) => (
-        <div className={`flex gap-2 border-b pb-1 bg-gray-100 p-1 ${options.className}`}>
-            <i className={`pi my-auto ${node.children && node.children.length > 0 ? 'pi-th-large text-blue-500' : 'pi-box text-green-500'} mr-2`}></i>
-            {isEditing ? (
-                <>
-                    <div className='flex flex-col space-y-2'>
-                        <InputText
-                            value={editedStockLocals[Number(node.key)]?.name || ''}
-                            onChange={(e) => handleInputChange(node.key as number, 'name', e.target.value)} // Garantir que o key seja tratado corretamente
-                            placeholder="Nome do Local"
-                            className="p-inputtext-sm w-full py-0 m-0"
-                        />
-                        <TextArea
-                            value={editedStockLocals[Number(node.key)]?.description || ''}
-                            onChange={(e) => handleInputChange(node.key as number, 'description', e.target.value)}
-                            placeholder="Descrição do Local"
-                            className="p-inputtext-sm w-full py-0 m-0"
-                        />
-                    </div>
-                    <Button
-                        icon="pi pi-plus"
-                        className="p-button-rounded p-button-text p-button-secondary"
-                        onClick={() => openAddSubcategoryDialog({ key: node.key as string, name: node.label || 'Sem nome' })} // Fornecer um valor padrão
-                        title="Adicionar Sublocal"
-                    />
 
+            <div className="flex flex-col h-[82vh] md:h-[73vh] xl:h-[73vh] mb-2 shadow rounded-md border border-gray-200 w-full overflow-y-auto md:mt-10 bg-white">
 
-                </>
-            ) : (
-                <span
-                    title={node.label}
-                    onClick={() => handleNodeClick(node as ItemNode)} // Cast para ItemNode
-                    className="cursor-pointer m-auto"
-                >
-                    {node.label}
-                </span>
-            )}
-            {node.children && node.children.length > 0 && <Badge value={node.children.length} severity="info" className="ml-auto" />}
-        </div>
-    )}
-/>
+                <Tree
+                    value={nodes as ItemNode[]}
+                    expandedKeys={expandedKeys}
+                    onToggle={(e) => setExpandedKeys(e.value)}
+                    className="w-full bg-white"
+                    nodeTemplate={(node, options) => (
+                        <div
+                            className={`flex gap-2 border-b pb-1 bg-gray-100 p-1 ${options.className}`}
+                            draggable={isEditing} // Somente permite arrastar no modo de edição
+                            onDragStart={(e) => e.currentTarget.style.cursor = 'grabbing'}
+                            onDragEnd={(e) => e.currentTarget.style.cursor = 'grab'}
+                        >
+                            <i className={`pi my-auto ${node.children && node.children.length > 0 ? 'pi-th-large text-blue-500' : 'pi-box text-green-500'} mr-2`}></i>
+                            {isEditing ? (
+                                <>
+                                <div className='flex flex-col space-y-1'>
+                                    <InputText
+                                        value={editedStockLocals[Number(node.key)]?.name || ''}
+                                        onChange={(e) => handleInputChange(node.key as number, 'name', e.target.value)}
+                                        className="p-inputtext-sm w-full py-0 m-0"
+                                    />
+                                    <div>
+                                    <InputTextarea
+                                        value={editedStockLocals[Number(node.key)]?.description || ''}
+                                        onChange={(e) => handleInputChange(node.key as number, 'description', e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === ' ') {
+                                                e.stopPropagation(); // Impede a propagação do evento para o Tree
+                                            }
+                                        }}
+                                        className="p-inputtext-sm w-full py-0 m-0"
+                                    />
 
+                                    </div>
+                                </div>
+                                <Button
+                                    icon="pi pi-trash"
+                                    className="p-button-rounded p-button-danger bg-red-500 text-white w-8 h-8 m-auto"
+                                    onClick={() => handleDeleteStockLocal(node.key as number)}
+                                    title="Excluir Local de Estoque"
+                                />
+                                </>
+                            ) : (
+                                    <span
+                                        title={node.label}
+                                        onClick={() => handleNodeClick(node as ItemNode)} // Fazendo um cast para garantir que o tipo seja compatível
+                                        className="cursor-pointer m-auto"
+                                    >
+                                        {node.label}
+                                        <div className='text-xs m-auto'>
+                                            {editedStockLocals[Number(node.key)]?.description || stockLocals.find(local => local.id === Number(node.key))?.description || ''}
+                                        </div>
+                                        </span>
 
+                            )}
+                            <Button
+                                    icon="pi pi-plus"
+                                    className="p-button-rounded p-button-text p-button-secondary m-auto"
+                                    onClick={() => openAddStockLocalDialog({ key: node.key as number, name: node.label || '' })}
+                                    title="Adicionar Subcategoria"
+                                />
+                            {node.children && node.children.length > 0 && (
+                                <Badge value={node.children.length} severity="info" className="ml-auto" />
+                            )}
+                        </div>
+                    )}
+                    dragdropScope={isEditing ? "stock-local-drag" : undefined}
+                    onDragDrop={isEditing ? onStockLocalDragDrop : undefined}
+                    filter={false} // Se estiver habilitado, pode interferir no comportamento do input
 
+                />
+            </div>
 
+            <div className="flex gap-4 justify-center pt-4">
+                <Button
+                    type="button"
+                    icon="pi pi-angle-double-down"
+                    label="Expandir Tudo"
+                    className="p-button-raised p-button-rounded p-button-success bg-blue-500 text-white py-1 px-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                    onClick={expandAll}
+                />
+                <Button
+                    type="button"
+                    icon="pi pi-angle-double-up"
+                    label="Colapsar Tudo"
+                    className="p-button-raised p-button-rounded p-button-warning bg-red-500 text-white py-1 px-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                    onClick={collapseAll}
+                />
+                <Button
+                icon="pi pi-plus"
+                label="Adicionar na raiz"
+                className="p-button-raised p-button-rounded p-button-warning bg-gray-200 text-black py-1 px-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                onClick={() => openAddStockLocalDialog({ key: null, name: '' })}
+                title="Adicionar Subcategoria"
+            />
+            </div>
 
-
+            {/* Diálogo de adicionar subcategoria */}
             <AddStockLocalDialog
                 visible={showAddSubcategoryDialog}
                 onHide={() => setShowAddSubcategoryDialog(false)}
-                parentLocalName={selectedParentLocal.name}
-                parentLocalId={selectedParentLocal.key}
-                setSaveAddLocal={setSaveAddLocal}
-                setIsEditing={setIsEditing}
+                parentLocalName={selectedParentLocal ? selectedParentLocal.name : null}
+                parentLocalId={selectedParentLocal ? selectedParentLocal.key : null}
+                setSaveAddLocal={() => {
+                    setShowAddSubcategoryDialog(false);
+                    setSelectedParentLocal(null);
+                }}
+                
             />
         </div>
     );

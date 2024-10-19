@@ -21,7 +21,6 @@ class Product extends Model
         'measuring_unit',
         'quantities_per_unit',
         'measuring_unit_of_unit',
-        'photo',
         'status'
     ];
 
@@ -69,4 +68,8 @@ class Product extends Model
     {
         $this->attributes['photo'] = json_encode($value);
     }
+    public function scopeActive($query)
+{
+    return $query->where('status', true);
+}
 }

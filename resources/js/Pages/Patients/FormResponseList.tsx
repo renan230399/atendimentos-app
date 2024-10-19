@@ -1,6 +1,6 @@
 import React from 'react';
 import FormResponseField from './FormResponseField';
-import {FormResponse, FormField, FormResponseDetail, Form} from './interfacesPatients'
+import {FormResponse, Field, FormResponseDetail, Form} from './interfacesPatients'
 
 
 interface FormResponseListProps {

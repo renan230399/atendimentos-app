@@ -19,12 +19,12 @@ class FormController extends Controller
     public function index(Request $request)
     {
         $user = $request->user()->load('company');
-
+        //dd($user);
         // Busca todos os formulários e carrega os campos relacionados (form_fields)
         $forms = Form::with('fields')->get();
 
         // Renderiza a página de listagem com Inertia, passando os formulários com seus campos
-        return Inertia::render('Forms/Index', [
+        return Inertia::render('Patients/Forms/Index', [
             'forms' => $forms,
             'auth' => [
                 'user' => $user, // Envia o usuário com a empresa para o frontend

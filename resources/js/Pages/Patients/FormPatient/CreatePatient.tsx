@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
-import TextArea from '@/Components/TextArea';
+import InputStatus from '@/Components/InputStatus';
 import InputLabel from '@/Components/InputLabel';
 import AddressSection from '@/Pages/Patients/FormPatient/AddressSection';
 import DocumentSection from '@/Pages/Patients/FormPatient/DocumentSection';
@@ -46,7 +46,7 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
     
 
     
-    
+    console.log(data.personal_contacts);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,7 +55,6 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
         const cleanPhoneNumber = (number: string) => {
             return number.replace(/\D/g, ''); // Remove tudo que não é dígito
         };
-    
         // Limpeza dos contatos pessoais
         const cleanedPersonalContacts = (data.personal_contacts || []).map(contact => ({
             ...contact,
@@ -81,7 +80,7 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
 
         };
     
-        console.log(updatedData); // Exibir dados limpos no console
+        console.log('dados console',updatedData); // Exibir dados limpos no console
         if (patient) {
             // Modo de edição
             post(route('patients.update', patient.id!), {
@@ -122,14 +121,14 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
 
             <div className="w-[100%] mx-auto">
                 <form onSubmit={handleSubmit}  encType="multipart/form-data" className="space-y-6 flex flex-wrap gap-1">
-                    <div className='w-[100%] z-10 rounded p-5 border-b-2 flex flex-wrap gap-1'>
+                    <div className='w-[100%] z-10 rounded p-5 flex flex-wrap gap-1'>
                         <DocumentSection
                             data={data}
                             setData={setData}
                             errors={errors}
                         />
                     </div>
-                    <div className='w-[100%] z-30 rounded border-2 border-black-200 flex flex-wrap gap-1 shadow-2xl'>
+                    <div className='w-full z-30 rounded  border-black-200 flex flex-wrap gap-1'>
                     <ContactSection
                         data={{
                             ...data,
@@ -138,22 +137,17 @@ const CreatePatient: React.FC<CreatePatientProps> = ({ patient, onSave, handleCl
                         }}
 
                             setData={setData}
+                            errors={errors}
                         />
-                    </div>
-                    <div className='w-[100%] z-20 rounded p-5 border-b-2 border-black-200 flex flex-wrap'>
-                        <AddressSection data={data} setData={setData} errors={errors} />
                     </div>
 
-                    <div className='w-[100%] md:w-[50%] pt-5'>
-                        <InputLabel htmlFor="notes" value="Observações" />
-                        <TextArea
-                            id="notes"
-                            value={data.notes}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('notes', e.target.value)}
-                        />
-                        <InputError message={errors.notes} className="mt-2" />
-                    </div>
+                    <InputStatus
+                        value={data.status}
+                        id={`status`}
+                        label="Status"
+                        onChange={(value) => setData('status', value)}
+                        error={errors?.status}
+                    />
 
                     <div className="m-auto pt-20">
                         <PrimaryButton disabled={processing} >

@@ -81,9 +81,11 @@ Route::middleware('auth')->group(function () {
     
     Route::post('/products', [ProductController::class, 'store'])->name('product.store');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('product.update');
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 
     Route::post('/stock-locals', [StockLocalController::class, 'store'])->name('stockLocals.store');
     Route::put('/stock-locals', [StockLocalController::class, 'update'])->name('stockLocals.update');
+    Route::delete('/stock-locals/{id}', [StockLocalController::class, 'destroy'])->name('stockLocals.destroy');
 
     // Rotas para formulários dinâmicos
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');

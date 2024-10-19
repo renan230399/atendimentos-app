@@ -6,11 +6,8 @@ import TextInput from '@/Components/TextInput';
 import CpfInput from '@/Components/CpfInput';
 import InputFile from '@/Components/InputFile';
 import CustomDropdown from '@/Components/CustomDropdown';
-// Definição das opções de status com ícones
-const statusOptions = [
-    { value: 1, label: 'Ativo', icon: <span className="text-green-500">✔</span> },
-    { value: 0, label: 'Inativo', icon: <span className="text-red-500">⏳</span> },
-];
+import InputStatus from '@/Components/InputStatus';
+import TextArea from '@/Components/TextArea';
 
 interface DocumentSectionProps {
     data: {
@@ -85,7 +82,7 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                 </div>
                 
                 {/* Data de nascimento */}
-                <div className="w-[100%] md:w-[32%] m-auto">
+                <div className="w-[100%] md:w-[15%] m-auto">
                     <DateOfBirthInput
                         value={data.birth_date || ''} // Passa a data no formato ISO como value
                         onChange={(value) => setData('birth_date', value)} // Atualiza o valor no state quando o usuário muda a data
@@ -95,7 +92,7 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                 </div>
 
                 {/* CPF */}
-                <div className="w-[100%] md:w-[32%] m-auto">
+                <div className="w-[100%] md:w-[15%] m-auto">
                     <CpfInput
                         value={data.cpf || ''}
                         onChange={(e) => setData('cpf', e.target.value)}
@@ -104,7 +101,7 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                 </div>
 
                 {/* Gênero */}
-                <div className="w-[100%] md:w-[32%] m-auto">
+                <div className="w-[100%] md:w-[20%] m-auto">
                     <InputLabel htmlFor="gender" value="Gênero" />
                     <select
                         id="gender"
@@ -118,16 +115,20 @@ const DocumentSection: React.FC<DocumentSectionProps> = ({ data, setData, errors
                         <option value="other">Outro</option>
                     </select>
                     <InputError message={errors.gender} className="mt-2" />
-                </div>
 
-                <CustomDropdown
-                    id={`status`}
-                    label="Status"
-                    value={data.status || ''}
-                    onChange={(value) => setData('status', value)}
-                    options={statusOptions}
-                    error={errors?.status}
-                />
+                </div>
+                <div className='w-[100%] md:w-[40%] m-auto'>
+                        <InputLabel htmlFor="notes" value="Observações" />
+                        <TextArea
+                            id="notes"
+                            value={data.notes}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('notes', e.target.value)}
+                        />
+                        <InputError message={errors.notes} className="mt-2" />
+                    </div>
+
+
             </div>
         </>
     );

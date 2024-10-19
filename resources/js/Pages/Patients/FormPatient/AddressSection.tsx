@@ -27,14 +27,14 @@ const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT
 
 const EnderecoSection: React.FC<EnderecoSectionProps> = ({ data, setData, errors }) => {
     return (
-        <>
+        <div className='flex'>
             {/* Imagem de Localização */}
-            <div className='w-[100%] md:w-[20%] m-auto'>
+            <div className='w-[100%] xl:w-[20%] m-auto'>
                 <img src="https://keyar-atendimentos.s3.amazonaws.com/icones/localizacao.png" className="m-auto w-20 h-20 md:w-40 md:h-40" />
             </div>
 
             {/* Seção de Inputs */}
-            <div className='w-[100%] md:w-[78%] flex flex-wrap gap-3 pb-5'>
+            <div className='w-[100%] md:w-[78%] flex flex-wrap gap-3'>
 
                 {/* Campo Estado (Select) */}
                 <div className='w-[20%]'>
@@ -119,7 +119,7 @@ const EnderecoSection: React.FC<EnderecoSectionProps> = ({ data, setData, errors
                     <InputError message={errors.address_complement} className="mt-2" />
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
